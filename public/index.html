@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,6 +16,7 @@
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/views.css">
 </head>
+
 <body>
     <div id="view-login" class="view-section active-view">
         <div class="login-overlay">
@@ -25,7 +27,8 @@
                 </div>
                 <div class="login-tagline">
                     <h2>Your Suspension, In Expert Hands</h2>
-                    <p>With MotoTrack, you can follow your motorcycle every step of the way — from drop-off to release — and view your service records and warranty anytime, anywhere.</p>
+                    <p>With MotoTrack, you can follow your motorcycle every step of the way from drop-off to release and
+                        view your service records and warranty anytime, anywhere.</p>
                     <div class="login-feature-pills">
                         <span>Live Service Status</span>
                         <span>Digital Service History</span>
@@ -38,27 +41,30 @@
                 <div class="brand-header">
                     <div class="logo-icon">
                         <!-- Font Awesome Free 6 "motorcycle" — CC BY 4.0, fontawesome.com -->
-                        <svg viewBox="0 0 640 512" fill="currentColor" aria-hidden="true"><path d="M280 32c-13.3 0-24 10.7-24 24s10.7 24 24 24l57.7 0 16.4 30.3L256 192l-45.3-45.3c-12-12-28.3-18.7-45.3-18.7L64 128c-17.7 0-32 14.3-32 32l0 32 96 0c88.4 0 160 71.6 160 160c0 11-1.1 21.7-3.2 32l70.4 0c-2.1-10.3-3.2-21-3.2-32c0-52.2 25-98.6 63.7-127.8l15.4 28.6C402.4 276.3 384 312 384 352c0 70.7 57.3 128 128 128s128-57.3 128-128s-57.3-128-128-128c-13.5 0-26.5 2.1-38.7 6L418.2 128l61.8 0c17.7 0 32-14.3 32-32l0-32c0-17.7-14.3-32-32-32l-20.4 0c-7.5 0-14.7 2.6-20.5 7.4L391.7 78.9l-14-26c-7-12.9-20.5-21-35.2-21L280 32zM462.7 311.2l28.2 52.2c6.3 11.7 20.9 16 32.5 9.7s16-20.9 9.7-32.5l-28.2-52.2c2.3-.3 4.7-.4 7.1-.4c35.3 0 64 28.7 64 64s-28.7 64-64 64s-64-28.7-64-64c0-15.5 5.5-29.7 14.7-40.8zM187.3 376c-9.5 23.5-32.5 40-59.3 40c-35.3 0-64-28.7-64-64s28.7-64 64-64c26.9 0 49.9 16.5 59.3 40l66.4 0C242.5 268.8 190.5 224 128 224C57.3 224 0 281.3 0 352s57.3 128 128 128c62.5 0 114.5-44.8 125.8-104l-66.4 0zM128 384a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg>
+                        <svg viewBox="0 0 640 512" fill="currentColor" aria-hidden="true">
+                            <path
+                                d="M280 32c-13.3 0-24 10.7-24 24s10.7 24 24 24l57.7 0 16.4 30.3L256 192l-45.3-45.3c-12-12-28.3-18.7-45.3-18.7L64 128c-17.7 0-32 14.3-32 32l0 32 96 0c88.4 0 160 71.6 160 160c0 11-1.1 21.7-3.2 32l70.4 0c-2.1-10.3-3.2-21-3.2-32c0-52.2 25-98.6 63.7-127.8l15.4 28.6C402.4 276.3 384 312 384 352c0 70.7 57.3 128 128 128s128-57.3 128-128s-57.3-128-128-128c-13.5 0-26.5 2.1-38.7 6L418.2 128l61.8 0c17.7 0 32-14.3 32-32l0-32c0-17.7-14.3-32-32-32l-20.4 0c-7.5 0-14.7 2.6-20.5 7.4L391.7 78.9l-14-26c-7-12.9-20.5-21-35.2-21L280 32zM462.7 311.2l28.2 52.2c6.3 11.7 20.9 16 32.5 9.7s16-20.9 9.7-32.5l-28.2-52.2c2.3-.3 4.7-.4 7.1-.4c35.3 0 64 28.7 64 64s-28.7 64-64 64s-64-28.7-64-64c0-15.5 5.5-29.7 14.7-40.8zM187.3 376c-9.5 23.5-32.5 40-59.3 40c-35.3 0-64-28.7-64-64s28.7-64 64-64c26.9 0 49.9 16.5 59.3 40l66.4 0C242.5 268.8 190.5 224 128 224C57.3 224 0 281.3 0 352s57.3 128 128 128c62.5 0 114.5-44.8 125.8-104l-66.4 0zM128 384a32 32 0 1 0 0-64 32 32 0 1 0 0 64z" />
+                        </svg>
                     </div>
                     <h1>MotoTrack</h1>
                     <p>Pops Shock Attack Operations</p>
                 </div>
-                
+
                 <form id="mainLoginForm" onsubmit="handleUnifiedLogin(event)">
                     <div class="input-group">
                         <label>Username</label>
                         <input type="text" id="loginUser" placeholder="Enter your username" required>
                     </div>
-                    
+
                     <div class="input-group">
                         <label>Password</label>
                         <input type="password" id="loginPass" placeholder="Enter your password" required>
                     </div>
                     <div id="loginError" class="error-msg hidden">Invalid username or password.</div>
                     <button type="submit" class="btn btn-primary btn-login">Login</button>
-                    
+
                     <p class="auth-link">
-                        <a href="#" onclick="toggleAuthMode('forgot')">Forgot Password?</a> | 
+                        <a href="#" onclick="toggleAuthMode('forgot')">Forgot Password?</a> |
                         <a href="#" onclick="toggleAuthMode('register')">Register here</a>
                     </p>
                 </form>
@@ -68,7 +74,7 @@
                         <label>Choose Username</label>
                         <input type="text" id="regUser" placeholder="e.g. juan_rider2" required>
                     </div>
-                    
+
                     <div class="input-group">
                         <label>Create Password</label>
                         <input type="password" id="regPass" placeholder="Minimum 6 characters" required>
@@ -78,12 +84,14 @@
                         <input type="password" id="regPassConfirm" placeholder="Retype password" required>
                     </div>
                     <button type="submit" class="btn btn-primary btn-login">Create Account</button>
-                    
-                    <p class="auth-link">Already have an account? <a href="#" onclick="toggleAuthMode('login')">Log in</a></p>
+
+                    <p class="auth-link">Already have an account? <a href="#" onclick="toggleAuthMode('login')">Log
+                            in</a></p>
                 </form>
 
                 <form id="forgotForm" class="hidden" onsubmit="handleForgot(event)">
-                    <p style="font-size:0.9rem; color:#555; margin-bottom:15px; text-align:center;">Enter your username to recover your account.</p>
+                    <p style="font-size:0.9rem; color:#555; margin-bottom:15px; text-align:center;">Enter your username
+                        to recover your account.</p>
                     <div class="input-group">
                         <label>Username</label>
                         <input type="text" id="forgotUser" placeholder="Enter your username" required>
@@ -96,7 +104,7 @@
         </div>
     </div>
 
-    <div id="view-system" class="view-section hidden">         
+    <div id="view-system" class="view-section hidden">
         <aside class="sidebar">
             <div class="sidebar-brand">
                 <h2>MotoTrack</h2>
@@ -104,7 +112,9 @@
             </div>
             <ul class="nav-links" id="sidebarNav"></ul>
             <div style="padding: 2rem;">
-                <button onclick="logout()" class="btn" style="background: rgba(255,255,255,0.1); border: 1px solid #555; color: #fff; width: 100%;">Log Out</button>
+                <button onclick="logout()" class="btn"
+                    style="background: rgba(255,255,255,0.1); border: 1px solid #555; color: #fff; width: 100%;">Log
+                    Out</button>
             </div>
         </aside>
 
@@ -118,14 +128,19 @@
                     <div id="headerActions" style="display: flex; gap: 10px; align-items: center;"></div>
                     <div class="notif-wrap" id="notifWrap">
                         <button class="notif-bell" onclick="toggleNotifPanel()" aria-label="Notifications">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.268 21a2 2 0 0 0 3.464 0"/><path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.737 7.326"/></svg>
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M10.268 21a2 2 0 0 0 3.464 0" />
+                                <path
+                                    d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.737 7.326" />
+                            </svg>
                             <span id="notifBadge" class="notif-badge hidden">0</span>
                         </button>
                         <div id="notifPanel" class="notif-panel hidden"></div>
                     </div>
                 </div>
             </div>
-            
+
             <div class="content-body" id="mainContentArea"></div>
         </main>
     </div>
@@ -171,9 +186,11 @@
             </div>
             <form onsubmit="submitSpecs(event)">
                 <input type="hidden" id="spec_job_id">
-                
-                <div style="background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin-bottom: 15px; border-radius: 4px;">
-                    <label style="font-weight: bold; color: #856404; cursor: pointer; display: flex; align-items: center; gap: 10px;">
+
+                <div
+                    style="background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin-bottom: 15px; border-radius: 4px;">
+                    <label
+                        style="font-weight: bold; color: #856404; cursor: pointer; display: flex; align-items: center; gap: 10px;">
                         <input type="checkbox" id="spec_is_warranty" style="width: 20px; height: 20px;">
                         This is a Re-Service Warranty Claim (Free of Charge)
                     </label>
@@ -199,8 +216,11 @@
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
                     <div style="flex: 2;">
-                        <label style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Oil Seal Size</label>
-                        <select id="spec_oil_seal" style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        <label
+                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Oil
+                            Seal Size</label>
+                        <select id="spec_oil_seal"
+                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                             <option value="None">None</option>
                             <option value="Oil Seal 12x31x10.5">Oil Seal 12x31x10.5</option>
                             <option value="Oil Seal 15x35x10">Oil Seal 15x35x10</option>
@@ -208,12 +228,16 @@
                         </select>
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Qty</label>
-                        <input type="number" id="spec_oil_seal_qty" value="0" min="0" max="2" style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        <label
+                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Qty</label>
+                        <input type="number" id="spec_oil_seal_qty" value="0" min="0" max="2"
+                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Side</label>
-                        <select id="spec_oil_seal_side" style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        <label
+                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Side</label>
+                        <select id="spec_oil_seal_side"
+                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                             <option value="N/A">N/A</option>
                             <option value="Left">Left</option>
                             <option value="Right">Right</option>
@@ -223,20 +247,27 @@
                 </div>
                 <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
                     <div style="flex: 2;">
-                        <label style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Dust Seal Size</label>
-                        <select id="spec_dust_seal" style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        <label
+                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Dust
+                            Seal Size</label>
+                        <select id="spec_dust_seal"
+                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                             <option value="None">None</option>
                             <option value="Dust Seal 41x54x11">Dust Seal 41x54x11</option>
                             <option value="Dust Seal 43x54x11">Dust Seal 43x54x11</option>
                         </select>
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Qty</label>
-                        <input type="number" id="spec_dust_seal_qty" value="0" min="0" max="2" style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        <label
+                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Qty</label>
+                        <input type="number" id="spec_dust_seal_qty" value="0" min="0" max="2"
+                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                     </div>
                     <div style="flex: 1;">
-                        <label style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Side</label>
-                        <select id="spec_dust_seal_side" style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        <label
+                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Side</label>
+                        <select id="spec_dust_seal_side"
+                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                             <option value="N/A">N/A</option>
                             <option value="Left">Left</option>
                             <option value="Right">Right</option>
@@ -253,8 +284,9 @@
                         <option value="Lowering Spring 2.0 inch">Lowering Spring 2.0 inch</option>
                     </select>
                 </div>
-                
-                <button type="submit" class="btn btn-primary" style="width:100%; margin-bottom: 1rem;">Compute Bill & Advance to QA</button>
+
+                <button type="submit" class="btn btn-primary" style="width:100%; margin-bottom: 1rem;">Compute Bill &
+                    Advance to QA</button>
             </form>
         </div>
     </div>
@@ -303,7 +335,7 @@
             <form onsubmit="submitUserForm(event)">
                 <input type="hidden" id="edit_user_mode" value="add">
                 <input type="hidden" id="edit_user_id">
-                
+
                 <div class="input-group">
                     <label>Username</label>
                     <input type="text" id="m_username" required>
@@ -333,7 +365,7 @@
             </div>
             <form onsubmit="submitAddStock(event)">
                 <input type="hidden" id="add_stock_item_id">
-                
+
                 <p style="margin-bottom: 1.5rem; font-size: 1.05rem; color: #555;">
                     Adding stock for:<br>
                     <strong id="add_stock_item_name" style="color: var(--text-primary); font-size: 1.3rem;"></strong>
@@ -371,10 +403,13 @@
     <div class="modal hidden" id="modal-logout">
         <div class="modal-content" style="width: 400px; text-align: center;">
             <h3 style="color: #dc3545; margin-bottom: 1rem; font-size: 1.5rem;">Confirm Logout</h3>
-            <p style="color: #555; margin-bottom: 2rem; font-size: 1.1rem;">Are you sure you want to end your session?</p>
+            <p style="color: #555; margin-bottom: 2rem; font-size: 1.1rem;">Are you sure you want to end your session?
+            </p>
             <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn" style="background: #e5e7eb; color: #374151; width: 50%; font-weight: bold;" onclick="closeModal('modal-logout')">Cancel</button>
-                <button class="btn btn-danger" style="width: 50%; font-weight: bold;" onclick="executeLogout()">Yes, Log out</button>
+                <button class="btn" style="background: #e5e7eb; color: #374151; width: 50%; font-weight: bold;"
+                    onclick="closeModal('modal-logout')">Cancel</button>
+                <button class="btn btn-danger" style="width: 50%; font-weight: bold;" onclick="executeLogout()">Yes, Log
+                    out</button>
             </div>
         </div>
     </div>
@@ -400,4 +435,5 @@
     <script src="js/receipt.js"></script>
     <script src="js/main.js"></script>
 </body>
+
 </html>
