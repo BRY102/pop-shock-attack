@@ -142,16 +142,19 @@ class ServiceJobController extends Controller
         $validated = $request->validated();
 
         // The bill is always computed here, never taken from the client,
-        // so a tampered request cannot underpay a job.
-        $totalBill = $this->billing->computeTotal(
+        // so a tampered request cannot underpay a job. The priced lines
+        // travel with the job so the receipt can show them later.
+        $bill = $this->billing->breakdown(
             enginePrice: (int) $validated['enginePrice'],
             isWarrantyClaim: (bool) $validated['isWarranty'],
+            oil: $validated['rawOil'] ?? $validated['oil'] ?? null,
             oilSealSize: $validated['rawOsSize'] ?? null,
             oilSealQty: (int) ($validated['rawOsQty'] ?? 0),
             dustSealSize: $validated['rawDsSize'] ?? null,
             dustSealQty: (int) ($validated['rawDsQty'] ?? 0),
             springs: $validated['rawSprings'] ?? null,
         );
+        $totalBill = $bill['total'];
 
         $consumables = $this->inventory->consumablesFor(
             oil: $validated['rawOil'] ?? null,
@@ -165,7 +168,7 @@ class ServiceJobController extends Controller
         $ranLow = [];
 
         // Job update and stock movements succeed or fail together.
-        DB::transaction(function () use ($job, $validated, $totalBill, $consumables, &$ranLow) {
+        DB::transaction(function () use ($job, $validated, $totalBill, $bill, $consumables, &$ranLow) {
             // Re-logging after a QA bounce: the parts from the previous attempt
             // were never fitted, so they go back before the new ones come out.
             $this->inventory->restore($this->inventory->fromSpecs($job->specs));
@@ -184,6 +187,9 @@ class ServiceJobController extends Controller
                 // Objective 2.3: the parts cost recorded at the moment they
                 // were fitted, so later price changes cannot rewrite history.
                 'partsCost' => $this->inventory->costOf($consumables),
+                'billLines' => $bill['lines'],
+                'billSubtotal' => $bill['subtotal'],
+                'billCovered' => $bill['covered'],
             ];
             // The measured suspension setup lives in its own columns so a
             // returning unit's history can be queried and compared per visit.

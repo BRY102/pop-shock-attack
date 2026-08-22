@@ -164,6 +164,39 @@ class BillingAndNotificationsTest extends TestCase
         $this->assertNull($job->fresh()->specs);
     }
 
+    public function test_logging_specs_stores_priced_bill_lines(): void
+    {
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertOk();
+
+        $specs = $job->fresh()->specs;
+        $this->assertEquals(2100, $specs['totalBill']);
+        $this->assertEquals(2100, $specs['billSubtotal']);
+        $this->assertFalse($specs['billCovered']);
+
+        $byKey = collect($specs['billLines'])->keyBy('key');
+        $this->assertEquals(1500, $byKey['labor']['amount']);
+        $this->assertEquals(600, $byKey['oilSeal']['amount']);
+        $this->assertEquals(0, $byKey['oil']['amount']);
+    }
+
+    public function test_a_warranty_claim_lists_shop_prices_but_charges_zero(): void
+    {
+        $this->makeCoveredHistory();
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
+            'isWarranty' => true,
+        ]))->assertOk();
+
+        $specs = $job->fresh()->specs;
+        $this->assertEquals(0, $specs['totalBill']);
+        $this->assertEquals(2100, $specs['billSubtotal']);
+        $this->assertTrue($specs['billCovered']);
+        $this->assertEquals(1500, collect($specs['billLines'])->firstWhere('key', 'labor')['amount']);
+    }
+
     public function test_logging_specs_records_what_the_parts_cost(): void
     {
         $job = $this->makeJob();

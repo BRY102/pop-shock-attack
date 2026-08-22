@@ -154,19 +154,6 @@ window.toggleOtherSuspensionBrand = function () {
     if (!isOther) input.value = '';
 };
 
-function computeBill({ enginePrice, isWarranty, osSize, osQty, dsSize, dsQty, springs }) {
-    if (isWarranty) return 0; // back-jobs under warranty are free
-
-    let bill = enginePrice;
-    const oilSealPrice = enginePrice >= 2800 ? 500 : 300;
-
-    if (osSize !== 'None') bill += osQty * oilSealPrice;
-    if (dsSize !== 'None') bill += dsQty * 75;
-    if (springs !== 'None') bill += 580;
-
-    return bill;
-}
-
 window.submitSpecs = async function (e) {
     e.preventDefault();
     const jobId = document.getElementById('spec_job_id').value;
@@ -199,10 +186,6 @@ window.submitSpecs = async function (e) {
         return;
     }
 
-    // Preview only — the server recomputes the bill from the raw inputs,
-    // so a tampered request can never change the amount charged.
-    const previewBill = computeBill({ enginePrice, isWarranty, osSize, osQty, dsSize, dsQty, springs });
-
     const payload = {
         enginePrice: enginePrice,
         oil: oil,
@@ -231,7 +214,7 @@ window.submitSpecs = async function (e) {
 
         if (response.ok) {
             const data = await response.json().catch(() => ({}));
-            const billedTotal = data.job?.specs?.totalBill ?? previewBill;
+            const billedTotal = data.job?.specs?.totalBill ?? 0;
             e.target.reset();
             toggleOtherSuspensionBrand(); // re-hide the "Others" field after the reset
             closeModal('modal-specs');

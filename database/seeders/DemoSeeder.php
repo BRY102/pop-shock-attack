@@ -61,9 +61,10 @@ class DemoSeeder extends Seeder
             $seal = $sealQty > 0 ? $sealSizes[$i % 3] : 'None';
             $springs = ($i % 4 === 0) ? 'Lowering Spring 1.5 inch' : 'None';
 
-            $total = $billing->computeTotal(
+            $bill = $billing->breakdown(
                 enginePrice: $basePrice,
                 isWarrantyClaim: $isClaim,
+                oil: $oils[$i % 3],
                 oilSealSize: $seal,
                 oilSealQty: $sealQty,
                 dustSealSize: 'None',
@@ -96,13 +97,16 @@ class DemoSeeder extends Seeder
             // rather than passed to create() where they would be discarded.
             $job->specs = [
                 'enginePrice' => $basePrice,
-                'totalBill' => $total,
+                'totalBill' => $bill['total'],
                 'oil' => $oils[$i % 3],
                 'oilSeal' => $seal === 'None' ? 'None' : "{$seal} ({$sealQty} - Both)",
                 'dustSeal' => 'None',
                 'springs' => $springs,
                 'consumables' => $consumables,
                 'partsCost' => $inventory->costOf($consumables),
+                'billLines' => $bill['lines'],
+                'billSubtotal' => $bill['subtotal'],
+                'billCovered' => $bill['covered'],
             ];
             // The measured suspension setup, so the technical log and the
             // history view have something real to show during a demo.

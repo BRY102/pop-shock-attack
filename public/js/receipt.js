@@ -14,15 +14,25 @@ window.printReceipt = function (jobId) {
     const dateStr = esc(job.date_in || 'N/A');
     const moto = esc(`${job.moto_model} (${job.plate_number})`);
 
+    const covered = job.specs.billCovered || job.is_warranty_claim;
+    const lines = Array.isArray(job.specs.billLines) && job.specs.billLines.length > 0
+        ? job.specs.billLines
+        : [
+            { label: 'Base Engine/Labor', qty: 1, unitPrice: Number(job.specs.enginePrice || 0), amount: Number(job.specs.enginePrice || 0) },
+        ];
+
     let partsHtml = '';
-    if (job.specs.oilSeal && job.specs.oilSeal !== 'None') {
-        partsHtml += `<div class="item-row"><span>Oil Seal: ${esc(job.specs.oilSeal)}</span><span>Included</span></div>`;
-    }
-    if (job.specs.dustSeal && job.specs.dustSeal !== 'None') {
-        partsHtml += `<div class="item-row"><span>Dust Seal: ${esc(job.specs.dustSeal)}</span><span>Included</span></div>`;
-    }
-    if (job.specs.springs && job.specs.springs !== 'None') {
-        partsHtml += `<div class="item-row"><span>Springs: ${esc(job.specs.springs)}</span><span>Included</span></div>`;
+    lines.forEach(line => {
+        const qtyLabel = line.qty > 1 ? ` × ${line.qty}` : '';
+        const amount = Number(line.amount) === 0
+            ? 'Included'
+            : '₱' + Number(line.amount).toLocaleString();
+        partsHtml += `<div class="item-row"><span>${esc(line.label)}${qtyLabel}</span><span>${amount}</span></div>`;
+    });
+
+    if (covered) {
+        const shopValue = Number(job.specs.billSubtotal ?? job.specs.enginePrice ?? 0);
+        partsHtml += `<div class="item-row" style="color:#92400e; font-weight:700;"><span>Covered by warranty</span><span>−₱${shopValue.toLocaleString()}</span></div>`;
     }
 
     const printHTML = `
@@ -86,14 +96,6 @@ window.printReceipt = function (jobId) {
                 <div class="divider"></div>
 
                 <div class="item-list">
-                    <div class="item-row">
-                        <span>Base Engine/Labor</span>
-                        <span>₱${Number(job.specs.enginePrice || 0).toLocaleString()}</span>
-                    </div>
-                    <div class="item-row">
-                        <span>Oil: ${esc(job.specs.oil)}</span>
-                        <span>Included</span>
-                    </div>
                     ${partsHtml}
                 </div>
 
