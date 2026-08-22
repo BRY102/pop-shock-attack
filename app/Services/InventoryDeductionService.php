@@ -106,6 +106,31 @@ class InventoryDeductionService
     }
 
     /**
+     * Objective 2.3: what a consumable list is worth at catalog prices. Stored
+     * on the job so its parts cost stays fixed at what the shop paid when the
+     * parts were fitted, even if the catalog price changes later.
+     *
+     * @param  list<array{name: string, qty: int}>  $consumables
+     */
+    public function costOf(array $consumables): float
+    {
+        if ($consumables === []) {
+            return 0.0;
+        }
+
+        $prices = InventoryItem::whereIn('name', array_column($consumables, 'name'))
+            ->pluck('price', 'name');
+
+        $total = 0.0;
+
+        foreach ($consumables as $line) {
+            $total += (float) ($prices[$line['name']] ?? 0) * (int) $line['qty'];
+        }
+
+        return round($total, 2);
+    }
+
+    /**
      * Put a consumable list back: the parts were never actually fitted because
      * the specs were revised or the job was cancelled.
      *

@@ -160,6 +160,28 @@ class BillingAndNotificationsTest extends TestCase
         $this->assertNull($job->fresh()->specs);
     }
 
+    public function test_logging_specs_records_what_the_parts_cost(): void
+    {
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertOk();
+
+        // 1 x Daily Oil at ₱150 + 2 x Oil Seal 41x54x11 at ₱500 = ₱1,150.
+        $this->assertEquals(1150, $job->fresh()->specs['partsCost']);
+    }
+
+    public function test_a_later_price_change_does_not_rewrite_a_recorded_parts_cost(): void
+    {
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertOk();
+
+        InventoryItem::where('name', 'Oil Seal 41x54x11')->update(['price' => 900]);
+
+        // The job keeps the cost from the day the parts were fitted.
+        $this->assertEquals(1150, $job->fresh()->specs['partsCost']);
+    }
+
     public function test_unknown_engine_class_prices_are_rejected(): void
     {
         $job = $this->makeJob();

@@ -68,6 +68,15 @@ class DemoSeeder extends Seeder
                 springs: $springs,
             );
 
+            $consumables = $inventory->consumablesFor(
+                oil: $oils[$i % 3],
+                oilSealSize: $seal,
+                oilSealQty: $sealQty,
+                dustSealSize: 'None',
+                dustSealQty: 0,
+                springs: $springs,
+            );
+
             $job = ServiceJob::create([
                 'customer' => $customer->username,
                 'app_user_id' => $customer->id,
@@ -89,14 +98,8 @@ class DemoSeeder extends Seeder
                 'oilSeal' => $seal === 'None' ? 'None' : "{$seal} ({$sealQty} - Both)",
                 'dustSeal' => 'None',
                 'springs' => $springs,
-                'consumables' => $inventory->consumablesFor(
-                    oil: $oils[$i % 3],
-                    oilSealSize: $seal,
-                    oilSealQty: $sealQty,
-                    dustSealSize: 'None',
-                    dustSealQty: 0,
-                    springs: $springs,
-                ),
+                'consumables' => $consumables,
+                'partsCost' => $inventory->costOf($consumables),
             ];
             $job->warranty_expires_at = $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months'));
             $job->save();

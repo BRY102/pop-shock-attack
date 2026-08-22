@@ -51,6 +51,32 @@ function extractBrand(motoModel) {
     return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
 }
 
+// The parts a job consumed. Jobs logged since the consumables tracker landed
+// carry an exact list; older ones are derived from their spec strings
+// ("Oil Seal 41x54x11 (2 - Both)" -> 2 of that seal) so their usage and cost
+// still count toward the totals.
+function consumablesOf(specs) {
+    if (Array.isArray(specs.consumables) && specs.consumables.length > 0) {
+        return specs.consumables.map(line => ({ name: line.name, qty: Number(line.qty) || 0 }));
+    }
+
+    const lines = [];
+    [specs.oil, specs.oilSeal, specs.dustSeal, specs.springs].forEach(raw => {
+        if (!raw || raw === 'None') return;
+        const qtyMatch = raw.match(/\((\d+)/);
+        lines.push({ name: raw.split(' (')[0], qty: qtyMatch ? parseInt(qtyMatch[1]) : 1 });
+    });
+
+    return lines;
+}
+
+// Catalog price per consumable name, for costing the parts a job used.
+function buildPriceIndex() {
+    const index = {};
+    dbInv.forEach(item => { index[item.name] = Number(item.price) || 0; });
+    return index;
+}
+
 function computeOverviewStats() {
     const todayStr = toISODate();
     const currentMonthStr = todayStr.substring(0, 7);
@@ -64,10 +90,23 @@ function computeOverviewStats() {
         totalSales: 0, dailySales: 0, weeklySales: 0, monthlySales: 0, yearlySales: 0,
         totalExpenses: 0,
         salesByDate: {}, expByDate: {}, revenueByMonth: {},
-        mechanicStats: {}, oilSealUsage: {}, brandStats: {},
+        mechanicStats: {}, brandStats: {},
         totalReleased: 0, totalBackjobs: 0, backjobRate: 0,
         lowStockItems: [],
+        totalPartsCost: 0, monthlyPartsCost: 0, yearlyPartsCost: 0,
+        consumableUsage: {}, stageCounts: {},
     };
+
+    // How many units sit at each step of the workflow right now.
+    STAGES.forEach(stage => { stats.stageCounts[stage] = 0; });
+    dbJobs.forEach(job => {
+        if (stats.stageCounts[job.stage] !== undefined) stats.stageCounts[job.stage] += 1;
+    });
+
+    // Parts are costed at current catalog prices so the cost tiles and the
+    // consumables table below can never disagree. The per-job snapshot the
+    // server stores (specs.partsCost) is what the receipt bills against.
+    const priceIndex = buildPriceIndex();
 
     // Consumables at or below their alert level, most urgent first, so the
     // owner sees what to restock before a job is held up waiting for it.
@@ -104,13 +143,22 @@ function computeOverviewStats() {
                 stats.revenueByMonth[monthKey] = (stats.revenueByMonth[monthKey] || 0) + bill;
             }
 
-            // Track oil seal consumption ("Oil Seal 41x54x11 (2 - Both)" -> name + qty)
-            if (job.specs.oilSeal && job.specs.oilSeal !== 'None') {
-                const sealName = job.specs.oilSeal.split(' (')[0];
-                const qtyMatch = job.specs.oilSeal.match(/\((\d+)/);
-                const qty = qtyMatch ? parseInt(qtyMatch[1]) : 1;
-                stats.oilSealUsage[sealName] = (stats.oilSealUsage[sealName] || 0) + qty;
-            }
+            // Which consumables this job used, and what they cost (Objective 2.3)
+            let jobPartsCost = 0;
+            consumablesOf(job.specs).forEach(line => {
+                const cost = (priceIndex[line.name] || 0) * line.qty;
+                jobPartsCost += cost;
+
+                if (!stats.consumableUsage[line.name]) {
+                    stats.consumableUsage[line.name] = { qty: 0, cost: 0 };
+                }
+                stats.consumableUsage[line.name].qty += line.qty;
+                stats.consumableUsage[line.name].cost += cost;
+            });
+
+            stats.totalPartsCost += jobPartsCost;
+            if (job.date_in && job.date_in.startsWith(currentMonthStr)) stats.monthlyPartsCost += jobPartsCost;
+            if (job.date_in && job.date_in.startsWith(currentYearStr)) stats.yearlyPartsCost += jobPartsCost;
         }
 
         if (job.mechanic_name) {
@@ -162,28 +210,55 @@ function buildMechanicTable(mechanicStats) {
     return html + `</tbody></table></div></div>`;
 }
 
-function buildSealTable(oilSealUsage) {
+// Objective 2.3: every consumable the shop has burned through on completed
+// jobs, with what it cost, so the owner can see where parts spending goes.
+function buildConsumablesTable(consumableUsage, totalPartsCost) {
     let html = `
         <div style="flex: 1; min-width: 300px;">
-            <h3 style="margin-top: 1rem; margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Oil Seal Consumption</h3>
+            <h3 style="margin-top: 1rem; margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Consumables Used & Cost</h3>
             <div class="table-container"><table class="data-table">
-            <thead><tr><th>Oil Seal Size</th><th>Quantity Used</th></tr></thead><tbody>
+            <thead><tr><th>Consumable</th><th>Quantity Used</th><th>Cost</th></tr></thead><tbody>
     `;
 
-    const sorted = Object.keys(oilSealUsage).sort((a, b) => oilSealUsage[b] - oilSealUsage[a]);
+    const sorted = Object.keys(consumableUsage).sort((a, b) => consumableUsage[b].cost - consumableUsage[a].cost);
 
     if (sorted.length === 0) {
-        html += `<tr><td colspan="2" style="text-align:center; padding: 1.5rem; color: #777;">No seals used yet.</td></tr>`;
+        html += `<tr><td colspan="3" style="text-align:center; padding: 1.5rem; color: #777;">No parts used yet.</td></tr>`;
     } else {
-        sorted.forEach(seal => {
+        sorted.forEach(name => {
+            const use = consumableUsage[name];
             html += `<tr>
-                <td style="font-weight: 600; color: var(--text-primary);">${esc(seal)}</td>
-                <td style="color: var(--text-primary); font-weight: bold;">${oilSealUsage[seal]} pcs</td>
+                <td style="font-weight: 600; color: var(--text-primary);">${esc(name)}</td>
+                <td style="color: var(--text-primary); font-weight: bold;">${use.qty} pcs</td>
+                <td style="color: #d97706; font-weight: bold;">${peso(use.cost)}</td>
             </tr>`;
         });
+        html += `<tr>
+            <td style="font-weight: 700; color: var(--text-primary);">Total</td>
+            <td></td>
+            <td style="color: #d97706; font-weight: bold;">${peso(totalPartsCost)}</td>
+        </tr>`;
     }
 
     return html + `</tbody></table></div></div>`;
+}
+
+// A compact strip showing how many units sit at each workflow step right now.
+function buildStagePanel(stageCounts) {
+    const cells = STAGES.map(stage => `
+        <div style="flex: 1; min-width: 110px; text-align: center; padding: 0.85rem 0.5rem; background: #fff; border: 1px solid var(--border, #e5e7eb); border-radius: 10px;">
+            <div style="font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; line-height: 1; color: var(--text-primary);">${stageCounts[stage]}</div>
+            <div style="font-size: 0.78rem; font-weight: 600; color: #6b7280; text-transform: uppercase; letter-spacing: 0.03em; margin-top: 4px;">${esc(stage)}</div>
+        </div>`).join('');
+
+    return `
+        <div class="chart-container" style="margin-top: 1.5rem;">
+            <h3 style="margin-bottom: 0.35rem; color: var(--text-primary); font-size: 1.15rem;">Units on the Floor</h3>
+            <p style="margin-bottom: 1rem; color: #6b7280; font-size: 0.9rem;">
+                How many units are at each step of the workflow right now.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.75rem;">${cells}</div>
+        </div>`;
 }
 
 // Only rendered when something actually needs restocking — the stat tile above
@@ -416,10 +491,14 @@ function renderOverview(ctx) {
             ${statTile({ icon: 'banknote', tint: '#28a745', value: peso(stats.totalSales), label: 'Total Revenue', accent: '#28a745', labelColor: '#28a745' })}
             ${statTile({ icon: 'receipt', tint: '#d97706', value: peso(stats.totalExpenses), label: 'Total Expenses', accent: '#d97706', labelColor: '#d97706' })}
             ${statTile({ icon: 'trending-up', tint: '#0ea5e9', value: peso(netProfit), label: 'Net Profit', accent: '#0ea5e9', labelColor: '#0ea5e9' })}
+            ${statTile({ icon: 'check', tint: '#0ea5e9', value: stats.totalReleased, label: 'Services Rendered' })}
+            ${statTile({ icon: 'inbox', tint: '#d97706', value: peso(stats.monthlyPartsCost), label: 'Parts Cost (Month)' })}
+            ${statTile({ icon: 'inbox', tint: '#d97706', value: peso(stats.yearlyPartsCost), label: 'Parts Cost (Year)' })}
             ${statTile({ icon: 'rotate-ccw', tint: backjobRateColor, value: stats.backjobRate.toFixed(1) + '%', label: 'Back-job / Claim Rate', accent: backjobRateColor, valueColor: backjobRateColor })}
             ${statTile({ icon: 'triangle-alert', tint: restockColor, value: stats.lowStockItems.length, label: 'Needs Restock', accent: restockColor, valueColor: restockColor })}
         </div>
 
+        ${buildStagePanel(stats.stageCounts)}
         ${buildRestockPanel(stats.lowStockItems)}
 
         <div class="chart-container">
@@ -440,7 +519,7 @@ function renderOverview(ctx) {
 
         <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1rem;">
             ${buildMechanicTable(stats.mechanicStats)}
-            ${buildSealTable(stats.oilSealUsage)}
+            ${buildConsumablesTable(stats.consumableUsage, stats.totalPartsCost)}
         </div>
     `;
 

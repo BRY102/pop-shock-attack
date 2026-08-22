@@ -181,6 +181,9 @@ class ServiceJobController extends Controller
                 // What was actually taken from stock, so a revision or a
                 // cancellation can put back exactly the same parts.
                 'consumables' => $consumables,
+                // Objective 2.3: the parts cost recorded at the moment they
+                // were fitted, so later price changes cannot rewrite history.
+                'partsCost' => $this->inventory->costOf($consumables),
             ];
             $job->is_warranty_claim = (bool) $validated['isWarranty'];
             $job->stage = JobStage::QA->value;
