@@ -33,7 +33,7 @@ function buildSidebar() {
 // (and refreshes) these instead of re-fetching everything, and a view
 // paints instantly whenever its caches are already synced.
 const VIEW_DATA = {
-    overview: ['jobs', 'expenses'],
+    overview: ['jobs', 'expenses', 'inventory'],
     approvals: ['users'],
     reports: ['jobs'],
     kanban: ['jobs'],

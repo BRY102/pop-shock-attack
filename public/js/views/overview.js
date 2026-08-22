@@ -66,7 +66,14 @@ function computeOverviewStats() {
         salesByDate: {}, expByDate: {}, revenueByMonth: {},
         mechanicStats: {}, oilSealUsage: {}, brandStats: {},
         totalReleased: 0, totalBackjobs: 0, backjobRate: 0,
+        lowStockItems: [],
     };
+
+    // Consumables at or below their alert level, most urgent first, so the
+    // owner sees what to restock before a job is held up waiting for it.
+    stats.lowStockItems = dbInv
+        .filter(item => item.is_low_stock)
+        .sort((a, b) => (Number(a.stock) - Number(a.threshold)) - (Number(b.stock) - Number(b.threshold)));
 
     // Brand distribution counts every unit in the shop (any stage), so a new
     // intake shows on the chart immediately. Brands outside MOTO_BRANDS are
@@ -177,6 +184,35 @@ function buildSealTable(oilSealUsage) {
     }
 
     return html + `</tbody></table></div></div>`;
+}
+
+// Only rendered when something actually needs restocking — the stat tile above
+// already carries the "nothing low" case, so an empty table would just be noise.
+function buildRestockPanel(lowStockItems) {
+    if (lowStockItems.length === 0) return '';
+
+    let rows = '';
+    lowStockItems.forEach(item => {
+        const isOut = Number(item.stock) === 0;
+        rows += `<tr>
+            <td style="font-weight: 700; color: var(--text-primary);">${esc(item.name)}</td>
+            <td style="font-weight: bold; color: ${isOut ? '#d9381e' : '#d97706'};">${item.stock} left</td>
+            <td style="color: #6b7280;">alerts at ${item.threshold}</td>
+            <td><span class="badge-low">${isOut ? 'OUT OF STOCK' : 'LOW STOCK'}</span></td>
+        </tr>`;
+    });
+
+    return `
+        <div class="chart-container" style="margin-top: 1.5rem; border-left: 4px solid #d9381e;">
+            <h3 style="margin-bottom: 0.35rem; color: var(--text-primary); font-size: 1.15rem;">Needs Restock</h3>
+            <p style="margin-bottom: 1rem; color: #6b7280; font-size: 0.9rem;">
+                These consumables are at or below their alert level. Restock them before they hold up a job.
+            </p>
+            <div class="table-container"><table class="data-table">
+                <thead><tr><th>Consumable</th><th>Remaining</th><th>Alert Level</th><th>Status</th></tr></thead>
+                <tbody>${rows}</tbody>
+            </table></div>
+        </div>`;
 }
 
 function drawFinancialChart(stats) {
@@ -369,6 +405,7 @@ function renderOverview(ctx) {
     // Same threshold/coloring convention as the mechanic table below,
     // so "backjob rate" reads consistently everywhere it appears.
     const backjobRateColor = stats.backjobRate > 10 ? '#d9381e' : '#15803d';
+    const restockColor = stats.lowStockItems.length > 0 ? '#d9381e' : '#15803d';
 
     ctx.content.innerHTML = `
         <div class="stats-grid">
@@ -380,7 +417,10 @@ function renderOverview(ctx) {
             ${statTile({ icon: 'receipt', tint: '#d97706', value: peso(stats.totalExpenses), label: 'Total Expenses', accent: '#d97706', labelColor: '#d97706' })}
             ${statTile({ icon: 'trending-up', tint: '#0ea5e9', value: peso(netProfit), label: 'Net Profit', accent: '#0ea5e9', labelColor: '#0ea5e9' })}
             ${statTile({ icon: 'rotate-ccw', tint: backjobRateColor, value: stats.backjobRate.toFixed(1) + '%', label: 'Back-job / Claim Rate', accent: backjobRateColor, valueColor: backjobRateColor })}
+            ${statTile({ icon: 'triangle-alert', tint: restockColor, value: stats.lowStockItems.length, label: 'Needs Restock', accent: restockColor, valueColor: restockColor })}
         </div>
+
+        ${buildRestockPanel(stats.lowStockItems)}
 
         <div class="chart-container">
             <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Financial Overview: Sales vs Expenses</h3>

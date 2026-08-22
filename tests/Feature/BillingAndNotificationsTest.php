@@ -6,6 +6,7 @@ use App\Models\AppUser;
 use App\Models\InventoryItem;
 use App\Models\ServiceJob;
 use App\Notifications\JobStageChanged;
+use App\Notifications\LowStockDetected;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 use Laravel\Sanctum\Sanctum;
@@ -168,13 +169,17 @@ class BillingAndNotificationsTest extends TestCase
         ]))->assertUnprocessable();
     }
 
-    public function test_stage_change_notifies_the_customer_and_the_owner_but_not_the_actor(): void
+    public function test_stage_change_notifies_the_shop_and_the_customer_but_not_the_actor(): void
     {
         Notification::fake();
 
         $owner = AppUser::create([
             'username' => 'owner_tester', 'password' => 'secret123',
             'role' => 'admin', 'status' => 'approved',
+        ]);
+        $otherTech = AppUser::create([
+            'username' => 'second_tech', 'password' => 'secret123',
+            'role' => 'staff', 'status' => 'approved',
         ]);
 
         $job = $this->makeJob('QA');
@@ -183,7 +188,95 @@ class BillingAndNotificationsTest extends TestCase
 
         Notification::assertSentTo($this->customer, JobStageChanged::class);
         Notification::assertSentTo($owner, JobStageChanged::class);
+        Notification::assertSentTo($otherTech, JobStageChanged::class);
+
+        // Whoever moved the unit is not told about their own action.
         Notification::assertNotSentTo($this->staff, JobStageChanged::class);
+    }
+
+    public function test_running_a_consumable_down_to_its_alert_level_warns_the_shop(): void
+    {
+        Notification::fake();
+
+        $owner = AppUser::create([
+            'username' => 'owner_tester', 'password' => 'secret123',
+            'role' => 'admin', 'status' => 'approved',
+        ]);
+
+        // Three seals left with an alert level of two: fitting a pair crosses it.
+        InventoryItem::where('name', 'Oil Seal 41x54x11')->update(['stock' => 3, 'threshold' => 2]);
+
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertOk();
+
+        // The owner is warned because restocking is owner-only, and the
+        // technician is warned even though they caused it — using the last
+        // pair is exactly what they need to know.
+        Notification::assertSentTo($owner, LowStockDetected::class);
+        Notification::assertSentTo($this->staff, LowStockDetected::class);
+        Notification::assertNotSentTo($this->customer, LowStockDetected::class);
+    }
+
+    public function test_a_consumable_that_is_merely_still_low_does_not_warn_again(): void
+    {
+        Notification::fake();
+
+        $owner = AppUser::create([
+            'username' => 'owner_tester', 'password' => 'secret123',
+            'role' => 'admin', 'status' => 'approved',
+        ]);
+
+        // Already below its alert level before this job, and not emptied by it.
+        InventoryItem::where('name', 'Oil Seal 41x54x11')->update(['stock' => 6, 'threshold' => 8]);
+
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertOk();
+
+        Notification::assertNotSentTo($owner, LowStockDetected::class);
+    }
+
+    public function test_emptying_a_consumable_warns_even_when_it_was_already_low(): void
+    {
+        Notification::fake();
+
+        $owner = AppUser::create([
+            'username' => 'owner_tester', 'password' => 'secret123',
+            'role' => 'admin', 'status' => 'approved',
+        ]);
+
+        // Already low, and this job takes the last two.
+        InventoryItem::where('name', 'Oil Seal 41x54x11')->update(['stock' => 2, 'threshold' => 8]);
+
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertOk();
+
+        Notification::assertSentTo($owner, LowStockDetected::class);
+    }
+
+    public function test_a_rejected_specs_log_raises_no_restock_alarm(): void
+    {
+        Notification::fake();
+
+        $owner = AppUser::create([
+            'username' => 'owner_tester', 'password' => 'secret123',
+            'role' => 'admin', 'status' => 'approved',
+        ]);
+
+        // The oil is taken first and crosses its alert level, then the seals
+        // come up short and the whole log is rejected. Nothing actually left
+        // stock, so nothing should be reported as running low.
+        InventoryItem::where('name', 'Daily Oil')->update(['stock' => 3, 'threshold' => 2]);
+        InventoryItem::where('name', 'Oil Seal 41x54x11')->update(['stock' => 1]);
+
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload())->assertUnprocessable();
+
+        Notification::assertNotSentTo($owner, LowStockDetected::class);
+        $this->assertEquals(3, InventoryItem::where('name', 'Daily Oil')->value('stock'));
     }
 
     public function test_users_can_fetch_and_clear_their_notifications(): void

@@ -65,11 +65,16 @@ class InventoryDeductionService
      * jobs logged at the same time cannot both claim the last unit.
      *
      * @param  list<array{name: string, qty: int}>  $consumables
+     * @return list<InventoryItem> the items this deduction pushed to their alert
+     *                             level or emptied, so the caller can warn the
+     *                             shop once the surrounding transaction commits.
      *
      * @throws ValidationException when an item is not in the catalog or is short.
      */
-    public function deduct(array $consumables): void
+    public function deduct(array $consumables): array
     {
+        $ranLow = [];
+
         foreach ($consumables as $line) {
             $item = InventoryItem::where('name', $line['name'])->lockForUpdate()->first();
 
@@ -85,8 +90,19 @@ class InventoryDeductionService
                 ]);
             }
 
+            $wasHealthy = (int) $item->stock > (int) $item->threshold;
+
             $item->decrement('stock', $line['qty']);
+
+            // Only report the way down: the moment an item crosses its alert
+            // level, or the moment it empties. An item that is merely still low
+            // stays quiet, so the bell is not flooded on every job.
+            if (($wasHealthy && (int) $item->stock <= (int) $item->threshold) || (int) $item->stock === 0) {
+                $ranLow[] = $item;
+            }
         }
+
+        return $ranLow;
     }
 
     /**

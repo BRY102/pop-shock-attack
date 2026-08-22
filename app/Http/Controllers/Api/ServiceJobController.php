@@ -13,6 +13,7 @@ use App\Http\Resources\ServiceJobResource;
 use App\Models\AppUser;
 use App\Models\ServiceJob;
 use App\Notifications\JobStageChanged;
+use App\Notifications\LowStockDetected;
 use App\Services\BillingService;
 use App\Services\InventoryDeductionService;
 use Illuminate\Http\JsonResponse;
@@ -161,12 +162,14 @@ class ServiceJobController extends Controller
             springs: $validated['rawSprings'] ?? null,
         );
 
+        $ranLow = [];
+
         // Job update and stock movements succeed or fail together.
-        DB::transaction(function () use ($job, $validated, $totalBill, $consumables) {
+        DB::transaction(function () use ($job, $validated, $totalBill, $consumables, &$ranLow) {
             // Re-logging after a QA bounce: the parts from the previous attempt
             // were never fitted, so they go back before the new ones come out.
             $this->inventory->restore($this->inventory->fromSpecs($job->specs));
-            $this->inventory->deduct($consumables);
+            $ranLow = $this->inventory->deduct($consumables);
 
             $job->specs = [
                 'enginePrice' => (int) $validated['enginePrice'],
@@ -185,6 +188,10 @@ class ServiceJobController extends Controller
         });
 
         $this->notifyStageChange($job, $request);
+
+        // Sent only after the transaction commits, so a rolled-back job can
+        // never raise a restock alarm for stock that was never taken.
+        $this->notifyLowStock($ranLow);
 
         return response()->json([
             'message' => 'Specs logged and inventory deducted!',
@@ -228,12 +235,12 @@ class ServiceJobController extends Controller
     }
 
     /**
-     * Notify the owner(s) and the job's customer about a stage change,
-     * skipping whoever performed the action.
+     * Notify the shop floor (owner and staff) and the job's customer about a
+     * stage change, skipping whoever performed the action.
      */
     private function notifyStageChange(ServiceJob $job, Request $request): void
     {
-        $recipients = AppUser::where('role', UserRole::Admin->value)
+        $recipients = AppUser::whereIn('role', [UserRole::Admin->value, UserRole::Staff->value])
             ->where('id', '!=', $request->user()->id)
             ->get();
 
@@ -245,5 +252,30 @@ class ServiceJobController extends Controller
         }
 
         Notification::send($recipients, new JobStageChanged($job));
+    }
+
+    /**
+     * Objective 2.4: tell the shop which consumables just hit their alert level.
+     * Staff are told because they are the ones logging parts, and the owner is
+     * told because restocking is owner-only. The person who logged the job is
+     * included too — running the last unit down is exactly what they need to know.
+     *
+     * @param  list<\App\Models\InventoryItem>  $items
+     */
+    private function notifyLowStock(array $items): void
+    {
+        if ($items === []) {
+            return;
+        }
+
+        $recipients = AppUser::whereIn('role', [UserRole::Admin->value, UserRole::Staff->value])->get();
+
+        if ($recipients->isEmpty()) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            Notification::send($recipients, new LowStockDetected($item));
+        }
     }
 }
