@@ -70,7 +70,7 @@ function computeOverviewStats() {
     const stats = {
         totalSales: 0, dailySales: 0, weeklySales: 0, monthlySales: 0, yearlySales: 0,
         totalExpenses: 0,
-        salesByDate: {}, expByDate: {}, revenueByMonth: {},
+        salesByDate: {}, expByDate: {}, revenueByMonth: {}, volumeByMonth: {},
         mechanicStats: {}, brandStats: {},
         totalReleased: 0, totalBackjobs: 0, backjobRate: 0,
         lowStockItems: [],
@@ -108,6 +108,11 @@ function computeOverviewStats() {
     dbJobs.filter(j => j.stage === 'Release').forEach(job => {
         stats.totalReleased += 1;
         if (job.is_warranty_claim) stats.totalBackjobs += 1;
+
+        if (job.date_in) {
+            const monthKey = job.date_in.substring(0, 7);
+            stats.volumeByMonth[monthKey] = (stats.volumeByMonth[monthKey] || 0) + 1;
+        }
 
         if (job.specs && job.specs.totalBill !== undefined) {
             const bill = Number(job.specs.totalBill);
@@ -359,6 +364,51 @@ function drawRevenueTrendChart(stats) {
     });
 }
 
+function drawVolumeChart(stats) {
+    const months = Object.keys(stats.volumeByMonth).sort();
+
+    mountChart('volumeChart', {
+        type: 'bar',
+        data: {
+            labels: months.map(monthLabel),
+            datasets: [{
+                label: 'Units released',
+                data: months.map(m => stats.volumeByMonth[m]),
+                backgroundColor: '#2a78d6',
+                borderRadius: 4,
+                maxBarThickness: 48,
+            }],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label(c) {
+                            const n = c.parsed.y;
+                            return ` ${n} unit${n === 1 ? '' : 's'} released`;
+                        },
+                    },
+                },
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { maxTicksLimit: 6, stepSize: 1, precision: 0 },
+                    grid: { color: 'rgba(0,0,0,0.05)' },
+                    border: { display: false },
+                },
+                x: {
+                    grid: { display: false },
+                    border: { display: false },
+                },
+            },
+        },
+    });
+}
+
 // Draws the total unit count in the doughnut's open center.
 const brandCenterText = {
     id: 'brandCenterText',
@@ -488,14 +538,19 @@ function renderOverview(ctx) {
         </div>
 
         <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1.5rem;">
-            <div class="chart-container" style="flex: 2; min-width: 320px; margin-top: 0;">
+            <div class="chart-container" style="flex: 1; min-width: 320px; margin-top: 0;">
                 <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Revenue Trend (by Month)</h3>
                 <div style="position: relative; height: 280px;"><canvas id="revenueTrendChart"></canvas></div>
             </div>
-            <div class="chart-container" style="flex: 1; min-width: 280px; margin-top: 0;">
-                <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Services by Motorcycle Brand</h3>
-                <div style="position: relative; height: 280px;"><canvas id="brandChart"></canvas></div>
+            <div class="chart-container" style="flex: 1; min-width: 320px; margin-top: 0;">
+                <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Service Volume (by Month)</h3>
+                <div style="position: relative; height: 280px;"><canvas id="volumeChart"></canvas></div>
             </div>
+        </div>
+
+        <div class="chart-container">
+            <h3 style="margin-bottom: 1rem; color: var(--text-primary); font-size: 1.15rem;">Services by Motorcycle Brand</h3>
+            <div style="position: relative; height: 280px;"><canvas id="brandChart"></canvas></div>
         </div>
 
         <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; margin-top: 1rem;">
@@ -508,6 +563,7 @@ function renderOverview(ctx) {
     setTimeout(() => {
         drawFinancialChart(stats);
         drawRevenueTrendChart(stats);
+        drawVolumeChart(stats);
         drawBrandChart(stats);
     }, 50);
 }
