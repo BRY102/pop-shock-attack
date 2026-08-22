@@ -6,6 +6,8 @@
 
 let notifUnreadCount = 0;
 let notifItems = [];
+let notifPollTimer = null;
+const NOTIF_POLL_MS = 45000;
 
 async function fetchNotifications() {
     if (!authToken || !currentRole) return;
@@ -77,6 +79,24 @@ window.toggleNotifPanel = async function () {
         }
     }
 };
+
+function startNotifPolling() {
+    stopNotifPolling();
+    notifPollTimer = setInterval(() => {
+        if (!authToken || !currentRole) {
+            stopNotifPolling();
+            return;
+        }
+        fetchNotifications();
+    }, NOTIF_POLL_MS);
+}
+
+function stopNotifPolling() {
+    if (notifPollTimer) {
+        clearInterval(notifPollTimer);
+        notifPollTimer = null;
+    }
+}
 
 // Clicking anywhere outside the bell closes the panel
 document.addEventListener('click', (e) => {

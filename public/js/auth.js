@@ -136,6 +136,7 @@ async function loginSuccess(userName, roleName) {
     document.getElementById('displayRole').innerText = roleName.toUpperCase();
 
     await syncAllData();
+    startNotifPolling();
     buildSidebar();
 }
 
@@ -174,6 +175,7 @@ function resetSession() {
     localStorage.removeItem('mt_session_user');
     localStorage.removeItem('mt_session_role');
     localStorage.removeItem('mt_token');
+    stopNotifPolling();
     authToken = null;
     currentUser = null;
     currentRole = null;
