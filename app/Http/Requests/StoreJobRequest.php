@@ -26,7 +26,8 @@ class StoreJobRequest extends FormRequest
                     fn ($query) => $query->where('stage', '!=', JobStage::Release->value)
                 ),
             ],
-            'dateIn' => 'required|date',
+            'dateIn' => 'required|date|before_or_equal:today',
+            'complaint' => 'required|string|min:3|max:500',
         ];
     }
 
@@ -34,6 +35,8 @@ class StoreJobRequest extends FormRequest
     {
         return [
             'plate.unique' => 'That plate / engine number already has an active job in the shop.',
+            'dateIn.before_or_equal' => 'A unit cannot be dated after today — that would put it in the wrong month on the reports.',
+            'complaint.required' => 'Write why the unit came in, the same way the paper ticket used to.',
         ];
     }
 }

@@ -63,7 +63,8 @@ class ServiceJobController extends Controller
         $jobs = ServiceJob::where(function ($query) use ($term) {
             $query->where('plate_number', 'like', $term)
                 ->orWhere('customer', 'like', $term)
-                ->orWhere('moto_model', 'like', $term);
+                ->orWhere('moto_model', 'like', $term)
+                ->orWhere('complaint', 'like', $term);
         })
             ->orderByDesc('date_in')
             ->limit(50)
@@ -101,6 +102,7 @@ class ServiceJobController extends Controller
             'plate_number' => $validated['plate'],
             'stage' => JobStage::Intake->value,
             'date_in' => $validated['dateIn'],
+            'complaint' => $validated['complaint'],
         ]);
 
         return response()->json([

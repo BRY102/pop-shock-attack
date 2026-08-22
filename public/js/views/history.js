@@ -99,14 +99,16 @@ function renderHistoryResults(jobs, q) {
             ? `<div style="color:#92400e; font-size:0.72rem; font-weight:700; margin-top:3px;">RE-SERVICE CLAIM</div>`
             : '';
 
+        const complaintLine = job.complaint ? `Complaint: ${esc(job.complaint)}` : '';
         const setup = job.specs
             ? [
+                complaintLine,
                 ...suspensionLines(job),
                 `Oil: ${esc(job.specs.oil)}`,
                 `Seals: ${esc(job.specs.oilSeal)} / ${esc(job.specs.dustSeal)}`,
                 `Springs: ${esc(job.specs.springs)}`,
-            ].join('<br>')
-            : `<span style="color:var(--text-muted);">No tuning logged yet</span>`;
+            ].filter(Boolean).join('<br>')
+            : (complaintLine || `<span style="color:var(--text-muted);">No tuning logged yet</span>`);
 
         const bill = job.specs
             ? `<strong style="color:#15803d;">${peso(job.specs.totalBill || 0)}</strong>`

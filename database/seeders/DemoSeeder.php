@@ -50,6 +50,14 @@ class DemoSeeder extends Seeder
         $viscosities = config('shop.oil_viscosities');
         $suspensionTypes = config('shop.suspension_types');
         $suspensionBrands = ['Stock / OEM', 'YSS', 'Ohlins', 'RCB', 'KYB'];
+        $complaints = [
+            'Front fork leaking oil',
+            'Rides too stiff after last service',
+            'Knocking on bumps',
+            'Sagging rear, bottoms out',
+            'Warranty: oil leaking from left fork',
+            'Wants a softer daily setup',
+        ];
 
         // --- 12 released jobs spread over the last ~90 days ---
         foreach ($units as $i => [$moto, $basePrice]) {
@@ -88,6 +96,7 @@ class DemoSeeder extends Seeder
                 'plate_number' => sprintf('DEMO-%04d', $i + 1),
                 'stage' => 'Release',
                 'date_in' => $dateIn->toDateString(),
+                'complaint' => $complaints[$i % count($complaints)],
                 'mechanic_name' => $mechanics[$i % 4],
                 'is_warranty_claim' => $isClaim,
             ]);
@@ -135,6 +144,7 @@ class DemoSeeder extends Seeder
                 'plate_number' => sprintf('DEMO-%04d', 100 + $i),
                 'stage' => $stage,
                 'date_in' => now()->subDays(3 - $i)->toDateString(),
+                'complaint' => $complaints[$i % count($complaints)],
                 'mechanic_name' => $stage === 'Intake' ? null : $mechanics[$i % 4],
             ]);
         }

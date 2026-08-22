@@ -56,7 +56,11 @@ function buildKanbanCard(job, stage) {
         btnHtml = `<div class="action-btns"><span class="badge-done">${icon('check')} Completed</span></div>`;
     }
 
-    return `<div class="card kanban-card" data-search="${esc(`${job.plate_number} ${job.customer} ${job.moto_model}`)}">${wBadge}<h4>${esc(job.moto_model)}</h4><p><strong>Customer:</strong> ${esc(job.customer)}</p><p><strong>Plate:</strong> ${esc(job.plate_number)}</p>${mechanicHtml}${specHtml}${btnHtml}</div>`;
+    const complaintHtml = job.complaint
+        ? `<p style="font-size:0.85rem;"><strong>Complaint:</strong> ${esc(job.complaint)}</p>`
+        : '';
+
+    return `<div class="card kanban-card" data-search="${esc(`${job.plate_number} ${job.customer} ${job.moto_model} ${job.complaint || ''}`)}">${wBadge}<h4>${esc(job.moto_model)}</h4><p><strong>Customer:</strong> ${esc(job.customer)}</p><p><strong>Plate:</strong> ${esc(job.plate_number)}</p>${complaintHtml}${mechanicHtml}${specHtml}${btnHtml}</div>`;
 }
 
 function renderKanban(ctx) {
@@ -65,7 +69,7 @@ function renderKanban(ctx) {
 
     let actHtml = `<input type="text" id="searchKanbanInput" class="search-bar" placeholder="Search Plate or Name..." onkeyup="searchKanban()">`;
     if (currentRole === 'staff') {
-        actHtml += `<button class="btn btn-primary" onclick="openModal('modal-intake')">${icon('plus')} New Intake</button>`;
+        actHtml += `<button class="btn btn-primary" onclick="openIntake()">${icon('plus')} New Intake</button>`;
     }
     ctx.actions.innerHTML = actHtml;
 

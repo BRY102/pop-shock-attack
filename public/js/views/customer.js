@@ -67,6 +67,7 @@ function renderCustomerDashboard(ctx) {
                 ${buildStageTracker(job.stage)}
                 <p><strong>Plate:</strong> ${esc(job.plate_number)}</p>
                 <p><strong>Date In:</strong> ${esc(job.date_in)}</p>
+                ${job.complaint ? `<p><strong>Complaint:</strong> ${esc(job.complaint)}</p>` : ''}
                 <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
                 <p><strong>Warranty:</strong> <span style="color:${isWarrantyActive ? '#28a745' : '#777'}; font-weight:bold;">${esc(warrantyText)}</span></p>
                 ${specHtml}${printBtn}</div>`;

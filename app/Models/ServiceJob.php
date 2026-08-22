@@ -20,6 +20,7 @@ class ServiceJob extends Model
         'plate_number',
         'stage',
         'date_in',
+        'complaint',
         'mechanic_name',
         'is_warranty_claim',
     ];

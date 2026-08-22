@@ -26,6 +26,15 @@ window.toggleOtherBrand = function () {
     if (!isOther) input.value = '';
 };
 
+window.openIntake = function () {
+    const dateField = document.getElementById('in_date');
+    if (dateField) {
+        dateField.value = toISODate();
+        dateField.max = toISODate();
+    }
+    openModal('modal-intake');
+};
+
 window.submitIntake = async function (e) {
     e.preventDefault();
     const plate = document.getElementById('in_plate').value.trim().toUpperCase();
@@ -52,7 +61,8 @@ window.submitIntake = async function (e) {
         // Stored as "<Brand> <Model>" — the brand chart groups by the first word
         moto: `${brand} ${document.getElementById('in_moto').value.trim()}`.trim(),
         plate: plate,
-        dateIn: toISODate(),
+        dateIn: document.getElementById('in_date').value,
+        complaint: document.getElementById('in_complaint').value.trim(),
     };
 
     try {

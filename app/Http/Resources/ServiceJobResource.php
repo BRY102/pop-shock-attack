@@ -20,6 +20,7 @@ class ServiceJobResource extends JsonResource
             'plate_number' => $this->plate_number,
             'stage' => $this->stage,
             'date_in' => $this->date_in,
+            'complaint' => $this->complaint,
             'specs' => $this->specs,
             'oil_viscosity' => $this->oil_viscosity,
             'suspension_brand' => $this->suspension_brand,

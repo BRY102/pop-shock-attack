@@ -86,11 +86,13 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Honda Beat',
             'plate' => 'NEW-0001',
             'dateIn' => '2026-07-05',
+            'complaint' => 'Front fork leaking oil',
         ])->assertCreated();
 
         $this->assertDatabaseHas('service_jobs', [
             'plate_number' => 'NEW-0001',
             'stage' => 'Intake',
+            'complaint' => 'Front fork leaking oil',
         ]);
     }
 
@@ -104,6 +106,7 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Suzuki Raider 150',
             'plate' => 'TST-0001',
             'dateIn' => '2026-07-06',
+            'complaint' => 'Still leaking after last visit',
         ])->assertUnprocessable();
 
         $this->assertSame(1, ServiceJob::where('plate_number', 'TST-0001')->count());
@@ -119,9 +122,35 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Suzuki Raider 150',
             'plate' => 'TST-0001',
             'dateIn' => '2026-07-06',
+            'complaint' => 'Returning for a fresh rebuild',
         ])->assertCreated();
 
         $this->assertSame(2, ServiceJob::where('plate_number', 'TST-0001')->count());
+    }
+
+    public function test_intake_requires_why_the_unit_came_in(): void
+    {
+        $this->actAsStaff();
+
+        $this->postJson('/api/jobs', [
+            'customer' => 'walkin',
+            'moto' => 'Honda Beat',
+            'plate' => 'NEW-0002',
+            'dateIn' => '2026-07-05',
+        ])->assertUnprocessable();
+    }
+
+    public function test_intake_cannot_be_dated_after_today(): void
+    {
+        $this->actAsStaff();
+
+        $this->postJson('/api/jobs', [
+            'customer' => 'walkin',
+            'moto' => 'Honda Beat',
+            'plate' => 'NEW-0003',
+            'dateIn' => now()->addDay()->toDateString(),
+            'complaint' => 'Front fork leaking oil',
+        ])->assertUnprocessable();
     }
 
     public function test_releasing_a_job_starts_the_six_month_warranty(): void
