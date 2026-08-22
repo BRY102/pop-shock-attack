@@ -33,6 +33,18 @@ function dayLabel(key) {
     return new Date(y, m - 1, d).toLocaleString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// The suspension setup recorded for a unit, as ready-to-escape label lines.
+// Returns an empty array for jobs with nothing logged yet — units still at
+// Intake, and jobs from before these parameters were captured.
+function suspensionLines(job) {
+    const lines = [];
+    if (job.suspension_type) lines.push(`Suspension: ${esc(job.suspension_type)}`);
+    if (job.suspension_brand) lines.push(`Brand: ${esc(job.suspension_brand)}`);
+    if (job.oil_viscosity) lines.push(`Viscosity: ${esc(job.oil_viscosity)}`);
+    if (job.spring_rate) lines.push(`Spring Rate: ${esc(job.spring_rate)} kg/mm`);
+    return lines;
+}
+
 // Inline SVG icons (Lucide, ISC license — lucide.dev). Rendered at 1em and
 // stroked with currentColor so they inherit the button's size and color.
 const ICONS = {

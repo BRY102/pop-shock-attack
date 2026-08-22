@@ -185,6 +185,13 @@ class ServiceJobController extends Controller
                 // were fitted, so later price changes cannot rewrite history.
                 'partsCost' => $this->inventory->costOf($consumables),
             ];
+            // The measured suspension setup lives in its own columns so a
+            // returning unit's history can be queried and compared per visit.
+            $job->oil_viscosity = $validated['oilViscosity'];
+            $job->suspension_brand = $validated['suspensionBrand'];
+            $job->suspension_type = $validated['suspensionType'];
+            $job->spring_rate = $validated['springRate'];
+
             $job->is_warranty_claim = (bool) $validated['isWarranty'];
             $job->stage = JobStage::QA->value;
             $job->save();

@@ -59,6 +59,10 @@ class JobWorkflowTest extends TestCase
             'dustSeal' => 'None',
             'springs' => 'None',
             'isWarranty' => false,
+            'oilViscosity' => '10W',
+            'suspensionBrand' => 'YSS',
+            'suspensionType' => 'Telescopic Fork',
+            'springRate' => 0.85,
             'rawOil' => 'Daily Oil',
             'rawOsSize' => 'Oil Seal 41x54x11',
             'rawOsQty' => 2,
@@ -212,6 +216,78 @@ class JobWorkflowTest extends TestCase
         $this->assertSame('QA', $job->fresh()->stage);
         $this->assertSame(9, $this->stockOf('Daily Oil'));
         $this->assertSame(3, $this->stockOf('Oil Seal 41x54x11'));
+    }
+
+    public function test_logging_specs_records_the_suspension_setup(): void
+    {
+        $this->actAsStaff();
+        $job = $this->makeJob('Tuning');
+        $this->seedConsumables();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
+            'oilViscosity' => '15W',
+            'suspensionBrand' => 'Ohlins',
+            'suspensionType' => 'Inverted (USD) Fork',
+            'springRate' => 1.05,
+        ]))->assertOk();
+
+        $fresh = $job->fresh();
+        $this->assertSame('15W', $fresh->oil_viscosity);
+        $this->assertSame('Ohlins', $fresh->suspension_brand);
+        $this->assertSame('Inverted (USD) Fork', $fresh->suspension_type);
+        $this->assertSame(1.05, $fresh->spring_rate);
+    }
+
+    public function test_a_suspension_setup_outside_the_shop_vocabulary_is_rejected(): void
+    {
+        $this->actAsStaff();
+        $this->seedConsumables();
+        $job = $this->makeJob('Tuning');
+
+        // Free-text viscosities would make the setup history incomparable
+        // between visits, which is the whole point of logging it.
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
+            'oilViscosity' => '12.5 weight-ish',
+        ]))->assertUnprocessable();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
+            'suspensionType' => 'Hoverboard',
+        ]))->assertUnprocessable();
+
+        $this->assertNull($job->fresh()->oil_viscosity);
+    }
+
+    public function test_a_returning_unit_keeps_the_setup_from_each_visit(): void
+    {
+        $this->actAsStaff();
+        $this->seedConsumables(oilStock: 10, sealStock: 6);
+
+        // First visit: released with its measured setup.
+        $first = $this->makeJob('Tuning');
+        $this->putJson("/api/jobs/{$first->id}/specs", $this->specsPayload([
+            'oilViscosity' => '10W',
+            'springRate' => 0.85,
+        ]))->assertOk();
+        $this->putJson("/api/jobs/{$first->id}/stage", ['stage' => 'Release'])->assertOk();
+
+        // Same plate comes back and is tuned stiffer.
+        $second = ServiceJob::create([
+            'customer' => 'walkin',
+            'moto_model' => 'Suzuki Raider 150',
+            'plate_number' => $first->plate_number,
+            'stage' => 'Tuning',
+            'date_in' => '2026-07-20',
+        ]);
+        $this->putJson("/api/jobs/{$second->id}/specs", $this->specsPayload([
+            'oilViscosity' => '20W',
+            'springRate' => 1.10,
+        ]))->assertOk();
+
+        // Each visit keeps its own setup, so the change is on record.
+        $this->assertSame('10W', $first->fresh()->oil_viscosity);
+        $this->assertSame(0.85, $first->fresh()->spring_rate);
+        $this->assertSame('20W', $second->fresh()->oil_viscosity);
+        $this->assertSame(1.10, $second->fresh()->spring_rate);
     }
 
     public function test_specs_can_only_be_logged_while_a_unit_is_in_tuning(): void

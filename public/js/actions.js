@@ -144,6 +144,16 @@ window.openSpecs = function (id) {
     openModal('modal-specs');
 };
 
+// Show the free-text suspension brand field only when "Others" is selected.
+window.toggleOtherSuspensionBrand = function () {
+    const isOther = document.getElementById('spec_susp_brand').value === 'Others';
+    const group = document.getElementById('otherSuspBrandGroup');
+    const input = document.getElementById('spec_susp_brand_other');
+    group.classList.toggle('hidden', !isOther);
+    input.required = isOther;
+    if (!isOther) input.value = '';
+};
+
 function computeBill({ enginePrice, isWarranty, osSize, osQty, dsSize, dsQty, springs }) {
     if (isWarranty) return 0; // back-jobs under warranty are free
 
@@ -177,6 +187,18 @@ window.submitSpecs = async function (e) {
         return;
     }
 
+    // Suspension setup: brand comes from the dropdown, or the manual field
+    // when "Others" is selected.
+    const suspBrandChoice = document.getElementById('spec_susp_brand').value;
+    const suspensionBrand = suspBrandChoice === 'Others'
+        ? document.getElementById('spec_susp_brand_other').value.trim()
+        : suspBrandChoice;
+
+    if (!suspensionBrand) {
+        showNotification('Please enter the suspension brand.', 'error');
+        return;
+    }
+
     // Preview only — the server recomputes the bill from the raw inputs,
     // so a tampered request can never change the amount charged.
     const previewBill = computeBill({ enginePrice, isWarranty, osSize, osQty, dsSize, dsQty, springs });
@@ -188,6 +210,12 @@ window.submitSpecs = async function (e) {
         dustSeal: dsSize !== 'None' ? `${dsSize} (${dsQty} - ${dsSide})` : 'None',
         springs: springs,
         isWarranty: isWarranty,
+
+        // The measured suspension setup, logged per visit
+        oilViscosity: document.getElementById('spec_oil_viscosity').value,
+        suspensionBrand: suspensionBrand,
+        suspensionType: document.getElementById('spec_susp_type').value,
+        springRate: document.getElementById('spec_spring_rate').value,
 
         // Raw values so the backend can deduct inventory
         rawOil: oil,
@@ -205,6 +233,7 @@ window.submitSpecs = async function (e) {
             const data = await response.json().catch(() => ({}));
             const billedTotal = data.job?.specs?.totalBill ?? previewBill;
             e.target.reset();
+            toggleOtherSuspensionBrand(); // re-hide the "Others" field after the reset
             closeModal('modal-specs');
             showNotification(`Specs logged. Bill: ₱${Number(billedTotal).toLocaleString()}`, 'success');
             invalidate('inventory');

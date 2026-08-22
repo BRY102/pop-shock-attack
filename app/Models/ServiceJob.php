@@ -11,8 +11,8 @@ class ServiceJob extends Model
     protected $table = 'service_jobs';
 
     // Fields the intake/workflow forms are allowed to mass-assign.
-    // 'specs' and 'warranty_expires_at' are set explicitly by the
-    // controller, never straight from request input.
+    // 'specs', 'warranty_expires_at' and the suspension columns are set
+    // explicitly by the controller, never straight from request input.
     protected $fillable = [
         'customer',
         'app_user_id',
@@ -28,6 +28,7 @@ class ServiceJob extends Model
         'specs' => 'array',
         'is_warranty_claim' => 'boolean',
         'warranty_expires_at' => 'date',
+        'spring_rate' => 'float',
     ];
 
     public function appUser()

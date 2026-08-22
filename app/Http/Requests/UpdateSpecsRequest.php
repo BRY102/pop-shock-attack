@@ -27,6 +27,12 @@ class UpdateSpecsRequest extends FormRequest
             'dustSeal' => 'required|string|max:255',
             'springs' => 'required|string|max:255',
             'isWarranty' => 'required|boolean',
+            // The suspension setup measured for this unit. Constrained to the
+            // shop's vocabulary so a returning unit's history stays comparable.
+            'oilViscosity' => ['required', 'string', Rule::in(config('shop.oil_viscosities'))],
+            'suspensionBrand' => 'required|string|max:100',
+            'suspensionType' => ['required', 'string', Rule::in(config('shop.suspension_types'))],
+            'springRate' => 'required|numeric|min:0.1|max:99.99',
             'rawOil' => 'nullable|string|max:255',
             'rawOsSize' => 'nullable|string|max:255',
             'rawOsQty' => 'nullable|integer|min:0|max:10',

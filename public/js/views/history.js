@@ -100,7 +100,12 @@ function renderHistoryResults(jobs, q) {
             : '';
 
         const setup = job.specs
-            ? `Oil: ${esc(job.specs.oil)}<br>Seals: ${esc(job.specs.oilSeal)} / ${esc(job.specs.dustSeal)}<br>Springs: ${esc(job.specs.springs)}`
+            ? [
+                ...suspensionLines(job),
+                `Oil: ${esc(job.specs.oil)}`,
+                `Seals: ${esc(job.specs.oilSeal)} / ${esc(job.specs.dustSeal)}`,
+                `Springs: ${esc(job.specs.springs)}`,
+            ].join('<br>')
             : `<span style="color:var(--text-muted);">No tuning logged yet</span>`;
 
         const bill = job.specs

@@ -206,6 +206,42 @@
                         <option value="6500">500-1000cc Big Bike e.g., Ninja 650 (Base: ₱6,500)</option>
                     </select>
                 </div>
+                <div
+                    style="background: #f1f5f9; padding: 12px; border-left: 4px solid #2a78d6; margin-bottom: 1.5rem; border-radius: 4px;">
+                    <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.85rem; font-size: 0.95rem;">
+                        Suspension Setup (Technical Log)
+                    </div>
+                    <div class="input-group">
+                        <label>Suspension Type</label>
+                        <select id="spec_susp_type" required></select>
+                    </div>
+                    <div class="input-group">
+                        <label>Suspension Brand</label>
+                        <select id="spec_susp_brand" required onchange="toggleOtherSuspensionBrand()"></select>
+                    </div>
+                    <div class="input-group hidden" id="otherSuspBrandGroup">
+                        <label>Other Suspension Brand</label>
+                        <input type="text" id="spec_susp_brand_other" placeholder="e.g. Nitron, Bitubo, Gazi">
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Spring
+                                Rate (kg/mm)</label>
+                            <input type="number" id="spec_spring_rate" step="0.01" min="0.1" max="99.99"
+                                placeholder="e.g. 0.85" required
+                                style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label
+                                style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Fork
+                                Oil Viscosity</label>
+                            <select id="spec_oil_viscosity" required
+                                style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;"></select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="input-group">
                     <label>Oil Type Used</label>
                     <select id="spec_oil" required>

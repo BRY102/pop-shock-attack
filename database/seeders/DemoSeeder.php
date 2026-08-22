@@ -47,6 +47,9 @@ class DemoSeeder extends Seeder
         ];
         $oils = ['Daily Oil', 'Touring Oil', 'Racing Oil'];
         $sealSizes = ['Oil Seal 12x31x10.5', 'Oil Seal 15x35x10', 'Oil Seal 41x54x11'];
+        $viscosities = config('shop.oil_viscosities');
+        $suspensionTypes = config('shop.suspension_types');
+        $suspensionBrands = ['Stock / OEM', 'YSS', 'Ohlins', 'RCB', 'KYB'];
 
         // --- 12 released jobs spread over the last ~90 days ---
         foreach ($units as $i => [$moto, $basePrice]) {
@@ -101,6 +104,13 @@ class DemoSeeder extends Seeder
                 'consumables' => $consumables,
                 'partsCost' => $inventory->costOf($consumables),
             ];
+            // The measured suspension setup, so the technical log and the
+            // history view have something real to show during a demo.
+            $job->oil_viscosity = $viscosities[$i % count($viscosities)];
+            $job->suspension_brand = $suspensionBrands[$i % count($suspensionBrands)];
+            $job->suspension_type = $suspensionTypes[$i % count($suspensionTypes)];
+            $job->spring_rate = round(0.75 + (($i % 6) * 0.05), 2);
+
             $job->warranty_expires_at = $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months'));
             $job->save();
         }

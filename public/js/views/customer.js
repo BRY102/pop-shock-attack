@@ -36,8 +36,18 @@ function renderCustomerDashboard(ctx) {
                 ? `<span class="badge-warranty" style="position:static; display:inline-block; margin-bottom:10px;">RE-SERVICE CLAIM</span>`
                 : '';
 
+            const setupLines = job.specs
+                ? [
+                    ...suspensionLines(job),
+                    `Oil: ${esc(job.specs.oil)}`,
+                    `Oil Seal: ${esc(job.specs.oilSeal)}`,
+                    `Dust Seal: ${esc(job.specs.dustSeal)}`,
+                    `Springs: ${esc(job.specs.springs)}`,
+                ]
+                : [];
+
             const specHtml = job.specs
-                ? `<div class="specs-box" style="margin-top:15px;"><strong>Historical Setup Data:</strong><br>Oil: ${esc(job.specs.oil)}<br>Oil Seal: ${esc(job.specs.oilSeal)}<br>Dust Seal: ${esc(job.specs.dustSeal)}<br>Springs: ${esc(job.specs.springs)}<hr style="margin:10px 0; border:0; border-top:1px dashed #ccc;"><strong style="color:#28a745; font-size:1.1rem;">Total Billed: ₱${Number(job.specs.totalBill || 0).toLocaleString()}</strong></div>`
+                ? `<div class="specs-box" style="margin-top:15px;"><strong>Historical Setup Data:</strong><br>${setupLines.join('<br>')}<hr style="margin:10px 0; border:0; border-top:1px dashed #ccc;"><strong style="color:#28a745; font-size:1.1rem;">Total Billed: ₱${Number(job.specs.totalBill || 0).toLocaleString()}</strong></div>`
                 : '';
 
             const warrantyText = job.warranty_status || 'Pending';

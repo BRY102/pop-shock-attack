@@ -6,8 +6,13 @@
 
 function buildKanbanCard(job, stage) {
     const wBadge = job.is_warranty_claim ? `<span class="badge-warranty">RE-SERVICE</span>` : '';
+    const suspension = suspensionLines(job);
+    const suspensionHtml = suspension.length > 0
+        ? `${suspension.join('<br>')}<hr style="margin:5px 0; border:0; border-top:1px dashed #ccc;">`
+        : '';
+
     const specHtml = job.specs
-        ? `<div class="specs-box"><strong>Oil:</strong> ${esc(job.specs.oil)}<br><strong>Oil Seal:</strong> ${esc(job.specs.oilSeal)}<br><strong>Dust Seal:</strong> ${esc(job.specs.dustSeal)}<br><strong>Springs:</strong> ${esc(job.specs.springs)}<hr style="margin:5px 0; border:0; border-top:1px dashed #ccc;"><strong style="color:#28a745;">Bill: ₱${Number(job.specs.totalBill || 0).toLocaleString()}</strong></div>`
+        ? `<div class="specs-box">${suspensionHtml}<strong>Oil:</strong> ${esc(job.specs.oil)}<br><strong>Oil Seal:</strong> ${esc(job.specs.oilSeal)}<br><strong>Dust Seal:</strong> ${esc(job.specs.dustSeal)}<br><strong>Springs:</strong> ${esc(job.specs.springs)}<hr style="margin:5px 0; border:0; border-top:1px dashed #ccc;"><strong style="color:#28a745;">Bill: ₱${Number(job.specs.totalBill || 0).toLocaleString()}</strong></div>`
         : '';
 
     // Mechanic assignment (staff can set it during Disassembly)
