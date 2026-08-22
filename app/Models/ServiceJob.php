@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\JobStage;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 
@@ -32,6 +33,23 @@ class ServiceJob extends Model
     public function appUser()
     {
         return $this->belongsTo(AppUser::class);
+    }
+
+    /**
+     * The earlier visit whose warranty still covers this unit, if any. A free
+     * re-service claim is only legitimate when this returns a job, so the
+     * decision never rests on the staff checkbox alone.
+     */
+    public function coveringWarranty(): ?self
+    {
+        return static::query()
+            ->where('plate_number', $this->plate_number)
+            ->whereKeyNot($this->getKey())
+            ->where('stage', JobStage::Release->value)
+            ->whereNotNull('warranty_expires_at')
+            ->whereDate('warranty_expires_at', '>=', now()->toDateString())
+            ->orderByDesc('warranty_expires_at')
+            ->first();
     }
 
     // warranty_status is derived from warranty_expires_at so it can't go stale.

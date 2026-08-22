@@ -6,6 +6,7 @@ use App\Models\AppUser;
 use App\Models\Expense;
 use App\Models\ServiceJob;
 use App\Services\BillingService;
+use App\Services\InventoryDeductionService;
 use Illuminate\Database\Seeder;
 
 /**
@@ -21,6 +22,7 @@ class DemoSeeder extends Seeder
     public function run(): void
     {
         $billing = new BillingService;
+        $inventory = new InventoryDeductionService;
 
         // Re-runnable: clear anything this seeder created before
         ServiceJob::where('plate_number', 'like', 'DEMO-%')->delete();
@@ -66,7 +68,7 @@ class DemoSeeder extends Seeder
                 springs: $springs,
             );
 
-            ServiceJob::create([
+            $job = ServiceJob::create([
                 'customer' => $customer->username,
                 'app_user_id' => $customer->id,
                 'moto_model' => $moto,
@@ -75,16 +77,29 @@ class DemoSeeder extends Seeder
                 'date_in' => $dateIn->toDateString(),
                 'mechanic_name' => $mechanics[$i % 4],
                 'is_warranty_claim' => $isClaim,
-                'specs' => [
-                    'enginePrice' => $basePrice,
-                    'totalBill' => $total,
-                    'oil' => $oils[$i % 3],
-                    'oilSeal' => $seal === 'None' ? 'None' : "{$seal} ({$sealQty} - Both)",
-                    'dustSeal' => 'None',
-                    'springs' => $springs,
-                ],
-                'warranty_expires_at' => $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months')),
             ]);
+
+            // specs and warranty_expires_at are guarded against mass assignment
+            // (the controller sets them explicitly), so they are assigned here
+            // rather than passed to create() where they would be discarded.
+            $job->specs = [
+                'enginePrice' => $basePrice,
+                'totalBill' => $total,
+                'oil' => $oils[$i % 3],
+                'oilSeal' => $seal === 'None' ? 'None' : "{$seal} ({$sealQty} - Both)",
+                'dustSeal' => 'None',
+                'springs' => $springs,
+                'consumables' => $inventory->consumablesFor(
+                    oil: $oils[$i % 3],
+                    oilSealSize: $seal,
+                    oilSealQty: $sealQty,
+                    dustSealSize: 'None',
+                    dustSealQty: 0,
+                    springs: $springs,
+                ),
+            ];
+            $job->warranty_expires_at = $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months'));
+            $job->save();
         }
 
         // --- Active units on every stage of the board ---

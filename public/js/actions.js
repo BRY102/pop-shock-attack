@@ -4,6 +4,14 @@
 // re-renders the relevant view.
 // ============================================================
 
+// The API rejects business-rule violations (stage order, insufficient stock,
+// warranty eligibility) with an explanatory message. Show that instead of a
+// generic failure, so staff know what to do next.
+async function serverMessage(response, fallback) {
+    const data = await response.json().catch(() => ({}));
+    return data.message || fallback;
+}
+
 // ------------------------------------------------------------
 // Service jobs
 // ------------------------------------------------------------
@@ -79,7 +87,7 @@ window.moveStage = async function (id, nextStage) {
             invalidate('jobs');
             await loadView('kanban');
         } else {
-            showNotification('Error moving job in database.', 'error');
+            showNotification(await serverMessage(response, 'Error moving job in database.'), 'error');
         }
     } catch (error) {
         console.error(error);
@@ -99,7 +107,7 @@ window.assignMechanic = async function (id, mechanicName) {
             invalidate('jobs');
             await loadView('kanban');
         } else {
-            showNotification('Error saving mechanic to database.', 'error');
+            showNotification(await serverMessage(response, 'Error saving mechanic to database.'), 'error');
         }
     } catch (error) {
         console.error(error);
@@ -118,7 +126,7 @@ window.deleteJob = async function (id) {
             invalidate('jobs');
             await loadView('kanban');
         } else {
-            showNotification('Error deleting job.', 'error');
+            showNotification(await serverMessage(response, 'Error deleting job.'), 'error');
         }
     } catch (error) {
         console.error(error);
@@ -199,10 +207,11 @@ window.submitSpecs = async function (e) {
             e.target.reset();
             closeModal('modal-specs');
             showNotification(`Specs logged. Bill: ₱${Number(billedTotal).toLocaleString()}`, 'success');
+            invalidate('inventory');
             invalidate('jobs');
             await loadView('kanban');
         } else {
-            showNotification('Error logging specs.', 'error');
+            showNotification(await serverMessage(response, 'Error logging specs.'), 'error');
         }
     } catch (error) {
         console.error(error);
@@ -310,7 +319,7 @@ window.submitAddStock = async function (e) {
             invalidate('inventory');
             await loadView('inventory');
         } else {
-            showNotification('Error adding stock.', 'error');
+            showNotification(await serverMessage(response, 'Error adding stock.'), 'error');
         }
     } catch (error) {
         console.error(error);

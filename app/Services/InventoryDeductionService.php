@@ -3,35 +3,107 @@
 namespace App\Services;
 
 use App\Models\InventoryItem;
+use Illuminate\Validation\ValidationException;
 
 class InventoryDeductionService
 {
     /**
-     * Deduct every consumable used on a job from inventory.
-     * Call inside a DB transaction together with the job save, so a
-     * failure can never leave the job updated but the stock untouched.
+     * The consumables a set of tuning specs uses, as [['name' => ..., 'qty' => ...]].
+     * "None" and empty selections are skipped, and repeated names are merged so a
+     * single stock row is only ever locked once per job.
+     *
+     * @return list<array{name: string, qty: int}>
      */
-    public function deductForSpecs(
+    public function consumablesFor(
         ?string $oil,
         ?string $oilSealSize,
         int $oilSealQty,
         ?string $dustSealSize,
         int $dustSealQty,
         ?string $springs,
-    ): void {
-        $this->deduct($oil);
-        $this->deduct($oilSealSize, $oilSealQty);
-        $this->deduct($dustSealSize, $dustSealQty);
-        $this->deduct($springs);
+    ): array {
+        $totals = [];
+
+        $used = [
+            [$oil, 1],
+            [$oilSealSize, $oilSealQty],
+            [$dustSealSize, $dustSealQty],
+            [$springs, 1],
+        ];
+
+        foreach ($used as [$name, $qty]) {
+            if ($this->isUsed($name) && $qty > 0) {
+                $totals[$name] = ($totals[$name] ?? 0) + $qty;
+            }
+        }
+
+        $lines = [];
+        foreach ($totals as $name => $qty) {
+            $lines[] = ['name' => (string) $name, 'qty' => $qty];
+        }
+
+        return $lines;
     }
 
     /**
-     * Decrement stock for a named consumable. "None" and empty values are skipped.
+     * The consumables recorded on a job's saved specs, so they can be put back
+     * when the specs are revised or the job is cancelled. Jobs logged before
+     * consumables were recorded return nothing rather than a guess, so a
+     * reversal can never invent stock the shop does not have.
+     *
+     * @return list<array{name: string, qty: int}>
      */
-    private function deduct(?string $name, int $qty = 1): void
+    public function fromSpecs(?array $specs): array
     {
-        if ($name && $name !== 'None' && $qty > 0) {
-            InventoryItem::where('name', $name)->decrement('stock', $qty);
+        return $specs['consumables'] ?? [];
+    }
+
+    /**
+     * Take a consumable list out of stock. Call inside a DB transaction together
+     * with the job save, so a failure can never leave the job updated but the
+     * stock untouched. Rows are locked for the length of that transaction, so two
+     * jobs logged at the same time cannot both claim the last unit.
+     *
+     * @param  list<array{name: string, qty: int}>  $consumables
+     *
+     * @throws ValidationException when an item is not in the catalog or is short.
+     */
+    public function deduct(array $consumables): void
+    {
+        foreach ($consumables as $line) {
+            $item = InventoryItem::where('name', $line['name'])->lockForUpdate()->first();
+
+            if (! $item) {
+                throw ValidationException::withMessages([
+                    'specs' => "\"{$line['name']}\" is not in the consumables inventory, so it cannot be logged. Add it under Consumables first.",
+                ]);
+            }
+
+            if ($item->stock < $line['qty']) {
+                throw ValidationException::withMessages([
+                    'specs' => "Not enough stock for \"{$item->name}\": {$item->stock} left but {$line['qty']} needed. Restock it before logging these specs.",
+                ]);
+            }
+
+            $item->decrement('stock', $line['qty']);
         }
+    }
+
+    /**
+     * Put a consumable list back: the parts were never actually fitted because
+     * the specs were revised or the job was cancelled.
+     *
+     * @param  list<array{name: string, qty: int}>  $consumables
+     */
+    public function restore(array $consumables): void
+    {
+        foreach ($consumables as $line) {
+            InventoryItem::where('name', $line['name'])->increment('stock', $line['qty']);
+        }
+    }
+
+    private function isUsed(?string $name): bool
+    {
+        return $name !== null && $name !== '' && $name !== 'None';
     }
 }

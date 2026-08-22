@@ -22,6 +22,19 @@ if (window.Chart) {
     Chart.defaults.plugins.legend.labels.padding = 14;
 }
 
+// Chart.js keeps drawing on a canvas until the instance is destroyed, and the
+// overview re-renders whenever its data changes (e.g. after logging an expense).
+// Mounting through here replaces the previous chart instead of stacking on it.
+const mountedCharts = {};
+
+function mountChart(canvasId, config) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+
+    if (mountedCharts[canvasId]) mountedCharts[canvasId].destroy();
+    mountedCharts[canvasId] = new Chart(canvas.getContext('2d'), config);
+}
+
 // Fixed hue order, validated for adjacent colorblind-safe separation. Each
 // slot belongs to one brand (in MOTO_BRANDS order: Honda, Yamaha, Suzuki,
 // Kawasaki, Rusi), so a brand keeps its color no matter which brands appear.
@@ -171,10 +184,7 @@ function drawFinancialChart(stats) {
     const salesData = allDates.map(date => stats.salesByDate[date] || 0);
     const expData = allDates.map(date => stats.expByDate[date] || 0);
 
-    const ctx = document.getElementById('financialChart');
-    if (!ctx) return;
-
-    new Chart(ctx.getContext('2d'), {
+    mountChart('financialChart', {
         type: 'bar',
         data: {
             labels: allDates.map(dayLabel),
@@ -210,10 +220,8 @@ function drawFinancialChart(stats) {
 
 function drawRevenueTrendChart(stats) {
     const months = Object.keys(stats.revenueByMonth).sort();
-    const ctx = document.getElementById('revenueTrendChart');
-    if (!ctx) return;
 
-    new Chart(ctx.getContext('2d'), {
+    mountChart('revenueTrendChart', {
         type: 'line',
         data: {
             labels: months.map(monthLabel),
@@ -303,10 +311,7 @@ function drawBrandChart(stats) {
         colors.push(OTHERS_CHART_COLOR);
     }
 
-    const ctx = document.getElementById('brandChart');
-    if (!ctx) return;
-
-    new Chart(ctx.getContext('2d'), {
+    mountChart('brandChart', {
         type: 'doughnut',
         data: {
             labels,

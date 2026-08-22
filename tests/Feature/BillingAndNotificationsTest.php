@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\AppUser;
+use App\Models\InventoryItem;
 use App\Models\ServiceJob;
 use App\Notifications\JobStageChanged;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,19 +32,50 @@ class BillingAndNotificationsTest extends TestCase
             'role' => 'customer', 'status' => 'approved',
         ]);
 
+        // Logged specs draw on real stock, so the parts they name must exist.
+        InventoryItem::create([
+            'item_no' => '000001', 'name' => 'Daily Oil', 'description' => 'Standard oil',
+            'stock' => 20, 'threshold' => 3, 'price' => 150,
+        ]);
+        InventoryItem::create([
+            'item_no' => '000002', 'name' => 'Oil Seal 41x54x11', 'description' => 'Front fork seal',
+            'stock' => 20, 'threshold' => 2, 'price' => 500,
+        ]);
+
         Sanctum::actingAs($this->staff);
     }
 
-    private function makeJob(): ServiceJob
+    private function makeJob(string $stage = 'Tuning'): ServiceJob
     {
         return ServiceJob::create([
             'customer' => $this->customer->username,
             'app_user_id' => $this->customer->id,
             'moto_model' => 'Yamaha NMAX',
             'plate_number' => 'ABC-1234',
-            'stage' => 'Tuning',
+            'stage' => $stage,
             'date_in' => '2026-07-06',
         ]);
+    }
+
+    /**
+     * An earlier visit for the same unit, released and still inside its
+     * warranty window — what makes a free re-service claim legitimate.
+     */
+    private function makeCoveredHistory(?string $expiresAt = null): ServiceJob
+    {
+        $previous = ServiceJob::create([
+            'customer' => $this->customer->username,
+            'app_user_id' => $this->customer->id,
+            'moto_model' => 'Yamaha NMAX',
+            'plate_number' => 'ABC-1234',
+            'stage' => 'Release',
+            'date_in' => '2026-05-01',
+        ]);
+
+        $previous->warranty_expires_at = $expiresAt ?? now()->addMonths(3)->toDateString();
+        $previous->save();
+
+        return $previous;
     }
 
     private function specsPayload(array $overrides = []): array
@@ -91,6 +123,7 @@ class BillingAndNotificationsTest extends TestCase
 
     public function test_warranty_claims_are_billed_zero(): void
     {
+        $this->makeCoveredHistory();
         $job = $this->makeJob();
 
         $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
@@ -100,6 +133,30 @@ class BillingAndNotificationsTest extends TestCase
         $fresh = $job->fresh();
         $this->assertEquals(0, $fresh->specs['totalBill']);
         $this->assertTrue($fresh->is_warranty_claim);
+    }
+
+    public function test_a_free_claim_is_refused_when_the_unit_has_no_earlier_service(): void
+    {
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
+            'isWarranty' => true,
+        ]))->assertUnprocessable();
+
+        $this->assertNull($job->fresh()->specs);
+        $this->assertFalse($job->fresh()->is_warranty_claim);
+    }
+
+    public function test_a_free_claim_is_refused_once_the_earlier_coverage_has_lapsed(): void
+    {
+        $this->makeCoveredHistory(now()->subDay()->toDateString());
+        $job = $this->makeJob();
+
+        $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
+            'isWarranty' => true,
+        ]))->assertUnprocessable();
+
+        $this->assertNull($job->fresh()->specs);
     }
 
     public function test_unknown_engine_class_prices_are_rejected(): void
@@ -120,7 +177,7 @@ class BillingAndNotificationsTest extends TestCase
             'role' => 'admin', 'status' => 'approved',
         ]);
 
-        $job = $this->makeJob();
+        $job = $this->makeJob('QA');
 
         $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Release'])->assertOk();
 
@@ -136,7 +193,7 @@ class BillingAndNotificationsTest extends TestCase
             'role' => 'admin', 'status' => 'approved',
         ]);
 
-        $job = $this->makeJob();
+        $job = $this->makeJob('QA');
         $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Release'])->assertOk();
 
         Sanctum::actingAs($this->customer);

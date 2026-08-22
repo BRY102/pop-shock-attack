@@ -37,10 +37,11 @@ function buildKanbanCard(job, stage) {
         if (stage === 'Tuning') {
             btnHtml = `<div class="action-btns"><button class="btn-sm" style="background:var(--primary);" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>${delBtn}</div>`;
         } else if (stage === 'QA') {
+            // No cancel here: a billed unit has to go back to Tuning first, which
+            // also returns its parts to stock. The API enforces the same rule.
             btnHtml = `<div class="action-btns">
                 <button class="btn-sm" onclick="moveStage('${job.id}', 'Release')">Move to Release</button>
                 <button class="btn-sm" style="background:#f59e0b; color:#fff;" onclick="moveStage('${job.id}', 'Tuning')">${icon('undo')} Back to Tuning</button>
-                ${delBtn}
             </div>`;
         } else if (idx < STAGES.length - 1) {
             btnHtml = `<div class="action-btns"><button class="btn-sm" onclick="moveStage('${job.id}', '${STAGES[idx + 1]}')">Move to ${STAGES[idx + 1]}</button>${delBtn}</div>`;

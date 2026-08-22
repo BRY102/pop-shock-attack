@@ -15,8 +15,10 @@ class AppUserSeeder extends Seeder
             ['username' => 'juan_rider', 'password' => 'pass123', 'role' => 'customer', 'status' => 'approved'],
         ];
 
+        // Re-runnable: seeding twice tops up missing accounts instead of
+        // failing on the unique username.
         foreach ($users as $user) {
-            AppUser::create($user);
+            AppUser::firstOrCreate(['username' => $user['username']], $user);
         }
     }
 }

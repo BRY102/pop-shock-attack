@@ -26,6 +26,17 @@ async function apiFetch(url, options = {}) {
     return response;
 }
 
+// A failed refresh used to be console-only, so a view would paint an empty
+// cache and read as "nothing in the shop" instead of "the server is
+// unreachable". One shared message keeps parallel failures to a single toast,
+// since showNotification() drops duplicates that are still on screen.
+function reportSyncFailure(response) {
+    // A 401 has already reset the session and shown its own message.
+    if (response && response.status === 401) return;
+
+    showNotification('Could not load the latest data from the server.', 'error');
+}
+
 // Which caches hold data we have fetched at least once this session.
 // Views render instantly from a synced cache; a mutation calls
 // invalidate() so the next view paint waits for fresh data instead
@@ -41,11 +52,15 @@ async function fetchJobsFromDatabase() {
         // Customers only ever see their own jobs; admin/staff see the full board.
         const endpoint = currentRole === 'customer' ? '/api/my-jobs' : '/api/jobs';
         const response = await apiFetch(endpoint);
-        if (!response.ok) throw new Error('Failed to load jobs');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
         dbJobs = await response.json();
         syncedKeys.add('jobs');
     } catch (error) {
         console.error('Failed to pull live jobs:', error);
+        reportSyncFailure(null);
     }
 }
 
@@ -53,11 +68,15 @@ async function fetchInventoryFromDatabase() {
     if (currentRole === 'customer') { syncedKeys.add('inventory'); return; } // no inventory access
     try {
         const response = await apiFetch('/api/inventory');
-        if (!response.ok) throw new Error('Failed to load inventory');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
         dbInv = await response.json();
         syncedKeys.add('inventory');
     } catch (error) {
         console.error('Failed to pull live inventory:', error);
+        reportSyncFailure(null);
     }
 }
 
@@ -65,11 +84,15 @@ async function fetchUsersFromDatabase() {
     if (currentRole === 'customer') { syncedKeys.add('users'); return; } // no user-management access
     try {
         const response = await apiFetch('/api/users');
-        if (!response.ok) throw new Error('Failed to load users');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
         dbUsers = await response.json();
         syncedKeys.add('users');
     } catch (error) {
         console.error('Failed to pull users from database:', error);
+        reportSyncFailure(null);
     }
 }
 
@@ -77,7 +100,10 @@ async function fetchExpensesFromDatabase() {
     if (currentRole === 'customer') { syncedKeys.add('expenses'); return; } // no expense access
     try {
         const response = await apiFetch('/api/expenses');
-        if (!response.ok) throw new Error('Failed to load expenses');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
 
         // Normalize backend field names to the shape the dashboard math expects.
         const rows = await response.json();
@@ -90,6 +116,7 @@ async function fetchExpensesFromDatabase() {
         syncedKeys.add('expenses');
     } catch (error) {
         console.error('Failed to pull live expenses:', error);
+        reportSyncFailure(null);
     }
 }
 

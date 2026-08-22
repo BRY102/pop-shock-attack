@@ -2,7 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\JobStage;
+use App\Models\ServiceJob;
 use App\Services\BillingService;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -30,6 +33,38 @@ class UpdateSpecsRequest extends FormRequest
             'rawDsSize' => 'nullable|string|max:255',
             'rawDsQty' => 'nullable|integer|min:0|max:10',
             'rawSprings' => 'nullable|string|max:255',
+        ];
+    }
+
+    /**
+     * Two rules the board relies on but cannot enforce by itself: specs belong
+     * to the Tuning stage, and a free re-service needs real warranty coverage
+     * on an earlier visit rather than just a ticked checkbox.
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                $job = $this->route('job');
+
+                if (! $job instanceof ServiceJob) {
+                    return;
+                }
+
+                if ($job->stage !== JobStage::Tuning->value) {
+                    $validator->errors()->add(
+                        'stage',
+                        "Tuning specs can only be logged while a unit is in Tuning; this one is at {$job->stage}."
+                    );
+                }
+
+                if ($this->boolean('isWarranty') && ! $job->coveringWarranty()) {
+                    $validator->errors()->add(
+                        'isWarranty',
+                        'This unit has no earlier released service still under warranty, so it cannot be billed as a free re-service claim.'
+                    );
+                }
+            },
         ];
     }
 }

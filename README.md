@@ -23,10 +23,13 @@ Cross-cutting: Sanctum token authentication, bcrypt-hashed passwords, server-enf
 ## Tech Stack
 
 - **Backend:** PHP 8.3 · Laravel 12 · Laravel Sanctum
-- **Database:** SQLite (development) / MySQL-ready via `DB_CONNECTION`
+- **Database:** MySQL / MariaDB (XAMPP, managed via phpMyAdmin)
 - **Frontend:** HTML, CSS, vanilla JavaScript (modular), Chart.js
 
 ## Getting Started
+
+Start **Apache** and **MySQL** in the XAMPP control panel, then create a database
+named `mototrack` in phpMyAdmin (<http://localhost/phpmyadmin>).
 
 ```bash
 composer install
@@ -35,6 +38,9 @@ php artisan key:generate
 php artisan migrate --seed
 php artisan serve
 ```
+
+The database connection is read from `.env` (defaults to the XAMPP setup:
+`mysql` on `127.0.0.1:3306`, database `mototrack`, user `root`, no password).
 
 Open <http://127.0.0.1:8000> — the root URL redirects to the app.
 

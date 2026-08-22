@@ -22,6 +22,16 @@ use Illuminate\Support\Facades\Notification;
 
 class ServiceJobController extends Controller
 {
+    /**
+     * Stages at which a unit is still on the floor, so cancelling it only
+     * discards work in progress.
+     */
+    private const CANCELLABLE_STAGES = [
+        JobStage::Intake->value,
+        JobStage::Disassembly->value,
+        JobStage::Tuning->value,
+    ];
+
     public function __construct(
         private readonly BillingService $billing,
         private readonly InventoryDeductionService $inventory,
@@ -106,7 +116,9 @@ class ServiceJobController extends Controller
     {
         $job->stage = $request->validated()['stage'];
 
-        if ($job->stage === JobStage::Release->value) {
+        // Coverage runs from the first release only, so a unit that bounces back
+        // to Tuning and is released again does not earn a fresh warranty window.
+        if ($job->stage === JobStage::Release->value && $job->warranty_expires_at === null) {
             $job->warranty_expires_at = now()->addMonths(config('shop.warranty_months'));
         }
 
@@ -140,8 +152,22 @@ class ServiceJobController extends Controller
             springs: $validated['rawSprings'] ?? null,
         );
 
-        // Job update and stock deduction succeed or fail together.
-        DB::transaction(function () use ($job, $validated, $totalBill) {
+        $consumables = $this->inventory->consumablesFor(
+            oil: $validated['rawOil'] ?? null,
+            oilSealSize: $validated['rawOsSize'] ?? null,
+            oilSealQty: (int) ($validated['rawOsQty'] ?? 0),
+            dustSealSize: $validated['rawDsSize'] ?? null,
+            dustSealQty: (int) ($validated['rawDsQty'] ?? 0),
+            springs: $validated['rawSprings'] ?? null,
+        );
+
+        // Job update and stock movements succeed or fail together.
+        DB::transaction(function () use ($job, $validated, $totalBill, $consumables) {
+            // Re-logging after a QA bounce: the parts from the previous attempt
+            // were never fitted, so they go back before the new ones come out.
+            $this->inventory->restore($this->inventory->fromSpecs($job->specs));
+            $this->inventory->deduct($consumables);
+
             $job->specs = [
                 'enginePrice' => (int) $validated['enginePrice'],
                 'totalBill' => $totalBill,
@@ -149,19 +175,13 @@ class ServiceJobController extends Controller
                 'oilSeal' => $validated['oilSeal'],
                 'dustSeal' => $validated['dustSeal'],
                 'springs' => $validated['springs'],
+                // What was actually taken from stock, so a revision or a
+                // cancellation can put back exactly the same parts.
+                'consumables' => $consumables,
             ];
             $job->is_warranty_claim = (bool) $validated['isWarranty'];
             $job->stage = JobStage::QA->value;
             $job->save();
-
-            $this->inventory->deductForSpecs(
-                oil: $validated['rawOil'] ?? null,
-                oilSealSize: $validated['rawOsSize'] ?? null,
-                oilSealQty: (int) ($validated['rawOsQty'] ?? 0),
-                dustSealSize: $validated['rawDsSize'] ?? null,
-                dustSealQty: (int) ($validated['rawDsQty'] ?? 0),
-                springs: $validated['rawSprings'] ?? null,
-            );
         });
 
         $this->notifyStageChange($job, $request);
@@ -187,11 +207,22 @@ class ServiceJobController extends Controller
     }
 
     /**
-     * Cancel and permanently delete a job.
+     * Cancel a job that is still on the floor. Once a unit has passed QA its
+     * billing and warranty history has to stay on record, so it cannot be
+     * deleted. Any parts already logged go back to stock.
      */
     public function destroy(ServiceJob $job): JsonResponse
     {
-        $job->delete();
+        if (! in_array($job->stage, self::CANCELLABLE_STAGES, true)) {
+            return response()->json([
+                'message' => "A unit at {$job->stage} can no longer be deleted; its billing and warranty history must stay on record.",
+            ], 422);
+        }
+
+        DB::transaction(function () use ($job) {
+            $this->inventory->restore($this->inventory->fromSpecs($job->specs));
+            $job->delete();
+        });
 
         return response()->json(['message' => 'Job successfully deleted']);
     }
