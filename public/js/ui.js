@@ -33,6 +33,25 @@ function dayLabel(key) {
     return new Date(y, m - 1, d).toLocaleString('en-US', { month: 'short', day: 'numeric' });
 }
 
+// The parts a job consumed, as [{ name, qty }]. Jobs logged since the
+// consumables tracker landed carry an exact list; older ones are derived from
+// their spec strings ("Oil Seal 41x54x11 (2 - Both)" -> 2 of that seal) so
+// their usage and cost still count.
+function consumablesOf(specs) {
+    if (Array.isArray(specs.consumables) && specs.consumables.length > 0) {
+        return specs.consumables.map(line => ({ name: line.name, qty: Number(line.qty) || 0 }));
+    }
+
+    const lines = [];
+    [specs.oil, specs.oilSeal, specs.dustSeal, specs.springs].forEach(raw => {
+        if (!raw || raw === 'None') return;
+        const qtyMatch = raw.match(/\((\d+)/);
+        lines.push({ name: raw.split(' (')[0], qty: qtyMatch ? parseInt(qtyMatch[1]) : 1 });
+    });
+
+    return lines;
+}
+
 // The suspension setup recorded for a unit, as ready-to-escape label lines.
 // Returns an empty array for jobs with nothing logged yet — units still at
 // Intake, and jobs from before these parameters were captured.
@@ -64,6 +83,7 @@ const ICONS = {
     inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
     'user-plus': '<path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/>',
     'triangle-alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+    download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
 };
 
 function icon(name) {

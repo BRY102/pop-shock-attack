@@ -51,25 +51,6 @@ function extractBrand(motoModel) {
     return first.charAt(0).toUpperCase() + first.slice(1).toLowerCase();
 }
 
-// The parts a job consumed. Jobs logged since the consumables tracker landed
-// carry an exact list; older ones are derived from their spec strings
-// ("Oil Seal 41x54x11 (2 - Both)" -> 2 of that seal) so their usage and cost
-// still count toward the totals.
-function consumablesOf(specs) {
-    if (Array.isArray(specs.consumables) && specs.consumables.length > 0) {
-        return specs.consumables.map(line => ({ name: line.name, qty: Number(line.qty) || 0 }));
-    }
-
-    const lines = [];
-    [specs.oil, specs.oilSeal, specs.dustSeal, specs.springs].forEach(raw => {
-        if (!raw || raw === 'None') return;
-        const qtyMatch = raw.match(/\((\d+)/);
-        lines.push({ name: raw.split(' (')[0], qty: qtyMatch ? parseInt(qtyMatch[1]) : 1 });
-    });
-
-    return lines;
-}
-
 // Catalog price per consumable name, for costing the parts a job used.
 function buildPriceIndex() {
     const index = {};
