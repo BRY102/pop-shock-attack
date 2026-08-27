@@ -1,52 +1,84 @@
 // ============================================================
-// MotoTrack — Global service-history search (Objective 2.3)
-// Staff/admin look up any unit's complete record — active or
-// released — by plate/engine number, customer, or model, to
-// recover previous tuning parameters for returning units.
+// MotoTrack — Service History
+// Released visits only (including re-service claims), newest
+// first. Jobs still in Tuning stay on the workflow board.
 // ============================================================
 
+function sortHistoryJobs(jobs) {
+    return [...jobs].sort((a, b) => {
+        const byDate = String(b.date_in || '').localeCompare(String(a.date_in || ''));
+        return byDate !== 0 ? byDate : Number(b.id) - Number(a.id);
+    });
+}
+
+async function loadHistoryList(q = '') {
+    const content = document.getElementById('mainContentArea');
+    const term = q.trim();
+
+    try {
+        const path = term.length >= 2
+            ? `/api/jobs/search?q=${encodeURIComponent(term)}`
+            : '/api/jobs/history';
+        const response = await apiFetch(path);
+        if (!response.ok) {
+            showNotification(term ? 'Search failed.' : 'Could not load service history.', 'error');
+            return;
+        }
+
+        const jobs = sortHistoryJobs(await response.json());
+        renderHistoryResults(jobs, term);
+    } catch (error) {
+        console.error(error);
+        showNotification('Server connection error.', 'error');
+        if (content) {
+            content.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">${icon('search')}</div>
+                    <h3>Could not load history</h3>
+                    <p>Check the connection and try again.</p>
+                </div>`;
+        }
+    }
+}
+
 function renderHistory(ctx) {
+    const pending = String(window.pendingHistoryQuery || '').trim();
+    window.pendingHistoryQuery = '';
+
     ctx.title.innerText = 'Service History';
-    ctx.desc.innerText = 'Search every past and active job by plate / engine no., customer, or model';
+    ctx.desc.innerText = 'Released and re-service visits, newest first.';
     ctx.actions.innerHTML = `
         <input type="text" id="historySearchInput" class="search-bar"
-               placeholder="e.g. ABC-1234, juan_rider, NMAX..."
+               placeholder="Plate, customer, or model"
+               value="${esc(pending)}"
                onkeydown="if (event.key === 'Enter') searchHistory()">
         <button class="btn btn-primary" onclick="searchHistory()">Search</button>
+        <button class="btn btn-ghost" onclick="showAllHistory()">Show all</button>
     `;
 
     ctx.content.innerHTML = `
         <div class="empty-state">
             <div class="empty-icon">${icon('search')}</div>
-            <h3>Look up a unit's full service history</h3>
-            <p>Type a plate / engine number, customer username, or motorcycle model above.<br>
-            Results include released jobs, so returning units' previous tuning setups are always recoverable.</p>
+            <h3>Loading history…</h3>
         </div>
     `;
 
-    document.getElementById('historySearchInput').focus();
+    loadHistoryList(pending);
 }
 
-window.searchHistory = async function () {
-    const q = document.getElementById('historySearchInput').value.trim();
-
-    if (q.length < 2) {
+window.searchHistory = function () {
+    const q = document.getElementById('historySearchInput')?.value.trim() || '';
+    if (q && q.length < 2) {
         showNotification('Enter at least 2 characters to search.', 'error');
         return;
     }
+    loadHistoryList(q);
+};
 
-    try {
-        const response = await apiFetch(`/api/jobs/search?q=${encodeURIComponent(q)}`);
-        if (!response.ok) {
-            showNotification('Search failed.', 'error');
-            return;
-        }
-
-        renderHistoryResults(await response.json(), q);
-    } catch (error) {
-        console.error(error);
-        showNotification('Server connection error.', 'error');
-    }
+window.showAllHistory = function () {
+    const input = document.getElementById('historySearchInput');
+    if (input) input.value = '';
+    loadHistoryList();
 };
 
 function renderHistoryResults(jobs, q) {
@@ -56,8 +88,8 @@ function renderHistoryResults(jobs, q) {
         content.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">${icon('search')}</div>
-                <h3>No records found for "${esc(q)}"</h3>
-                <p>Check the spelling, or try part of the plate number only.</p>
+                <h3>${q ? `No records found for "${esc(q)}"` : 'No service records yet'}</h3>
+                <p>${q ? 'Check the spelling, or try part of the plate number only.' : 'Released jobs will show up here.'}</p>
             </div>
         `;
         return;
@@ -67,17 +99,18 @@ function renderHistoryResults(jobs, q) {
     // the "returning customer" story at a glance.
     const plates = [...new Set(jobs.map(j => j.plate_number))];
     let summaryHtml = '';
-    if (plates.length === 1) {
+    if (q && plates.length === 1) {
         const releasedCount = jobs.filter(j => j.stage === 'Release').length;
         const backJobs = jobs.filter(j => j.is_warranty_claim).length;
         const totalBilled = jobs.reduce((sum, j) => sum + Number(j.specs?.totalBill || 0), 0);
-        const latest = jobs[0]; // newest first from the API
+        const latest = jobs[0];
+        const proof = warrantyProofCard(unitWarrantyState(jobs));
 
         summaryHtml = `
             <div class="unit-summary">
                 <div class="unit-title">
                     <h3>${esc(latest.moto_model)}</h3>
-                    <code>${esc(latest.plate_number)}</code> · owned by <strong>${esc(latest.customer)}</strong>
+                    <code>${esc(latest.plate_number)}</code> · owned by <strong>${esc(displayName(latest.customer))}</strong>
                 </div>
                 <div class="summary-chips">
                     <div class="chip"><b>${jobs.length}</b><span>Visit${jobs.length === 1 ? '' : 's'}</span></div>
@@ -85,7 +118,8 @@ function renderHistoryResults(jobs, q) {
                     <div class="chip"><b>${backJobs}</b><span>Back-jobs</span></div>
                     <div class="chip"><b>${peso(totalBilled)}</b><span>Total billed</span></div>
                 </div>
-            </div>`;
+            </div>
+            ${proof}`;
     }
 
     let rows = '';
@@ -96,7 +130,7 @@ function renderHistoryResults(jobs, q) {
             : `<span class="badge-stage">${esc(job.stage).toUpperCase()}</span>`;
 
         const claim = job.is_warranty_claim
-            ? `<div style="color:#92400e; font-size:0.72rem; font-weight:700; margin-top:3px;">RE-SERVICE CLAIM</div>`
+            ? `<div style="margin-top:4px;"><span class="badge-service claim">Re-service Claim</span></div>`
             : '';
 
         const complaintLine = job.complaint ? `Complaint: ${esc(job.complaint)}` : '';
@@ -119,25 +153,30 @@ function renderHistoryResults(jobs, q) {
             : (warrantyText.includes('Expired') ? '#b91c1c' : 'var(--text-muted)');
 
         rows += `<tr>
-            <td>${esc(job.date_in)}</td>
-            <td><strong>${esc(job.customer)}</strong></td>
+            <td class="cell-keep">${esc(job.date_in)}</td>
+            <td class="cell-keep"><strong>${esc(displayName(job.customer))}</strong></td>
             <td><strong>${esc(job.moto_model)}</strong><br><code style="color:#6b7280; font-size:0.8rem;">${esc(job.plate_number)}</code></td>
             <td>${stageBadge}${claim}</td>
             <td style="font-size:0.8rem; line-height:1.5;">${setup}</td>
             <td style="font-size:0.8rem; color:${warrantyColor}; font-weight:600;">${esc(warrantyText)}</td>
             <td>${bill}</td>
+            <td>${Number(job.rating) >= 1 ? `${starsDisplay(job.rating)} ${Number(job.rating)}/5` : '—'}</td>
         </tr>`;
     });
 
+    const countLine = q
+        ? `<strong>${jobs.length}</strong> record${jobs.length === 1 ? '' : 's'} for "<strong>${esc(q)}</strong>" · newest first`
+        : `<strong>${jobs.length}</strong> record${jobs.length === 1 ? '' : 's'} · newest first`;
+
     content.innerHTML = `
         <p style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
-            <strong>${jobs.length}</strong> record${jobs.length === 1 ? '' : 's'} found for "<strong>${esc(q)}</strong>"
+            ${countLine}
         </p>
         ${summaryHtml}
-        <div class="table-container"><table class="data-table">
+        <div class="table-container table-scroll"><table class="data-table">
             <thead><tr>
-                <th>Date In</th><th>Customer</th><th>Unit</th><th>Status</th>
-                <th>Tuning Setup</th><th>Warranty</th><th>Billed</th>
+                <th class="cell-keep">Date In</th><th class="cell-keep">Customer</th><th>Unit</th><th>Status</th>
+                <th>Tuning Setup</th><th>Warranty</th><th>Billed</th><th>Rate</th>
             </tr></thead>
             <tbody>${rows}</tbody>
         </table></div>

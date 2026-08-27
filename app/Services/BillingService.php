@@ -5,21 +5,23 @@ namespace App\Services;
 class BillingService
 {
     /**
-     * Base front-shock service price per motorcycle class.
-     * Must match the classes offered on the tuning-specs form.
+     * Allowed base labor amounts, from config/shop.php engine_classes.
+     * The tuning form offers the same list so staff cannot pick a rogue price.
+     *
+     * @return list<int>
      */
-    public const BASE_PRICES = [1200, 1500, 2500, 2800, 4500, 6500];
+    public static function basePrices(): array
+    {
+        return array_map(
+            static fn (array $class): int => (int) $class['price'],
+            config('shop.engine_classes', []),
+        );
+    }
 
-    /** Oil seal price depends on the motorcycle class. */
-    private const OIL_SEAL_PRICE_BIG = 500;
-
-    private const OIL_SEAL_PRICE_SMALL = 300;
-
-    private const BIG_BIKE_THRESHOLD = 2800;
-
-    private const DUST_SEAL_PRICE = 75;
-
-    private const SPRING_PRICE = 580;
+    private function partPrice(string $key): int
+    {
+        return (int) config("shop.part_prices.{$key}");
+    }
 
     /**
      * The priced lines of a bill, plus the total the customer actually pays.
@@ -59,9 +61,9 @@ class BillingService
         }
 
         if ($this->isUsed($oilSealSize) && $oilSealQty > 0) {
-            $unit = $enginePrice >= self::BIG_BIKE_THRESHOLD
-                ? self::OIL_SEAL_PRICE_BIG
-                : self::OIL_SEAL_PRICE_SMALL;
+            $unit = $enginePrice >= $this->partPrice('big_bike_labor_threshold')
+                ? $this->partPrice('oil_seal_big')
+                : $this->partPrice('oil_seal_small');
             $lines[] = [
                 'key' => 'oilSeal',
                 'label' => $oilSealSize,
@@ -76,8 +78,8 @@ class BillingService
                 'key' => 'dustSeal',
                 'label' => $dustSealSize,
                 'qty' => $dustSealQty,
-                'unitPrice' => self::DUST_SEAL_PRICE,
-                'amount' => $dustSealQty * self::DUST_SEAL_PRICE,
+                'unitPrice' => $this->partPrice('dust_seal'),
+                'amount' => $dustSealQty * $this->partPrice('dust_seal'),
             ];
         }
 
@@ -86,8 +88,8 @@ class BillingService
                 'key' => 'springs',
                 'label' => $springs,
                 'qty' => 1,
-                'unitPrice' => self::SPRING_PRICE,
-                'amount' => self::SPRING_PRICE,
+                'unitPrice' => $this->partPrice('springs'),
+                'amount' => $this->partPrice('springs'),
             ];
         }
 

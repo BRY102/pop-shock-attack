@@ -21,8 +21,9 @@ class GlobalSearchTest extends TestCase
             'role' => 'staff', 'status' => 'approved',
         ]));
 
-        // One released job with tuning history, one active, one unrelated.
-        // specs/warranty are guarded (not mass-assignable), so set them explicitly.
+        // Released visit with tuning history, an in-progress Tuning job
+        // (must not appear in history search), a released re-service, and
+        // an unrelated intake.
         $released = ServiceJob::create([
             'customer' => 'juan_rider', 'moto_model' => 'Yamaha NMAX 155',
             'plate_number' => 'ABC-1234', 'stage' => 'Release', 'date_in' => '2026-04-10',
@@ -33,7 +34,13 @@ class GlobalSearchTest extends TestCase
         $released->save();
         ServiceJob::create([
             'customer' => 'juan_rider', 'moto_model' => 'Yamaha NMAX 155',
-            'plate_number' => 'ABC-1234', 'stage' => 'Tuning', 'date_in' => '2026-07-09',
+            'plate_number' => 'ABC-1234', 'stage' => 'Tuning',
+            'date_in' => '2026-07-09', 'is_warranty_claim' => true,
+        ]);
+        ServiceJob::create([
+            'customer' => 'juan_rider', 'moto_model' => 'Yamaha NMAX 155',
+            'plate_number' => 'ABC-1234', 'stage' => 'Release',
+            'date_in' => '2026-06-01', 'is_warranty_claim' => true,
         ]);
         ServiceJob::create([
             'customer' => 'maria_rides', 'moto_model' => 'Honda Click 125',
@@ -41,21 +48,20 @@ class GlobalSearchTest extends TestCase
         ]);
     }
 
-    public function test_search_by_plate_returns_full_history_including_released_jobs(): void
+    public function test_search_by_plate_returns_released_visits_only(): void
     {
         $response = $this->getJson('/api/jobs/search?q=ABC-1234');
 
         $response->assertOk()->assertJsonCount(2);
-
-        // The released job's previous tuning setup is recoverable
         $response->assertJsonFragment(['oil' => 'Racing Oil']);
+        $response->assertJsonMissing(['stage' => 'Tuning']);
     }
 
     public function test_search_matches_partial_plate_customer_and_model(): void
     {
         $this->getJson('/api/jobs/search?q=ABC')->assertOk()->assertJsonCount(2);
         $this->getJson('/api/jobs/search?q=juan_rider')->assertOk()->assertJsonCount(2);
-        $this->getJson('/api/jobs/search?q=Click')->assertOk()->assertJsonCount(1);
+        $this->getJson('/api/jobs/search?q=Click')->assertOk()->assertJsonCount(0);
     }
 
     public function test_search_with_no_matches_returns_an_empty_list(): void

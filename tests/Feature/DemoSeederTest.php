@@ -34,6 +34,22 @@ class DemoSeederTest extends TestCase
         $this->assertGreaterThan(0, $revenue, 'Owner dashboard would show no revenue');
     }
 
+    public function test_seeded_released_jobs_include_customer_ratings(): void
+    {
+        $this->seed(DemoSeeder::class);
+
+        $released = ServiceJob::where('stage', 'Release')->get();
+        $rated = $released->whereNotNull('rating');
+
+        $this->assertGreaterThan(0, $rated->count());
+        $this->assertLessThan($released->count(), $rated->count());
+        $rated->each(function (ServiceJob $job) {
+            $this->assertGreaterThanOrEqual(1, $job->rating);
+            $this->assertLessThanOrEqual(5, $job->rating);
+            $this->assertNotNull($job->rated_at);
+        });
+    }
+
     public function test_the_board_is_seeded_with_a_unit_on_every_active_stage(): void
     {
         $this->seed(DemoSeeder::class);

@@ -3,7 +3,7 @@
 // ============================================================
 
 window.printReceipt = function (jobId) {
-    const job = dbJobs.find(j => j.id == jobId);
+    const job = allShopJobs().find(j => j.id == jobId);
 
     if (!job || !job.specs) {
         showNotification('This unit has no completed billing yet.', 'error');

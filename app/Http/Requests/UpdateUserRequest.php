@@ -21,7 +21,7 @@ class UpdateUserRequest extends FormRequest
                 Rule::unique('app_users', 'username')->ignore($this->route('user')),
             ],
             'role' => ['required', Rule::in(UserRole::values())],
-            'password' => 'nullable|string|min:6',
+            'password' => 'nullable|string|min:'.config('shop.password_min_length'),
         ];
     }
 }

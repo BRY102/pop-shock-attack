@@ -76,4 +76,15 @@ class AuthenticationTest extends TestCase
             'status' => 'pending',
         ]);
     }
+
+    public function test_registration_rejects_a_short_password(): void
+    {
+        $this->postJson('/api/register', [
+            'username' => 'short_pass',
+            'password' => '1234567',
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('password');
+
+        $this->assertDatabaseMissing('app_users', ['username' => 'short_pass']);
+    }
 }

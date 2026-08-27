@@ -30,6 +30,8 @@ class ServiceJob extends Model
         'is_warranty_claim' => 'boolean',
         'warranty_expires_at' => 'date',
         'spring_rate' => 'float',
+        'rating' => 'integer',
+        'rated_at' => 'datetime',
     ];
 
     public function appUser()

@@ -5,60 +5,157 @@
 // functions live in the other files of this folder, one per view.
 // ============================================================
 
-function buildSidebar() {
+const SIDEBAR_COLLAPSE_KEY = 'mt_sidebar_collapsed';
+
+function isMobileNav() {
+    return window.matchMedia('(max-width: 1024px)').matches;
+}
+
+function syncMenuToggle(open) {
+    const toggle = document.getElementById('menuToggle');
+    if (!toggle) return;
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+}
+
+function syncCollapseToggle() {
+    const btn = document.getElementById('sidebarCollapse');
+    const collapsed = document.getElementById('view-system')?.classList.contains('sidebar-collapsed');
+    if (!btn) return;
+    btn.setAttribute('aria-label', collapsed ? 'Expand menu' : 'Collapse menu');
+    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+}
+
+function restoreSidebarCollapse() {
+    const system = document.getElementById('view-system');
+    if (!system) return;
+    if (!isMobileNav() && localStorage.getItem(SIDEBAR_COLLAPSE_KEY) === '1') {
+        system.classList.add('sidebar-collapsed');
+    }
+    syncCollapseToggle();
+}
+
+window.toggleSidebarCollapse = function (e) {
+    e?.stopPropagation();
+    if (isMobileNav()) return;
+    const system = document.getElementById('view-system');
+    if (!system) return;
+    const collapsed = !system.classList.contains('sidebar-collapsed');
+    system.classList.toggle('sidebar-collapsed', collapsed);
+    localStorage.setItem(SIDEBAR_COLLAPSE_KEY, collapsed ? '1' : '0');
+    syncCollapseToggle();
+    window.fitOverviewCharts?.();
+};
+
+window.closeSidebar = function () {
+    const system = document.getElementById('view-system');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    system?.classList.remove('sidebar-open');
+    backdrop?.classList.add('hidden');
+    syncMenuToggle(false);
+};
+
+window.openSidebar = function () {
+    if (!isMobileNav()) return;
+    const system = document.getElementById('view-system');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    const notifPanel = document.getElementById('notifPanel');
+    system?.classList.add('sidebar-open');
+    backdrop?.classList.remove('hidden');
+    notifPanel?.classList.add('hidden');
+    window.closeFeedbackDrawer?.();
+    syncMenuToggle(true);
+};
+
+window.toggleSidebar = function (e) {
+    e?.stopPropagation();
+    const system = document.getElementById('view-system');
+    if (system?.classList.contains('sidebar-open')) {
+        closeSidebar();
+    } else {
+        openSidebar();
+    }
+};
+
+// Which screens each role gets, in menu order, with the icon that labels it.
+const NAV_MENUS = {
+    admin: [
+        { view: 'overview', label: 'Overview', icon: 'layout-grid' },
+        { view: 'kanban', label: 'Workflow', icon: 'wrench' },
+        { view: 'history', label: 'Service History', icon: 'calendar-clock' },
+        { view: 'inventory', label: 'Inventory', icon: 'package' },
+        { view: 'reports', label: 'Sales', icon: 'banknote' },
+        { view: 'backjobs', label: 'Back-jobs', icon: 'rotate-ccw' },
+        { view: 'users', label: 'Manage Users', icon: 'users' },
+    ],
+    staff: [
+        { view: 'kanban', label: 'Workflow', icon: 'wrench' },
+        { view: 'history', label: 'Service History', icon: 'calendar-clock' },
+        { view: 'backjobs', label: 'Back-jobs', icon: 'rotate-ccw' },
+        { view: 'inventory', label: 'Inventory', icon: 'package' },
+        { view: 'approvals', label: 'Pending Requests', icon: 'clipboard-list' },
+    ],
+    customer: [
+        { view: 'customer', label: 'My Dashboard', icon: 'layout-grid' },
+        { view: 'customer-prev', label: 'Previous jobs', icon: 'calendar-clock' },
+    ],
+};
+
+async function buildSidebar() {
     const nav = document.getElementById('sidebarNav');
     nav.innerHTML = '';
+    closeSidebar();
 
-    if (currentRole === 'admin') {
-        nav.innerHTML += `<li class="nav-item active" onclick="loadView('overview')">Shop Overview</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('kanban')">Stage-Gate Tracker</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('history')">Service History</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('inventory')">Consumables Tracker</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('reports')">Sales & Reports</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('users')">Manage Users</li>`;
-        loadView('overview');
-    } else if (currentRole === 'staff') {
-        nav.innerHTML += `<li class="nav-item active" onclick="loadView('kanban')">Active Workflow</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('history')">Service History</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('inventory')">Inventory Check</li>`;
-        nav.innerHTML += `<li class="nav-item" onclick="loadView('approvals')">Pending Accounts</li>`;
-        loadView('kanban');
-    } else if (currentRole === 'customer') {
-        nav.innerHTML += `<li class="nav-item active" onclick="loadView('customer')">My Dashboard</li>`;
-        loadView('customer');
-    }
+    const menu = NAV_MENUS[currentRole];
+    if (!menu) return;
+
+    nav.innerHTML = menu.map((entry, i) => `
+        <li class="nav-item${i === 0 ? ' active' : ''}" data-view="${entry.view}"
+            title="${esc(entry.label)}"
+            onclick="loadView('${entry.view}')">
+            ${icon(entry.icon)}<span>${esc(entry.label)}</span>
+        </li>`).join('');
+
+    await loadView(menu[0].view);
 }
 
 // The caches each view actually depends on. Navigation only waits for
 // (and refreshes) these instead of re-fetching everything, and a view
 // paints instantly whenever its caches are already synced.
 const VIEW_DATA = {
-    overview: ['jobs', 'expenses', 'inventory'],
-    approvals: ['users'],
-    reports: ['jobs'],
-    kanban: ['jobs'],
+    overview: ['jobs', 'released', 'expenses', 'inventory', 'counterSales'],
+    approvals: ['users', 'resets'],
+    reports: ['jobs', 'released', 'counterSales'],
+    kanban: ['jobs', 'released', 'mechanics'],
     history: [], // searches on demand
+    backjobs: ['jobs', 'released'],
     inventory: ['inventory'],
-    users: ['users'],
+    users: ['users', 'resets', 'mechanics'],
     customer: ['jobs'],
+    'customer-prev': ['jobs'],
 };
 
 const FETCHERS = {
     jobs: fetchJobsFromDatabase,
+    released: fetchReleasedJobsFromDatabase,
     inventory: fetchInventoryFromDatabase,
     users: fetchUsersFromDatabase,
     expenses: fetchExpensesFromDatabase,
+    counterSales: fetchCounterSalesFromDatabase,
+    resets: fetchPasswordResetsFromDatabase,
+    mechanics: fetchMechanicsFromDatabase,
 };
 
 // Ignore stale background refreshes after the user has navigated on
 let loadSequence = 0;
 
 window.loadView = async function (viewType) {
-    // Highlight the active nav item
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    if (typeof event !== 'undefined' && event && event.currentTarget) {
-        event.currentTarget.classList.add('active');
-    }
+    document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.view === viewType);
+    });
+    closeSidebar();
+    document.getElementById('view-system')?.classList.remove('header-compact');
+    if (viewType !== 'kanban') window.pendingKanbanFocus = null;
 
     const renderers = {
         overview: renderOverview,
@@ -66,9 +163,11 @@ window.loadView = async function (viewType) {
         reports: renderReports,
         kanban: renderKanban,
         history: renderHistory,
+        backjobs: renderBackjobs,
         inventory: renderInventory,
         users: renderUsers,
         customer: renderCustomerDashboard,
+        'customer-prev': renderCustomerPrevious,
     };
 
     const render = renderers[viewType];
@@ -80,21 +179,22 @@ window.loadView = async function (viewType) {
         actions: document.getElementById('headerActions'),
         content: document.getElementById('mainContentArea'),
     };
+    ctx.desc?.classList.remove('bj-crumbs');
 
     const needs = VIEW_DATA[viewType] ?? [];
     const cacheReady = needs.every(key => syncedKeys.has(key));
-    const CACHES = { jobs: () => dbJobs, inventory: () => dbInv, users: () => dbUsers, expenses: () => dbExpenses };
+    const CACHES = { jobs: () => dbJobs, released: () => dbReleased, inventory: () => dbInv, users: () => dbUsers, expenses: () => dbExpenses, counterSales: () => dbCounterSales, resets: () => dbResets, mechanics: () => dbMechanics };
     const snapshot = () => JSON.stringify(needs.map(key => CACHES[key]()));
+    const sequence = ++loadSequence;
 
     // 1) Paint immediately from cache when we can — navigation feels instant
-    if (cacheReady) {
+    if (cacheReady && sequence === loadSequence) {
         ctx.actions.innerHTML = '';
         render(ctx);
     }
 
     // 2) Refresh this view's data (plus notifications) in the background
     const before = cacheReady ? snapshot() : null;
-    const sequence = ++loadSequence;
     try {
         await Promise.all([...needs.map(key => FETCHERS[key]()), fetchNotifications()]);
     } catch (error) {
@@ -108,3 +208,11 @@ window.loadView = async function (viewType) {
         render(ctx);
     }
 };
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeSidebar();
+});
+
+window.addEventListener('resize', () => {
+    if (!isMobileNav()) closeSidebar();
+});

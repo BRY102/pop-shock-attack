@@ -17,6 +17,17 @@ window.toggleAuthMode = function (mode) {
     }
 };
 
+window.toggleLoginPassword = function () {
+    const input = document.getElementById('loginPass');
+    const toggle = document.getElementById('loginPassToggle');
+    if (!input || !toggle) return;
+
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    toggle.classList.toggle('is-visible', show);
+    toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+};
+
 window.handleRegister = async function (e) {
     e.preventDefault();
 
@@ -37,6 +48,11 @@ window.handleRegister = async function (e) {
             return;
         }
 
+        if (password.length < PASSWORD_MIN_LENGTH) {
+            showNotification(`Error: Password must be at least ${PASSWORD_MIN_LENGTH} characters.`, 'error');
+            return;
+        }
+
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
@@ -47,6 +63,8 @@ window.handleRegister = async function (e) {
             showNotification('Account registered! Pending staff approval.', 'success');
             e.target.reset();
             toggleAuthMode('login');
+        } else if (response.status === 429) {
+            showNotification('Too many registration attempts. Please wait a minute.', 'error');
         } else {
             const data = await response.json().catch(() => ({}));
             showNotification(data.message || 'Registration failed.', 'error');
@@ -59,29 +77,75 @@ window.handleRegister = async function (e) {
     }
 };
 
-window.handleForgot = function (e) {
+window.handleForgot = async function (e) {
     e.preventDefault();
-    // Passwords are hashed server-side and there is no reset-token flow yet,
-    // so show a generic message (also avoids user enumeration).
-    showNotification('Please contact shop staff to reset your password.', 'warning');
-    toggleAuthMode('login');
+
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    if (submitBtn.disabled) return;
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.innerText;
+    submitBtn.innerText = 'Sending request...';
+
+    const username = document.getElementById('forgotUser').value.trim().toLowerCase();
+
+    try {
+        const response = await fetch('/api/forgot-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ username }),
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (response.ok) {
+            showNotification(data.message || 'If this account exists, visit the shop counter.', 'success');
+            e.target.reset();
+            toggleAuthMode('login');
+        } else if (response.status === 429) {
+            showNotification('Too many reset attempts. Please wait a minute.', 'error');
+        } else {
+            showNotification(data.message || 'Could not submit the reset request.', 'error');
+        }
+    } catch (err) {
+        showNotification('Server connection error. Is Laravel running?', 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalLabel;
+    }
 };
+
+function showLoginLoader() {
+    const el = document.getElementById('loginLoader');
+    if (!el) return;
+    el.classList.remove('hidden');
+    el.setAttribute('aria-hidden', 'false');
+}
+
+function hideLoginLoader() {
+    const el = document.getElementById('loginLoader');
+    if (!el) return;
+    el.classList.add('hidden');
+    el.setAttribute('aria-hidden', 'true');
+}
 
 window.handleUnifiedLogin = async function (e) {
     e.preventDefault();
 
     // Prevent double submission (double-click or Enter + click): one request,
-    // one welcome toast. The button doubles as the loading indicator.
+    // one welcome toast.
     const submitBtn = e.target.querySelector('button[type="submit"]');
     if (submitBtn.disabled) return;
     submitBtn.disabled = true;
     const originalLabel = submitBtn.innerText;
     submitBtn.innerText = 'Logging in...';
+    showLoginLoader();
 
     const username = document.getElementById('loginUser').value.trim().toLowerCase();
     const password = document.getElementById('loginPass').value.trim();
     const err = document.getElementById('loginError');
     err.classList.add('hidden');
+
+    let greeting = null;
 
     try {
         const response = await fetch('/api/login', {
@@ -93,7 +157,9 @@ window.handleUnifiedLogin = async function (e) {
         if (!response.ok) {
             const data = await response.json().catch(() => ({}));
             err.classList.remove('hidden');
-            err.innerText = data.message || 'Invalid credentials.';
+            err.innerText = response.status === 429
+                ? 'Too many login attempts. Please wait a minute.'
+                : (data.message || 'Invalid credentials.');
             return;
         }
 
@@ -102,24 +168,75 @@ window.handleUnifiedLogin = async function (e) {
         localStorage.setItem('mt_token', authToken);
 
         if (data.user.role === 'admin') {
-            loginSuccess('Shop Owner', 'admin');
-            showNotification('Welcome back, Owner!', 'success');
+            await loginSuccess('Shop Owner', 'admin');
+            greeting = 'Welcome back, Owner!';
         } else if (data.user.role === 'staff') {
-            loginSuccess('Head Tech', 'staff');
-            showNotification('Workspace accessed.', 'success');
+            await loginSuccess('Head Tech', 'staff');
+            greeting = 'Workspace accessed.';
         } else {
-            loginSuccess(data.user.username, 'customer');
-            showNotification('Welcome to your portal.', 'success');
+            await loginSuccess(data.user.username, 'customer');
+            greeting = 'Welcome to your portal.';
         }
     } catch (error) {
         console.error('Login failed:', error);
         err.classList.remove('hidden');
         err.innerText = 'Server connection error.';
     } finally {
+        hideLoginLoader();
         submitBtn.disabled = false;
         submitBtn.innerText = originalLabel;
     }
+
+    if (greeting) showNotification(greeting, 'success');
 };
+
+function waitForPaint() {
+    return new Promise(resolve => {
+        requestAnimationFrame(() => requestAnimationFrame(resolve));
+    });
+}
+
+function clearWorkspaceState() {
+    loadSequence += 1;
+    syncedKeys.clear();
+    dbUsers = [];
+    dbJobs = [];
+    dbReleased = [];
+    dbInv = [];
+    dbExpenses = [];
+    dbResets = [];
+    dbMechanics = [];
+    dbCounterSales = [];
+    notifUnreadCount = 0;
+    notifItems = [];
+
+    const nav = document.getElementById('sidebarNav');
+    const content = document.getElementById('mainContentArea');
+    const actions = document.getElementById('headerActions');
+    const title = document.getElementById('pageTitle');
+    const desc = document.getElementById('pageDesc');
+    const badge = document.getElementById('notifBadge');
+    const panel = document.getElementById('notifPanel');
+
+    if (nav) nav.innerHTML = '';
+    if (content) content.innerHTML = '';
+    if (actions) actions.innerHTML = '';
+    if (title) title.innerText = 'Dashboard';
+    if (desc) {
+        desc.innerText = '';
+        desc.classList.remove('bj-crumbs');
+    }
+    if (badge) {
+        badge.innerText = '0';
+        badge.classList.add('hidden');
+    }
+    if (panel) {
+        panel.innerHTML = '';
+        panel.classList.add('hidden');
+    }
+    window.closeFeedbackDrawer?.();
+    document.getElementById('feedbackWrap')?.classList.add('hidden');
+}
 
 async function loginSuccess(userName, roleName) {
     currentUser = userName;
@@ -129,18 +246,29 @@ async function loginSuccess(userName, roleName) {
     localStorage.setItem('mt_session_user', userName);
     localStorage.setItem('mt_session_role', roleName);
 
+    clearWorkspaceState();
+    document.getElementById('displayRole').innerText = roleName.toUpperCase();
+    restoreSidebarCollapse();
+
+    // Keep the loader up while this role's first screen is built. Showing the
+    // shell now lets charts measure, but leftover UI from the last account
+    // is already gone.
     document.getElementById('view-login').classList.remove('active-view');
     document.getElementById('view-login').classList.add('hidden');
     document.getElementById('view-system').classList.remove('hidden');
     document.getElementById('view-system').classList.add('active-view');
-    document.getElementById('displayRole').innerText = roleName.toUpperCase();
+    window.syncFeedbackAccess?.();
 
     await syncAllData();
     startNotifPolling();
-    buildSidebar();
+    await buildSidebar();
+    await waitForPaint();
+    // Overview charts draw on a short timeout after the canvas is in the DOM.
+    await new Promise(resolve => setTimeout(resolve, 80));
 }
 
 window.logout = function () {
+    closeSidebar();
     openModal('modal-logout');
 };
 
@@ -186,6 +314,8 @@ function resetSession() {
     document.getElementById('view-login').classList.add('active-view');
     document.getElementById('mainLoginForm').reset();
     document.getElementById('loginError').classList.add('hidden');
+    clearWorkspaceState();
 
     closeModal('modal-logout');
+    closeSidebar();
 }

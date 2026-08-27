@@ -19,8 +19,12 @@ function buildKanbanCard(job, stage) {
     let mechanicHtml = '';
     if (currentRole === 'staff' && stage === 'Disassembly') {
         let options = `<option value="">-- Unassigned --</option>`;
-        MECHANICS.forEach(m => {
-            options += `<option value="${m}" ${job.mechanic_name === m ? 'selected' : ''}>${m}</option>`;
+        const names = dbMechanics.map(m => m.name);
+        if (job.mechanic_name && !names.includes(job.mechanic_name)) {
+            names.unshift(job.mechanic_name);
+        }
+        names.forEach(m => {
+            options += `<option value="${esc(m)}" ${job.mechanic_name === m ? 'selected' : ''}>${esc(m)}</option>`;
         });
         mechanicHtml = `
             <div style="margin-top: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #e5e7eb;">
@@ -60,29 +64,58 @@ function buildKanbanCard(job, stage) {
         ? `<p style="font-size:0.85rem;"><strong>Complaint:</strong> ${esc(job.complaint)}</p>`
         : '';
 
-    return `<div class="card kanban-card" data-search="${esc(`${job.plate_number} ${job.customer} ${job.moto_model} ${job.complaint || ''}`)}">${wBadge}<h4>${esc(job.moto_model)}</h4><p><strong>Customer:</strong> ${esc(job.customer)}</p><p><strong>Plate:</strong> ${esc(job.plate_number)}</p>${complaintHtml}${mechanicHtml}${specHtml}${btnHtml}</div>`;
+    return `<div class="card kanban-card" data-job-id="${esc(job.id)}" data-search="${esc(`${job.plate_number} ${job.customer} ${job.moto_model} ${job.complaint || ''}`)}">${wBadge}<h4>${esc(job.moto_model)}</h4><p><strong>Customer:</strong> ${esc(displayName(job.customer))}</p><p><strong>Plate:</strong> ${esc(job.plate_number)}</p>${complaintHtml}${mechanicHtml}${specHtml}${btnHtml}</div>`;
 }
 
 function renderKanban(ctx) {
-    ctx.title.innerText = 'Stage-Gate Workflow';
-    ctx.desc.innerText = currentRole === 'staff' ? 'Manage and move active service units' : 'View-only monitoring of shop floor';
+    ctx.title.innerText = 'Workflow';
+    ctx.desc.innerText = currentRole === 'staff' ? 'Move jobs through each stage.' : 'Shop floor — view only.';
 
-    let actHtml = `<input type="text" id="searchKanbanInput" class="search-bar" placeholder="Search Plate or Name..." onkeyup="searchKanban()">`;
+    let actHtml = `<input type="text" id="searchKanbanInput" class="search-bar" placeholder="Plate or customer" onkeyup="searchKanban()">`;
     if (currentRole === 'staff') {
         actHtml += `<button class="btn btn-primary" onclick="openIntake()">${icon('plus')} New Intake</button>`;
     }
     ctx.actions.innerHTML = actHtml;
 
     let html = `<div class="kanban-board">`;
-    STAGES.forEach(stage => {
-        html += `<div class="stage-column"><div class="stage-header">${stage}</div><div class="job-list" id="col-${stage}">`;
-        dbJobs.filter(j => j.stage === stage).forEach(job => {
+    STAGES.forEach((stage, i) => {
+        const jobs = dbJobs.filter(j => j.stage === stage);
+        const active = jobs.length > 0 ? ' has-jobs' : '';
+        html += `<div class="line-station">
+            <div class="stage-column${active}">
+                <div class="stage-header">
+                    <span class="station-num">${stationNumber(i)}</span>
+                    <span class="station-name">${esc(stage)}</span>
+                    <span class="station-count">${jobs.length}</span>
+                </div>
+                <div class="job-list" id="col-${stage}">`;
+        jobs.forEach(job => {
             html += buildKanbanCard(job, stage);
         });
         html += `</div></div>`;
+        if (i < STAGES.length - 1) {
+            html += `<div class="line-chevron" aria-hidden="true">${icon('chevron-right')}</div>`;
+        }
+        html += `</div>`;
     });
     html += `</div>`;
     ctx.content.innerHTML = html;
+    focusPendingKanbanCard();
+}
+
+function focusPendingKanbanCard() {
+    const pending = window.pendingKanbanFocus;
+    if (!pending) return;
+    const input = document.getElementById('searchKanbanInput');
+    if (input && pending.plate) {
+        input.value = pending.plate;
+        searchKanban();
+    }
+    const card = [...document.querySelectorAll('.kanban-card')]
+        .find(el => el.dataset.jobId === String(pending.id));
+    if (!card) return;
+    card.classList.add('is-focus');
+    card.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }
 
 window.searchKanban = function () {

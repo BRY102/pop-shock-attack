@@ -10,21 +10,26 @@ let reportRows = [];
 let reportPeriod = { start: '', end: '' };
 
 function renderReports(ctx) {
-    ctx.title.innerText = 'Sales & Financial Reports';
-    ctx.desc.innerText = 'Itemized breakdown of all completed and released services.';
+    ctx.title.innerText = 'Sales';
+    ctx.desc.innerText = 'Released jobs and totals.';
+    // Filtering is the one primary action here, so it is the only solid button.
+    // Export and print are secondary, so they take the neutral ghost style.
     ctx.actions.innerHTML = `
-        <input type="date" id="filterStart" class="search-bar" style="width: 150px; min-width: auto;">
-        <input type="date" id="filterEnd" class="search-bar" style="width: 150px; min-width: auto;">
-        <button class="btn btn-primary" onclick="filterReports()">Filter Data</button>
-        <button class="btn" style="background:#1d6f42; color:#fff;" onclick="exportReportCsv()">${icon('download')} Export CSV</button>
-        <button class="btn" style="background:#555; color:#fff;" onclick="window.print()">${icon('printer')} Print Report</button>
+        <div class="filter-group">
+            <input type="date" id="filterStart" class="date-filter" aria-label="From date">
+            <span class="filter-sep"></span>
+            <input type="date" id="filterEnd" class="date-filter" aria-label="To date">
+        </div>
+        <button class="btn btn-primary" onclick="filterReports()">${icon('search')} Filter Data</button>
+        <button class="btn btn-ghost" onclick="exportReportCsv()">${icon('download')} Export CSV</button>
+        <button class="btn btn-ghost" onclick="window.print()">${icon('printer')} Print Report</button>
     `;
 
     reportPeriod = { start: '', end: '' };
-    renderReportTable(dbJobs.filter(j => j.stage === 'Release' && j.specs));
+    renderReportTable(dbReleased.filter(j => j.specs));
 }
 
-window.filterReports = function () {
+window.filterReports = async function () {
     const start = document.getElementById('filterStart').value;
     const end = document.getElementById('filterEnd').value;
     if (!start || !end) {
@@ -33,8 +38,18 @@ window.filterReports = function () {
     }
 
     reportPeriod = { start, end };
-    const filtered = dbJobs.filter(j => j.stage === 'Release' && j.specs && j.date_in >= start && j.date_in <= end);
-    renderReportTable(filtered);
+    try {
+        const response = await apiFetch(`/api/jobs/released?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`);
+        if (!response.ok) {
+            showNotification('Could not filter sales.', 'error');
+            return;
+        }
+        const filtered = await response.json();
+        renderReportTable(filtered.filter(j => j.specs));
+    } catch (error) {
+        console.error(error);
+        showNotification('Could not filter sales.', 'error');
+    }
 };
 
 // "Daily Oil x1; Oil Seal 41x54x11 x2" — one readable cell for both the
@@ -49,10 +64,13 @@ function renderReportTable(jobsArray) {
 
     let totalSales = 0;
     let totalPartsCost = 0;
-    let rowsHtml = `<div class="table-container"><table class="data-table"><thead><tr><th>Date</th><th>Customer</th><th>Motorcycle</th><th>Service Type</th><th>Parts Used</th><th>Parts Cost</th><th>Total Billed</th></tr></thead><tbody>`;
+    let rowsHtml = `<div class="table-container table-scroll"><table class="data-table"><thead><tr>
+        <th class="cell-keep">Date</th><th class="cell-keep">Customer</th><th>Motorcycle</th><th>Service Type</th>
+        <th>Parts Used</th><th class="num-start">Parts Cost</th><th class="num-start">Total Billed</th>
+    </tr></thead><tbody>`;
 
     if (jobsArray.length === 0) {
-        rowsHtml += `<tr><td colspan="7" style="text-align:center; padding: 1.5rem; color: #777;">No released services in this period.</td></tr>`;
+        rowsHtml += `<tr><td colspan="7" class="table-empty">No released services in this period.</td></tr>`;
     }
 
     jobsArray.forEach(job => {
@@ -60,19 +78,33 @@ function renderReportTable(jobsArray) {
         totalPartsCost += Number(job.specs.partsCost || 0);
 
         const typeBadge = job.is_warranty_claim
-            ? `<span style="color:#92400e; font-weight:700; font-size:0.78rem;">WARRANTY CLAIM</span>`
-            : `<span style="color:#15803d; font-weight:700; font-size:0.78rem;">NEW SERVICE</span>`;
+            ? `<span class="badge-service claim">Warranty Claim</span>`
+            : `<span class="badge-service new">New Service</span>`;
 
         rowsHtml += `<tr>
-            <td>${esc(job.date_in)}</td>
-            <td><strong>${esc(job.customer)}</strong></td>
-            <td>${esc(job.moto_model)} (${esc(job.plate_number)})</td>
+            <td class="cell-keep">${esc(job.date_in)}</td>
+            <td class="cell-keep"><span class="cell-title">${esc(displayName(job.customer))}</span></td>
+            <td>
+                <span class="cell-title">${esc(job.moto_model)}</span>
+                <span class="cell-sub">${esc(job.plate_number)}</span>
+            </td>
             <td>${typeBadge}</td>
-            <td style="font-size:0.85rem; color:#666;">Base/Labor ₱${Number(job.specs.enginePrice || 0).toLocaleString()}<br>${esc(partsUsedText(job.specs))}</td>
-            <td style="color:#d97706; font-weight:bold;">${peso(job.specs.partsCost || 0)}</td>
-            <td style="font-weight:bold; color:#28a745; font-size:1.1rem;">${peso(job.specs.totalBill || 0)}</td>
+            <td>
+                <span class="cell-title">Base / labor ${peso(job.specs.enginePrice || 0)}</span>
+                <span class="cell-sub">${esc(partsUsedText(job.specs))}</span>
+            </td>
+            <td class="num-start num-muted">${peso(job.specs.partsCost || 0)}</td>
+            <td class="num-start num-strong">${peso(job.specs.totalBill || 0)}</td>
         </tr>`;
     });
+
+    if (jobsArray.length > 0) {
+        rowsHtml += `<tr class="is-total">
+            <td colspan="5">Total for ${jobsArray.length} service${jobsArray.length === 1 ? '' : 's'}</td>
+            <td class="num-start">${peso(totalPartsCost)}</td>
+            <td class="num-start">${peso(totalSales)}</td>
+        </tr>`;
+    }
 
     rowsHtml += `</tbody></table></div>`;
 
@@ -80,15 +112,87 @@ function renderReportTable(jobsArray) {
         ? `${esc(reportPeriod.start)} to ${esc(reportPeriod.end)}`
         : 'All released services';
 
+    // Walk-in income has no job behind it, so it gets its own table below the
+    // transactions. Total Sales counts both, matching what Overview reports.
+    const counterSales = counterSalesInPeriod();
+    const counterTotal = counterSales.reduce((sum, sale) => sum + sale.amount, 0);
+    totalSales += counterTotal;
+
+    const walkInNote = counterTotal > 0 ? ` &middot; includes ${peso(counterTotal)} walk-in` : '';
+
     document.getElementById('mainContentArea').innerHTML = `
-        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 5px solid #28a745; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-            <p style="font-size: 1rem; color: #555;">Total Shop Revenue Generated <span style="color:#888;">— ${periodLabel}</span></p>
-            <h2 style="color: #28a745; font-size: 2.5rem;">${peso(totalSales)}</h2>
-            <p style="font-size: 0.9rem; color: #666; margin-top: 0.35rem;">
-                ${jobsArray.length} service${jobsArray.length === 1 ? '' : 's'} released &middot;
-                parts cost ${peso(totalPartsCost)}
-            </p>
-        </div>${rowsHtml}`;
+        <section class="page-section">
+            <div class="section-head">
+                <p class="dash-heading">Sales Summary</p>
+                <span class="section-meta">${periodLabel}${walkInNote}</span>
+            </div>
+            <div class="dash-hero">
+                ${summaryCard('banknote', 'is-money-in', peso(totalSales), 'Total Sales')}
+                ${summaryCard('inbox', 'is-money-out', peso(totalPartsCost), 'Parts Cost')}
+                ${summaryCard('check', 'is-brand', jobsArray.length, 'Services Released')}
+            </div>
+        </section>
+
+        <section class="page-section">
+            <div class="section-head">
+                <p class="dash-heading">Transactions</p>
+                <span class="section-meta">${jobsArray.length} released service${jobsArray.length === 1 ? '' : 's'}</span>
+            </div>
+            ${rowsHtml}
+        </section>
+
+        ${counterSalesTable(counterSales, counterTotal)}`;
+}
+
+// The three figures at the top of the page. No trend pill here — this page is
+// filtered by an arbitrary date range, so a month-on-month delta would lie.
+function summaryCard(iconName, tint, value, label) {
+    return `
+        <div class="dash-metric is-plain">
+            <div class="stat-icon ${tint}">${icon(iconName)}</div>
+            <div>
+                <h3>${value}</h3>
+                <p>${label}</p>
+            </div>
+        </div>`;
+}
+
+// Counter sales inside the active date filter (all of them when unfiltered).
+function counterSalesInPeriod() {
+    if (!reportPeriod.start) return dbCounterSales;
+    return dbCounterSales.filter(sale => sale.date >= reportPeriod.start && sale.date <= reportPeriod.end);
+}
+
+function counterSalesTable(sales, total) {
+    if (sales.length === 0) return '';
+
+    const rows = sales
+        .slice()
+        .sort((a, b) => b.date.localeCompare(a.date))
+        .map(sale => `<tr>
+            <td>${esc(sale.date)}</td>
+            <td><span class="cell-title">${esc(sale.desc)}</span></td>
+            <td><span class="badge-service neutral">Counter Sale</span></td>
+            <td class="num num-strong">${peso(sale.amount)}</td>
+        </tr>`)
+        .join('');
+
+    return `
+        <section class="page-section">
+            <div class="section-head">
+                <p class="dash-heading">Counter Sales</p>
+                <span class="section-meta">Walk-in income with no service job behind it</span>
+            </div>
+            <div class="table-container"><table class="data-table">
+                <thead><tr><th>Date</th><th>Description</th><th>Type</th><th class="num">Amount</th></tr></thead>
+                <tbody>${rows}
+                    <tr class="is-total">
+                        <td colspan="3">Total for ${sales.length} sale${sales.length === 1 ? '' : 's'}</td>
+                        <td class="num">${peso(total)}</td>
+                    </tr>
+                </tbody>
+            </table></div>
+        </section>`;
 }
 
 // Quote a CSV field only when it needs it, doubling any embedded quotes.

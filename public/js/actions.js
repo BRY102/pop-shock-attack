@@ -74,6 +74,7 @@ window.submitIntake = async function (e) {
             closeModal('modal-intake');
             showNotification('Intake successfully registered!', 'success');
             invalidate('jobs');
+            invalidate('released');
             await loadView('kanban');
         } else {
             const data = await response.json().catch(() => ({}));
@@ -95,6 +96,7 @@ window.moveStage = async function (id, nextStage) {
         if (response.ok) {
             showNotification(`Moved to ${nextStage}`, 'success');
             invalidate('jobs');
+            invalidate('released');
             await loadView('kanban');
         } else {
             showNotification(await serverMessage(response, 'Error moving job in database.'), 'error');
@@ -115,6 +117,7 @@ window.assignMechanic = async function (id, mechanicName) {
         if (response.ok) {
             showNotification(mechanicName ? `Assigned to ${mechanicName}` : 'Mechanic unassigned', 'success');
             invalidate('jobs');
+            invalidate('released');
             await loadView('kanban');
         } else {
             showNotification(await serverMessage(response, 'Error saving mechanic to database.'), 'error');
@@ -134,6 +137,7 @@ window.deleteJob = async function (id) {
         if (response.ok) {
             showNotification('Job permanently deleted.', 'success');
             invalidate('jobs');
+            invalidate('released');
             await loadView('kanban');
         } else {
             showNotification(await serverMessage(response, 'Error deleting job.'), 'error');
@@ -150,7 +154,29 @@ window.deleteJob = async function (id) {
 
 window.openSpecs = function (id) {
     document.getElementById('spec_job_id').value = id;
-    document.getElementById('spec_is_warranty').checked = false;
+    const claimBox = document.getElementById('spec_is_warranty');
+    claimBox.checked = false;
+
+    const job = dbJobs.find(j => String(j.id) === String(id));
+    const slot = document.getElementById('spec_warranty_proof');
+    if (job && slot) {
+        // Coverage lives on earlier Released visits, which are not on the
+        // floor cache — check the same plate across active + released jobs.
+        const earlier = allShopJobs().filter(j =>
+            j.plate_number === job.plate_number && String(j.id) !== String(job.id)
+        );
+        const state = unitWarrantyState(earlier);
+        slot.innerHTML = warrantyProofCard(state);
+        claimBox.disabled = state.state !== 'active';
+        claimBox.title = state.state === 'active'
+            ? 'This unit is still under warranty.'
+            : 'No active warranty on this plate — cannot bill as a free claim.';
+    } else if (slot) {
+        slot.innerHTML = '';
+        claimBox.disabled = false;
+        claimBox.title = '';
+    }
+
     openModal('modal-specs');
 };
 
@@ -231,6 +257,7 @@ window.submitSpecs = async function (e) {
             showNotification(`Specs logged. Bill: ₱${Number(billedTotal).toLocaleString()}`, 'success');
             invalidate('inventory');
             invalidate('jobs');
+            invalidate('released');
             await loadView('kanban');
         } else {
             showNotification(await serverMessage(response, 'Error logging specs.'), 'error');
@@ -245,7 +272,12 @@ window.submitSpecs = async function (e) {
 // Inventory items
 // ------------------------------------------------------------
 
-window.openItemModal = function (mode, id = null) {
+// Where to go after a successful save. The Inventory page wants to stay put;
+// the Overview quick action should not throw the owner onto another screen.
+let itemModalReturnView = 'inventory';
+
+window.openItemModal = function (mode, id = null, returnView = 'inventory') {
+    itemModalReturnView = returnView;
     document.getElementById('edit_item_mode').value = mode;
     const modal = document.getElementById('modal-edit-item');
     const form = modal.querySelector('form');
@@ -304,7 +336,7 @@ window.submitItemForm = async function (e) {
         closeModal('modal-edit-item');
         showNotification(mode === 'add' ? 'New item saved to database.' : 'Item updated in database.', 'success');
         invalidate('inventory');
-            await loadView('inventory');
+        await loadView(itemModalReturnView);
     } catch (error) {
         showNotification('Error: ' + error.message, 'error');
     }
@@ -383,7 +415,7 @@ window.openUserModal = function (mode, id = null) {
         document.getElementById('userModalTitle').innerText = 'Add User';
         form.reset();
         passwordInput.required = true;
-        passwordInput.placeholder = '';
+        passwordInput.placeholder = `Minimum ${PASSWORD_MIN_LENGTH} characters`;
     } else {
         document.getElementById('userModalTitle').innerText = 'Edit User';
         const user = dbUsers.find(u => u.id === id);
@@ -411,6 +443,11 @@ window.submitUserForm = async function (e) {
     const username = document.getElementById('m_username').value.trim().toLowerCase();
     const password = document.getElementById('m_password').value;
     const role = document.getElementById('m_role').value;
+
+    if (password && password.length < PASSWORD_MIN_LENGTH) {
+        showNotification(`Error: Password must be at least ${PASSWORD_MIN_LENGTH} characters.`, 'error');
+        return;
+    }
 
     try {
         let response;
@@ -468,6 +505,101 @@ window.deleteUser = async function (id) {
     }
 };
 
+window.openResetModal = function (id) {
+    const reset = dbResets.find(r => r.id === id);
+    if (!reset) {
+        showNotification('Error: Could not load the reset request.', 'error');
+        return;
+    }
+
+    document.getElementById('reset_request_id').value = reset.id;
+    document.getElementById('reset_username').value = reset.username;
+    document.getElementById('reset_password').value = '';
+    document.getElementById('reset_password_confirm').value = '';
+    openModal('modal-reset-password');
+};
+
+window.submitPasswordReset = async function (e) {
+    e.preventDefault();
+
+    const id = document.getElementById('reset_request_id').value;
+    const password = document.getElementById('reset_password').value;
+    const confirm = document.getElementById('reset_password_confirm').value;
+
+    if (password !== confirm) {
+        showNotification('Error: Passwords do not match.', 'error');
+        return;
+    }
+
+    if (password.length < PASSWORD_MIN_LENGTH) {
+        showNotification(`Error: Password must be at least ${PASSWORD_MIN_LENGTH} characters.`, 'error');
+        return;
+    }
+
+    try {
+        const response = await apiFetch(`/api/password-resets/${id}/complete`, {
+            method: 'PUT',
+            body: JSON.stringify({ password }),
+        });
+
+        if (!response.ok) {
+            showNotification(await serverMessage(response, 'Could not reset the password.'), 'error');
+            return;
+        }
+
+        closeModal('modal-reset-password');
+        showNotification('Password reset. Tell the rider the new password at the counter.', 'success');
+        invalidate('resets');
+        await loadView(currentRole === 'admin' ? 'users' : 'approvals');
+    } catch (error) {
+        showNotification('Server connection error.', 'error');
+    }
+};
+
+window.submitMechanic = async function (e) {
+    e.preventDefault();
+    const name = document.getElementById('m_mechanic_name').value.trim();
+    if (!name) return;
+
+    try {
+        const response = await apiFetch('/api/mechanics', {
+            method: 'POST',
+            body: JSON.stringify({ name }),
+        });
+
+        if (!response.ok) {
+            showNotification(await serverMessage(response, 'Could not add the mechanic.'), 'error');
+            return;
+        }
+
+        e.target.reset();
+        showNotification('Mechanic added. Staff can assign this name on the board.', 'success');
+        invalidate('mechanics');
+        await loadView('users');
+    } catch (error) {
+        showNotification('Server connection error.', 'error');
+    }
+};
+
+window.deleteMechanic = async function (id) {
+    const mechanic = dbMechanics.find(m => m.id === id);
+    const name = mechanic ? mechanic.name : 'this mechanic';
+    if (!confirm(`Remove ${name} from the assignment list?`)) return;
+
+    try {
+        const response = await apiFetch(`/api/mechanics/${id}`, { method: 'DELETE' });
+        if (response.ok) {
+            showNotification('Mechanic removed.', 'success');
+            invalidate('mechanics');
+            await loadView('users');
+        } else {
+            showNotification(await serverMessage(response, 'Could not remove the mechanic.'), 'error');
+        }
+    } catch (error) {
+        showNotification('Server connection error.', 'error');
+    }
+};
+
 window.approveUser = async function (id) {
     try {
         const response = await apiFetch(`/api/users/${id}/approve`, { method: 'PUT' });
@@ -507,6 +639,46 @@ window.submitExpense = async function (e) {
             await loadView('overview');
         } else {
             showNotification('Error saving expense to database.', 'error');
+        }
+    } catch (error) {
+        console.error(error);
+        showNotification('Server connection error.', 'error');
+    }
+};
+
+// ------------------------------------------------------------
+// Counter sales (walk-in income with no service job behind it)
+// ------------------------------------------------------------
+
+window.openCounterSaleModal = function () {
+    const dateField = document.getElementById('sale_date');
+    if (dateField) {
+        dateField.value = toISODate();
+        dateField.max = toISODate();
+    }
+    openModal('modal-add-sale');
+};
+
+window.submitCounterSale = async function (e) {
+    e.preventDefault();
+    const description = document.getElementById('sale_desc').value.trim();
+    const amount = parseFloat(document.getElementById('sale_amount').value);
+    const date = document.getElementById('sale_date').value;
+
+    try {
+        const response = await apiFetch('/api/counter-sales', {
+            method: 'POST',
+            body: JSON.stringify({ description, amount, date }),
+        });
+
+        if (response.ok) {
+            e.target.reset();
+            closeModal('modal-add-sale');
+            showNotification('Counter sale recorded.', 'success');
+            invalidate('counterSales');
+            await loadView('overview');
+        } else {
+            showNotification(await serverMessage(response, 'Could not record the sale.'), 'error');
         }
     } catch (error) {
         console.error(error);

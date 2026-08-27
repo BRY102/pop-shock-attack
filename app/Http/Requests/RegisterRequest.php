@@ -15,7 +15,7 @@ class RegisterRequest extends FormRequest
     {
         return [
             'username' => 'required|string|min:3|max:50|unique:app_users,username',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:'.config('shop.password_min_length'),
         ];
     }
 }

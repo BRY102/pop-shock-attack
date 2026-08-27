@@ -3,18 +3,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>MotoTrack | Premium Operations</title>
-    <!-- Vendored locally so the app works fully offline (no CDN dependency) -->
     <script src="js/vendor/chart.umd.min.js"></script>
     <!-- Speed up the Google Fonts load referenced from css/base.css -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Load order matters: base tokens first, view styles (incl. responsive/print) last -->
+    <!-- Load order: tokens → layout → components → views → responsive/print overrides -->
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/views.css">
+    <link rel="stylesheet" href="css/responsive.css">
 </head>
 
 <body>
@@ -26,14 +26,13 @@
                     <img src="img/logo-psa.png" alt="Pops Shock Attack" class="logo-psa" />
                 </div>
                 <div class="login-tagline">
-                    <h2>Your Suspension, In Expert Hands</h2>
-                    <p>With MotoTrack, you can follow your motorcycle every step of the way from drop-off to release and
-                        view your service records and warranty anytime, anywhere.</p>
+                    <h2>Track your bike from drop-off to release</h2>
+                    <p>See job status, history, and warranty in one place.</p>
                     <div class="login-feature-pills">
-                        <span>Live Service Status</span>
-                        <span>Digital Service History</span>
-                        <span>Warranty Coverage</span>
-                        <span>Transparent Billing</span>
+                        <span>Status</span>
+                        <span>History</span>
+                        <span>Warranty</span>
+                        <span>Billing</span>
                     </div>
                 </div>
             </div>
@@ -47,41 +46,63 @@
                         </svg>
                     </div>
                     <h1>MotoTrack</h1>
-                    <p>Pops Shock Attack Operations</p>
+                    <p>Pops Shock Attack</p>
                 </div>
 
-                <form id="mainLoginForm" onsubmit="handleUnifiedLogin(event)">
+                <form id="mainLoginForm" class="login-form" onsubmit="handleUnifiedLogin(event)">
                     <div class="input-group">
-                        <label>Username</label>
-                        <input type="text" id="loginUser" placeholder="Enter your username" required>
+                        <label for="loginUser">Username</label>
+                        <input type="text" id="loginUser" placeholder="Username" required autocomplete="username">
                     </div>
 
                     <div class="input-group">
-                        <label>Password</label>
-                        <input type="password" id="loginPass" placeholder="Enter your password" required>
+                        <div class="login-label-row">
+                            <label for="loginPass">Password</label>
+                            <a href="#" class="login-forgot" onclick="toggleAuthMode('forgot'); return false;">Forgot Password?</a>
+                        </div>
+                        <div class="login-pass-wrap">
+                            <span class="login-pass-ico" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </span>
+                            <input type="password" id="loginPass" placeholder="Password" required autocomplete="current-password">
+                            <button type="button" class="login-pass-toggle" id="loginPassToggle" onclick="toggleLoginPassword()" aria-label="Show password">
+                                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"></path>
+                                    <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path>
+                                    <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"></path>
+                                    <path d="m2 2 20 20"></path>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     <div id="loginError" class="error-msg hidden">Invalid username or password.</div>
                     <button type="submit" class="btn btn-primary btn-login">Login</button>
 
-                    <p class="auth-link">
-                        <a href="#" onclick="toggleAuthMode('forgot')">Forgot Password?</a> |
-                        <a href="#" onclick="toggleAuthMode('register')">Register here</a>
+                    <p class="auth-link login-register">
+                        New to MotoTrack? <a href="#" onclick="toggleAuthMode('register'); return false;">Register here.</a>
                     </p>
                 </form>
 
                 <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
                     <div class="input-group">
                         <label>Choose Username</label>
-                        <input type="text" id="regUser" placeholder="e.g. juan_rider2" required>
+                        <input type="text" id="regUser" placeholder="Username" required>
                     </div>
 
                     <div class="input-group">
                         <label>Create Password</label>
-                        <input type="password" id="regPass" placeholder="Minimum 6 characters" required>
+                        <input type="password" id="regPass" placeholder="Minimum 8 characters" required minlength="8">
                     </div>
                     <div class="input-group">
                         <label>Confirm Password</label>
-                        <input type="password" id="regPassConfirm" placeholder="Retype password" required>
+                        <input type="password" id="regPassConfirm" placeholder="Retype password" required minlength="8">
                     </div>
                     <button type="submit" class="btn btn-primary btn-login">Create Account</button>
 
@@ -90,13 +111,13 @@
                 </form>
 
                 <form id="forgotForm" class="hidden" onsubmit="handleForgot(event)">
-                    <p style="font-size:0.9rem; color:#555; margin-bottom:15px; text-align:center;">Enter your username
-                        to recover your account.</p>
+                    <p style="font-size:0.9rem; color:#555; margin-bottom:15px; text-align:center;">Enter your username.
+                        If the account exists, shop staff can set a new password at the counter.</p>
                     <div class="input-group">
                         <label>Username</label>
-                        <input type="text" id="forgotUser" placeholder="Enter your username" required>
+                        <input type="text" id="forgotUser" placeholder="Enter your username" required minlength="3">
                     </div>
-                    <button type="submit" class="btn btn-primary btn-login">Recover Password</button>
+                    <button type="submit" class="btn btn-primary btn-login">Request Reset</button>
                     <p class="auth-link"><a href="#" onclick="toggleAuthMode('login')">Back to Login</a></p>
                 </form>
 
@@ -105,27 +126,68 @@
     </div>
 
     <div id="view-system" class="view-section hidden">
-        <aside class="sidebar">
+        <div class="sidebar-backdrop hidden" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+        <aside class="sidebar" id="appSidebar">
             <div class="sidebar-brand">
-                <h2>MotoTrack</h2>
-                <div class="role-badge" id="displayRole">ROLE</div>
+                <div class="sidebar-brand-copy">
+                    <h2>MotoTrack</h2>
+                    <div class="role-badge" id="displayRole">ROLE</div>
+                </div>
+                <button type="button" class="sidebar-collapse" id="sidebarCollapse" onclick="toggleSidebarCollapse(event)" aria-label="Collapse menu">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 5h16" />
+                        <path d="M4 12h16" />
+                        <path d="M4 19h16" />
+                    </svg>
+                </button>
             </div>
             <ul class="nav-links" id="sidebarNav"></ul>
-            <div style="padding: 2rem;">
-                <button onclick="logout()" class="btn"
-                    style="background: rgba(255,255,255,0.1); border: 1px solid #555; color: #fff; width: 100%;">Log
-                    Out</button>
+            <div class="sidebar-footer">
+                <button type="button" onclick="logout()" class="btn sidebar-logout" title="Log out">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                        <polyline points="16 17 21 12 16 7" />
+                        <line x1="21" x2="9" y1="12" y2="12" />
+                    </svg>
+                    <span>Log Out</span>
+                </button>
             </div>
         </aside>
 
         <main class="main-content">
             <div class="top-header">
-                <div>
-                    <h2 id="pageTitle" style="color: var(--text-primary);">Dashboard</h2>
-                    <p id="pageDesc" style="color: #777; font-size: 0.9rem;">Overview</p>
+                <div class="header-start">
+                    <button type="button" class="menu-toggle" id="menuToggle" onclick="toggleSidebar(event)"
+                        aria-label="Open menu" aria-expanded="false" aria-controls="appSidebar">
+                        <svg class="menu-icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M4 5h16" />
+                            <path d="M4 12h16" />
+                            <path d="M4 19h16" />
+                        </svg>
+                        <svg class="menu-icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M18 6 6 18" />
+                            <path d="m6 6 12 12" />
+                        </svg>
+                    </button>
+                    <div class="page-title-block">
+                        <h2 id="pageTitle" style="color: var(--text-primary);">Dashboard</h2>
+                        <p id="pageDesc" style="color: #777; font-size: 0.9rem;">Overview</p>
+                    </div>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <div id="headerActions" style="display: flex; gap: 10px; align-items: center;"></div>
+                <div id="headerActions" class="header-actions"></div>
+                <div class="header-tools">
+                    <div class="feedback-wrap hidden" id="feedbackWrap">
+                        <button type="button" class="notif-bell" id="feedbackBell"
+                            onclick="toggleFeedbackDrawer()" aria-label="Customer feedback"
+                            aria-expanded="false" aria-controls="feedbackDrawer">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                            </svg>
+                        </button>
+                    </div>
                     <div class="notif-wrap" id="notifWrap">
                         <button class="notif-bell" onclick="toggleNotifPanel()" aria-label="Notifications">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -145,6 +207,11 @@
         </main>
     </div>
 
+    <div id="feedbackBackdrop" class="feedback-backdrop" onclick="closeFeedbackDrawer()"></div>
+    <aside id="feedbackDrawer" class="feedback-drawer" aria-hidden="true" aria-labelledby="feedbackTitle">
+        <div class="fb-inner" id="feedbackDrawerInner"></div>
+    </aside>
+
     <!-- Modals -->
     <div class="modal hidden" id="modal-intake">
         <div class="modal-content">
@@ -163,11 +230,11 @@
                 </div>
                 <div class="input-group hidden" id="otherBrandGroup">
                     <label>Other Brand Name</label>
-                    <input type="text" id="in_brand_other" placeholder="e.g. SYM, TVS, Motorstar">
+                    <input type="text" id="in_brand_other" placeholder="Brand name">
                 </div>
                 <div class="input-group">
                     <label>Motorcycle Model</label>
-                    <input type="text" id="in_moto" placeholder="e.g. Click 125, NMAX 155" required>
+                    <input type="text" id="in_moto" placeholder="Motorcycle model" required>
                 </div>
                 <div class="input-group">
                     <label>Plate / Engine No.</label>
@@ -180,7 +247,7 @@
                 <div class="input-group">
                     <label>Why it came in</label>
                     <textarea id="in_complaint" rows="3" required maxlength="500"
-                        placeholder="e.g. Front fork leaking oil, rides too stiff, knocking on bumps"></textarea>
+                        placeholder="Complaint or reason"></textarea>
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%;">Save to System</button>
             </form>
@@ -188,7 +255,7 @@
     </div>
 
     <div class="modal hidden" id="modal-specs">
-        <div class="modal-content" style="width: 550px; max-height: 90vh; overflow-y: auto;">
+        <div class="modal-content modal-wide">
             <div class="modal-header">
                 <h2>Log Tuning Specs & Billing</h2>
                 <button class="modal-close" onclick="closeModal('modal-specs')">&times;</button>
@@ -196,6 +263,7 @@
             <form onsubmit="submitSpecs(event)">
                 <input type="hidden" id="spec_job_id">
 
+                <div id="spec_warranty_proof" class="warranty-proof-slot"></div>
                 <div
                     style="background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin-bottom: 15px; border-radius: 4px;">
                     <label
@@ -206,14 +274,7 @@
                 </div>
                 <div class="input-group">
                     <label>Motorcycle Class (Base Front Shock Price)</label>
-                    <select id="spec_engine" required>
-                        <option value="1200">110-125cc Scooter/Underbone (Base: ₱1,200)</option>
-                        <option value="1500">150-160cc Scooter/Underbone (Base: ₱1,500)</option>
-                        <option value="2500">Inverted Shock Scooter (Base: ₱2,500)</option>
-                        <option value="2800">150-200cc Backbone e.g., R15, MT15 (Base: ₱2,800)</option>
-                        <option value="4500">320-450cc Backbone e.g., Ninja 400 (Base: ₱4,500)</option>
-                        <option value="6500">500-1000cc Big Bike e.g., Ninja 650 (Base: ₱6,500)</option>
-                    </select>
+                    <select id="spec_engine" required></select>
                 </div>
                 <div
                     style="background: #f1f5f9; padding: 12px; border-left: 4px solid #2a78d6; margin-bottom: 1.5rem; border-radius: 4px;">
@@ -230,15 +291,15 @@
                     </div>
                     <div class="input-group hidden" id="otherSuspBrandGroup">
                         <label>Other Suspension Brand</label>
-                        <input type="text" id="spec_susp_brand_other" placeholder="e.g. Nitron, Bitubo, Gazi">
+                        <input type="text" id="spec_susp_brand_other" placeholder="Suspension brand">
                     </div>
-                    <div style="display: flex; gap: 10px;">
+                    <div class="form-row form-row-tight form-row-2">
                         <div style="flex: 1;">
                             <label
                                 style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Spring
                                 Rate (kg/mm)</label>
                             <input type="number" id="spec_spring_rate" step="0.01" min="0.1" max="99.99"
-                                placeholder="e.g. 0.85" required
+                                placeholder="Spring rate" required
                                 style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
                         </div>
                         <div style="flex: 1;">
@@ -259,7 +320,7 @@
                         <option value="Racing Oil">Racing Oil</option>
                     </select>
                 </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <div class="form-row">
                     <div style="flex: 2;">
                         <label
                             style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Oil
@@ -290,7 +351,7 @@
                         </select>
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 1.5rem;">
+                <div class="form-row">
                     <div style="flex: 2;">
                         <label
                             style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Dust
@@ -387,7 +448,7 @@
                 </div>
                 <div class="input-group">
                     <label>Password</label>
-                    <input type="password" id="m_password" required>
+                    <input type="password" id="m_password" required minlength="8">
                 </div>
                 <div class="input-group">
                     <label>System Role</label>
@@ -402,8 +463,38 @@
         </div>
     </div>
 
+    <div class="modal hidden" id="modal-reset-password">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Set New Password</h2>
+                <button class="modal-close" onclick="closeModal('modal-reset-password')">&times;</button>
+            </div>
+            <form onsubmit="submitPasswordReset(event)">
+                <input type="hidden" id="reset_request_id">
+                <p style="margin-bottom: 1.25rem; color: #555; font-size: 0.95rem;">
+                    Tell this rider the new password in person. Their old login sessions will stop working.
+                </p>
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" id="reset_username" readonly>
+                </div>
+                <div class="input-group">
+                    <label>New Password</label>
+                    <input type="password" id="reset_password" required minlength="8"
+                        placeholder="Minimum 8 characters">
+                </div>
+                <div class="input-group">
+                    <label>Confirm Password</label>
+                    <input type="password" id="reset_password_confirm" required minlength="8"
+                        placeholder="Retype password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Save New Password</button>
+            </form>
+        </div>
+    </div>
+
     <div class="modal hidden" id="modal-add-stock">
-        <div class="modal-content" style="width: 400px;">
+        <div class="modal-content modal-narrow">
             <div class="modal-header">
                 <h2>Add Stock</h2>
                 <button class="modal-close" onclick="closeModal('modal-add-stock')">&times;</button>
@@ -426,7 +517,7 @@
 
     <!-- NEW EXPENSE MODAL -->
     <div class="modal hidden" id="modal-add-expense">
-        <div class="modal-content" style="width: 400px;">
+        <div class="modal-content modal-narrow">
             <div class="modal-header">
                 <h2>Log Shop Expense</h2>
                 <button class="modal-close" onclick="closeModal('modal-add-expense')">&times;</button>
@@ -434,7 +525,7 @@
             <form onsubmit="submitExpense(event)">
                 <div class="input-group">
                     <label>Expense Description</label>
-                    <input type="text" id="exp_desc" placeholder="e.g., Restock Tools, Shop Utilities" required>
+                    <input type="text" id="exp_desc" placeholder="Expense description" required>
                 </div>
                 <div class="input-group">
                     <label>Amount (PHP)</label>
@@ -445,21 +536,83 @@
         </div>
     </div>
 
+    <!-- Walk-in income with no job behind it (parts over the counter, misc) -->
+    <div class="modal hidden" id="modal-add-sale">
+        <div class="modal-content modal-narrow">
+            <div class="modal-header">
+                <h2>Record Counter Sale</h2>
+                <button class="modal-close" onclick="closeModal('modal-add-sale')">&times;</button>
+            </div>
+            <form onsubmit="submitCounterSale(event)">
+                <p class="modal-note">
+                    For walk-in sales only — parts over the counter, accessories, or other income.
+                    Service work is still billed when its job reaches Release.
+                </p>
+                <div class="input-group">
+                    <label>What was sold</label>
+                    <input type="text" id="sale_desc" placeholder="Item or service sold" required maxlength="255">
+                </div>
+                <div class="input-group">
+                    <label>Amount (PHP)</label>
+                    <input type="number" id="sale_amount" min="1" step="0.01" required>
+                </div>
+                <div class="input-group">
+                    <label>Date</label>
+                    <input type="date" id="sale_date" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Record Sale</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="modal-financial-review">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h2>Monthly Financial Review</h2>
+                <button class="modal-close" onclick="closeModal('modal-financial-review')">&times;</button>
+            </div>
+            <div id="financialReviewBody"></div>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="modal-inventory-audit">
+        <div class="modal-content modal-wide">
+            <div class="modal-header">
+                <h2>Inventory Audit</h2>
+                <button class="modal-close" onclick="closeModal('modal-inventory-audit')">&times;</button>
+            </div>
+            <div id="inventoryAuditBody"></div>
+        </div>
+    </div>
+
+    <!-- Filled just before window.print(), so the expense report can be saved as PDF -->
+    <div id="printExpenseReport" class="print-only"></div>
+
     <div class="modal hidden" id="modal-logout">
-        <div class="modal-content" style="width: 400px; text-align: center;">
-            <h3 style="color: #dc3545; margin-bottom: 1rem; font-size: 1.5rem;">Confirm Logout</h3>
-            <p style="color: #555; margin-bottom: 2rem; font-size: 1.1rem;">Are you sure you want to end your session?
-            </p>
-            <div style="display: flex; gap: 1rem; justify-content: center;">
-                <button class="btn" style="background: #e5e7eb; color: #374151; width: 50%; font-weight: bold;"
-                    onclick="closeModal('modal-logout')">Cancel</button>
-                <button class="btn btn-danger" style="width: 50%; font-weight: bold;" onclick="executeLogout()">Yes, Log
-                    out</button>
+        <div class="modal-content modal-confirm">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to end your session?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-muted" onclick="closeModal('modal-logout')">Cancel</button>
+                <button type="button" class="btn btn-danger" onclick="executeLogout()">Yes, Log out</button>
             </div>
         </div>
     </div>
 
     <div id="toastContainer" class="toast-container"></div>
+
+    <div id="loginLoader" class="login-loader hidden" role="status" aria-live="polite" aria-hidden="true">
+        <div class="login-loader-mark">
+            <svg class="login-loader-ring" viewBox="0 0 120 120" aria-hidden="true">
+                <circle class="login-loader-track" cx="60" cy="60" r="54"></circle>
+                <circle class="login-loader-arc" cx="60" cy="60" r="54"></circle>
+            </svg>
+            <div class="login-loader-well">
+                <img src="img/logo-psa.png" alt="" class="login-loader-logo">
+            </div>
+        </div>
+        <span class="sr-only">Signing in</span>
+    </div>
 
     <!-- Load order matters: state first, bootstrap (main.js) last.
          views/ holds one file per screen plus the router that dispatches to them. -->
@@ -473,9 +626,11 @@
     <script src="js/views/history.js"></script>
     <script src="js/views/inventory.js"></script>
     <script src="js/views/reports.js"></script>
+    <script src="js/views/backjobs.js"></script>
     <script src="js/views/users.js"></script>
     <script src="js/views/customer.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/feedback.js"></script>
     <script src="js/actions.js"></script>
     <script src="js/receipt.js"></script>
     <script src="js/main.js"></script>

@@ -12,13 +12,13 @@ class AppUserSeeder extends Seeder
         $users = [
             ['username' => 'admin', 'password' => 'admin123', 'role' => 'admin', 'status' => 'approved'],
             ['username' => 'staff', 'password' => 'staff123', 'role' => 'staff', 'status' => 'approved'],
-            ['username' => 'juan_rider', 'password' => 'pass123', 'role' => 'customer', 'status' => 'approved'],
+            ['username' => 'juan_rider', 'password' => 'pass1234', 'role' => 'customer', 'status' => 'approved'],
         ];
 
-        // Re-runnable: seeding twice tops up missing accounts instead of
-        // failing on the unique username.
+        // Re-runnable: updateOrCreate ensures the password (and other fields)
+        // are always refreshed, so re-seeding never leaves a stale hash behind.
         foreach ($users as $user) {
-            AppUser::firstOrCreate(['username' => $user['username']], $user);
+            AppUser::updateOrCreate(['username' => $user['username']], $user);
         }
     }
 }

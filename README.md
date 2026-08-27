@@ -56,7 +56,7 @@ php artisan db:seed --class=DemoSeeder
 |---|---|---|
 | Owner | `admin` | `admin123` |
 | Staff | `staff` | `staff123` |
-| Customer | `juan_rider` | `pass123` |
+| Customer | `juan_rider` | `pass1234` |
 
 ## Project Structure
 

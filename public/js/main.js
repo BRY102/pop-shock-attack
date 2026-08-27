@@ -25,6 +25,13 @@ window.addEventListener('DOMContentLoaded', () => {
         suspBrandSelect.add(new Option('Others (type it below)', 'Others'));
     }
 
+    const engineSelect = document.getElementById('spec_engine');
+    if (engineSelect) {
+        ENGINE_CLASSES.forEach(c => {
+            engineSelect.add(new Option(`${c.label} (Base: ₱${Number(c.price).toLocaleString()})`, String(c.price)));
+        });
+    }
+
     const viscositySelect = document.getElementById('spec_oil_viscosity');
     if (viscositySelect) {
         OIL_VISCOSITIES.forEach(v => viscositySelect.add(new Option(v, v)));
@@ -36,6 +43,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Only auto-login when we still hold a token; if it has been revoked,
     // the first API call returns 401 and apiFetch() sends us back to login.
     if (savedUser && savedRole && authToken) {
-        loginSuccess(savedUser, savedRole);
+        showLoginLoader();
+        Promise.resolve(loginSuccess(savedUser, savedRole)).finally(hideLoginLoader);
     }
 });

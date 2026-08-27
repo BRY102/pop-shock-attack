@@ -66,6 +66,7 @@ window.toggleNotifPanel = async function () {
     const panel = document.getElementById('notifPanel');
     const opening = panel.classList.contains('hidden');
     panel.classList.toggle('hidden');
+    if (opening) window.closeFeedbackDrawer?.();
 
     // Opening the panel marks everything as read (badge clears immediately;
     // items keep their unread highlight until the next data sync).

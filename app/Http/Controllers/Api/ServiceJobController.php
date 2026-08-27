@@ -6,6 +6,7 @@ use App\Enums\JobStage;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignMechanicRequest;
+use App\Http\Requests\StoreJobRatingRequest;
 use App\Http\Requests\StoreJobRequest;
 use App\Http\Requests\UpdateSpecsRequest;
 use App\Http\Requests\UpdateStageRequest;
@@ -39,18 +40,58 @@ class ServiceJobController extends Controller
     ) {}
 
     /**
-     * Full job board for admin/staff.
+     * Jobs still on the floor (not yet released).
      */
     public function index(): JsonResponse
     {
-        return response()->json(ServiceJobResource::collection(ServiceJob::all()));
+        return response()->json(ServiceJobResource::collection(
+            ServiceJob::query()
+                ->where('stage', '!=', JobStage::Release)
+                ->orderByDesc('date_in')
+                ->get()
+        ));
     }
 
     /**
-     * Global service-history search (Objective 2.3): every job ever
-     * recorded — active or released — matched by plate/engine number,
-     * customer, or motorcycle model. Lets staff recover a returning
-     * unit's previous tuning parameters without paper records.
+     * Completed jobs for overview and sales. Optional date_in range.
+     */
+    public function released(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'start' => 'nullable|date',
+            'end' => 'nullable|date|after_or_equal:start',
+        ]);
+
+        $jobs = ServiceJob::query()
+            ->where('stage', JobStage::Release)
+            ->when($validated['start'] ?? null, fn ($query, $start) => $query->whereDate('date_in', '>=', $start))
+            ->when($validated['end'] ?? null, fn ($query, $end) => $query->whereDate('date_in', '<=', $end))
+            ->orderByDesc('date_in')
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json(ServiceJobResource::collection($jobs));
+    }
+
+    /**
+     * Completed visits for Service History: released jobs (including
+     * re-service claims). Units still on the floor — Intake through QA —
+     * stay on the workflow board, not here.
+     */
+    public function history(): JsonResponse
+    {
+        $jobs = $this->historyQuery()
+            ->orderByDesc('date_in')
+            ->orderByDesc('id')
+            ->get();
+
+        return response()->json(ServiceJobResource::collection($jobs));
+    }
+
+    /**
+     * Service-history search (Objective 2.3): released visits matched by
+     * plate, customer, model, or complaint so staff can recover previous
+     * tuning without mixing in jobs still being worked.
      */
     public function search(Request $request): JsonResponse
     {
@@ -60,14 +101,40 @@ class ServiceJobController extends Controller
 
         $term = '%'.$validated['q'].'%';
 
-        $jobs = ServiceJob::where(function ($query) use ($term) {
-            $query->where('plate_number', 'like', $term)
-                ->orWhere('customer', 'like', $term)
-                ->orWhere('moto_model', 'like', $term)
-                ->orWhere('complaint', 'like', $term);
-        })
+        $jobs = $this->historyQuery()
+            ->where(function ($query) use ($term) {
+                $query->where('plate_number', 'like', $term)
+                    ->orWhere('customer', 'like', $term)
+                    ->orWhere('moto_model', 'like', $term)
+                    ->orWhere('complaint', 'like', $term);
+            })
             ->orderByDesc('date_in')
+            ->orderByDesc('id')
             ->limit(50)
+            ->get();
+
+        return response()->json(ServiceJobResource::collection($jobs));
+    }
+
+    /**
+     * History is the completed record: Release stage only. Re-service
+     * (warranty claim) jobs appear once they have been released.
+     */
+    private function historyQuery()
+    {
+        return ServiceJob::query()->where('stage', JobStage::Release);
+    }
+
+    /**
+     * Shop floor + owner: every warranty re-service (back-job), with the
+     * complaint, parts taken from stock, and the mechanic who did the work.
+     */
+    public function backjobs(): JsonResponse
+    {
+        $jobs = ServiceJob::query()
+            ->where('is_warranty_claim', true)
+            ->orderByDesc('date_in')
+            ->orderByDesc('id')
             ->get();
 
         return response()->json(ServiceJobResource::collection($jobs));
@@ -81,6 +148,40 @@ class ServiceJobController extends Controller
         return response()->json(ServiceJobResource::collection(
             ServiceJob::where('app_user_id', $request->user()->id)->get()
         ));
+    }
+
+    /**
+     * Customer rates a released visit once. Locked after submit so shop
+     * averages cannot be edited from the portal.
+     */
+    public function rate(StoreJobRatingRequest $request, ServiceJob $job): JsonResponse
+    {
+        if ($job->app_user_id !== $request->user()->id) {
+            abort(403, 'You can only rate your own jobs.');
+        }
+
+        if ($job->stage !== JobStage::Release->value) {
+            return response()->json([
+                'message' => 'Rate this job after the shop releases it.',
+            ], 422);
+        }
+
+        if ($job->rating !== null || $job->rated_at !== null) {
+            return response()->json([
+                'message' => 'This job already has a rating.',
+            ], 422);
+        }
+
+        $validated = $request->validated();
+        $job->rating = $validated['rating'];
+        $job->rating_comment = $validated['comment'] ?? null;
+        $job->rated_at = now();
+        $job->save();
+
+        return response()->json([
+            'message' => 'Thanks for the rating.',
+            'job' => new ServiceJobResource($job->fresh()),
+        ]);
     }
 
     /**

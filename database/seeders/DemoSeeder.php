@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\AppUser;
+use App\Models\Mechanic;
 use App\Models\Expense;
 use App\Models\ServiceJob;
 use App\Services\BillingService;
@@ -30,15 +31,16 @@ class DemoSeeder extends Seeder
 
         // A couple of extra customer accounts so user management looks real
         $customers = collect([
-            ['username' => 'juan_rider', 'password' => 'pass123'],
-            ['username' => 'maria_rides', 'password' => 'pass123'],
-            ['username' => 'carlo_moto', 'password' => 'pass123'],
+            ['username' => 'juan_rider', 'password' => 'pass1234'],
+            ['username' => 'maria_rides', 'password' => 'pass1234'],
+            ['username' => 'carlo_moto', 'password' => 'pass1234'],
         ])->map(fn ($data) => AppUser::firstOrCreate(
             ['username' => $data['username']],
             ['password' => $data['password'], 'role' => 'customer', 'status' => 'approved'],
         ));
 
-        $mechanics = ['John Hendrix', 'Vince Sael', 'Dhax Allen', 'Jan Cairo'];
+        $this->call(MechanicSeeder::class);
+        $mechanics = Mechanic::query()->orderBy('name')->pluck('name')->all();
         $units = [
             ['Honda Click 125', 1500], ['Yamaha NMAX 155', 1500], ['Honda Beat', 1200],
             ['Suzuki Raider 150', 1500], ['Yamaha Mio Sporty', 1200], ['Kawasaki Barako II', 1500],
@@ -125,6 +127,29 @@ class DemoSeeder extends Seeder
             $job->spring_rate = round(0.75 + (($i % 6) * 0.05), 2);
 
             $job->warranty_expires_at = $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months'));
+
+            // Leave two visits unrated so Overview can show coverage below 100%.
+            $demoRatings = [5, 4, 5, 4, 2, 5, 4, 3, 5, null, 4, null];
+            $demoComments = [
+                'Smooth after the rebuild',
+                'Better than stock',
+                'Good daily setup',
+                'A bit stiff on small bumps',
+                'Still leaking after the fix',
+                'Plush on the highway',
+                'Solid work',
+                'Ride still a bit stiff',
+                'No complaints',
+                null,
+                'Holds up on rough roads',
+                null,
+            ];
+            if ($demoRatings[$i] !== null) {
+                $job->rating = $demoRatings[$i];
+                $job->rating_comment = $demoComments[$i];
+                $job->rated_at = $dateIn->copy()->addDays(4);
+            }
+
             $job->save();
         }
 

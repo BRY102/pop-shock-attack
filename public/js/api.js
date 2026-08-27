@@ -47,9 +47,13 @@ function invalidate(key) {
     syncedKeys.delete(key);
 }
 
+function allShopJobs() {
+    return dbJobs.concat(dbReleased);
+}
+
 async function fetchJobsFromDatabase() {
     try {
-        // Customers only ever see their own jobs; admin/staff see the full board.
+        // Customers see every visit of theirs; shop staff see the floor only.
         const endpoint = currentRole === 'customer' ? '/api/my-jobs' : '/api/jobs';
         const response = await apiFetch(endpoint);
         if (!response.ok) {
@@ -60,6 +64,22 @@ async function fetchJobsFromDatabase() {
         syncedKeys.add('jobs');
     } catch (error) {
         console.error('Failed to pull live jobs:', error);
+        reportSyncFailure(null);
+    }
+}
+
+async function fetchReleasedJobsFromDatabase() {
+    if (currentRole === 'customer') { syncedKeys.add('released'); return; }
+    try {
+        const response = await apiFetch('/api/jobs/released');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
+        dbReleased = await response.json();
+        syncedKeys.add('released');
+    } catch (error) {
+        console.error('Failed to pull released jobs:', error);
         reportSyncFailure(null);
     }
 }
@@ -96,6 +116,38 @@ async function fetchUsersFromDatabase() {
     }
 }
 
+async function fetchPasswordResetsFromDatabase() {
+    if (currentRole === 'customer') { syncedKeys.add('resets'); return; }
+    try {
+        const response = await apiFetch('/api/password-resets');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
+        dbResets = await response.json();
+        syncedKeys.add('resets');
+    } catch (error) {
+        console.error('Failed to pull password reset requests:', error);
+        reportSyncFailure(null);
+    }
+}
+
+async function fetchMechanicsFromDatabase() {
+    if (currentRole === 'customer') { syncedKeys.add('mechanics'); return; }
+    try {
+        const response = await apiFetch('/api/mechanics');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
+        dbMechanics = await response.json();
+        syncedKeys.add('mechanics');
+    } catch (error) {
+        console.error('Failed to pull mechanics:', error);
+        reportSyncFailure(null);
+    }
+}
+
 async function fetchExpensesFromDatabase() {
     if (currentRole === 'customer') { syncedKeys.add('expenses'); return; } // no expense access
     try {
@@ -120,6 +172,31 @@ async function fetchExpensesFromDatabase() {
     }
 }
 
+// Counter sales are owner-only bookkeeping, so every other role keeps an empty
+// cache instead of firing a request the API would reject.
+async function fetchCounterSalesFromDatabase() {
+    if (currentRole !== 'admin') { syncedKeys.add('counterSales'); return; }
+    try {
+        const response = await apiFetch('/api/counter-sales');
+        if (!response.ok) {
+            reportSyncFailure(response);
+            return;
+        }
+
+        const rows = await response.json();
+        dbCounterSales = rows.map(sale => ({
+            id: sale.id,
+            desc: sale.description,
+            amount: Number(sale.amount),
+            date: sale.date,
+        }));
+        syncedKeys.add('counterSales');
+    } catch (error) {
+        console.error('Failed to pull counter sales:', error);
+        reportSyncFailure(null);
+    }
+}
+
 // Refresh every cache the current role has access to (login warm-up).
 async function syncAllData() {
     await Promise.all([
@@ -127,6 +204,9 @@ async function syncAllData() {
         fetchInventoryFromDatabase(),
         fetchUsersFromDatabase(),
         fetchExpensesFromDatabase(),
+        fetchCounterSalesFromDatabase(),
+        fetchPasswordResetsFromDatabase(),
+        fetchMechanicsFromDatabase(),
         fetchNotifications(),
     ]);
 }
