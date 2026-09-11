@@ -122,7 +122,6 @@ function suspensionLines(job) {
     if (job.suspension_type) lines.push(`Suspension: ${esc(job.suspension_type)}`);
     if (job.suspension_brand) lines.push(`Brand: ${esc(job.suspension_brand)}`);
     if (job.oil_viscosity) lines.push(`Viscosity: ${esc(job.oil_viscosity)}`);
-    if (job.spring_rate) lines.push(`Spring Rate: ${esc(job.spring_rate)} kg/mm`);
     return lines;
 }
 
@@ -150,6 +149,9 @@ const ICONS = {
     inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
     'shield-check': '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
     user: '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+    lock: '<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+    info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+    save: '<path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M17 21v-7a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v7"/><path d="M7 3v4a1 1 0 0 0 1 1h7"/>',
     'user-plus': '<path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/>',
     key: '<path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/>',
     'triangle-alert': '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
@@ -225,6 +227,7 @@ window.openModal = function (id) {
 window.closeModal = function (id) {
     document.getElementById(id).classList.add('hidden');
     if (id === 'modal-intake') window.closeIntakeBrandMenu?.();
+    if (id === 'modal-manage-user') window.closeUserRoleMenu?.();
 };
 
 // ------------------------------------------------------------
@@ -311,3 +314,93 @@ document.addEventListener('keydown', (e) => {
 // A fixed menu cannot follow its row, so any scroll or resize dismisses it
 window.addEventListener('resize', () => closeRowMenus());
 document.addEventListener('scroll', () => closeRowMenus(), true);
+
+// Mobile card-rows read the column name from data-label. Stamp it from
+// the header so every table (including ones painted after a fetch) stacks.
+function tableHeaderLabels(table) {
+    return [...table.querySelectorAll(':scope > thead th')].map((th) => {
+        const sr = th.querySelector('.sr-only');
+        return (sr ? sr.textContent : th.textContent).replace(/\s+/g, ' ').trim();
+    });
+}
+
+function stampTableLabels(table) {
+    if (!table || table.closest('.print-report, .bill-sheet, .cust-sheet, .print-pack')) return;
+
+    const headers = tableHeaderLabels(table);
+    table.querySelectorAll(':scope > tbody > tr').forEach((tr) => {
+        const cells = [...tr.children];
+        if (cells.length === 1 && cells[0].hasAttribute('colspan')) {
+            cells[0].classList.add('is-span');
+            return;
+        }
+
+        if (tr.classList.contains('is-total')) {
+            cells.forEach((td) => {
+                if (td.hasAttribute('colspan')) {
+                    td.setAttribute('data-label', 'Total');
+                    return;
+                }
+                if (td.classList.contains('num') || td.classList.contains('num-start')) {
+                    td.setAttribute('data-label', 'Amount');
+                    return;
+                }
+                td.setAttribute('data-label', td.textContent.trim() ? (headers[cells.indexOf(td)] || '') : '');
+            });
+            return;
+        }
+
+        cells.forEach((td, i) => {
+            if (td.classList.contains('row-menu-cell') || td.classList.contains('cell-actions')) {
+                td.setAttribute('data-label', '');
+                return;
+            }
+            td.setAttribute('data-label', headers[i] || '');
+        });
+    });
+}
+
+function applyTableLabels(root = document) {
+    const scope = root.querySelectorAll ? root : document;
+    const tables = [];
+    if (root.matches?.('table.data-table, .bj-panel table')) tables.push(root);
+    scope.querySelectorAll('table.data-table, .bj-panel table').forEach((table) => tables.push(table));
+    tables.forEach(stampTableLabels);
+}
+
+window.applyTableLabels = applyTableLabels;
+
+function observeAdaptiveTables() {
+    applyTableLabels(document);
+    if (typeof MutationObserver === 'undefined' || !document.body) return;
+
+    const observer = new MutationObserver((mutations) => {
+        const seen = new Set();
+        for (const mutation of mutations) {
+            for (const node of mutation.addedNodes) {
+                if (node.nodeType !== 1) continue;
+                const table = node.matches?.('table') ? node : node.closest?.('table');
+                if (table && (table.classList.contains('data-table') || table.closest('.bj-panel'))) {
+                    if (!seen.has(table)) {
+                        seen.add(table);
+                        stampTableLabels(table);
+                    }
+                }
+                node.querySelectorAll?.('table.data-table, .bj-panel table').forEach((found) => {
+                    if (!seen.has(found)) {
+                        seen.add(found);
+                        stampTableLabels(found);
+                    }
+                });
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeAdaptiveTables);
+} else {
+    observeAdaptiveTables();
+}

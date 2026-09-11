@@ -305,7 +305,7 @@ class ServiceJobController extends Controller
             $job->oil_viscosity = $validated['oilViscosity'];
             $job->suspension_brand = $validated['suspensionBrand'];
             $job->suspension_type = $validated['suspensionType'];
-            $job->spring_rate = $validated['springRate'];
+            $job->spring_rate = null;
 
             $job->is_warranty_claim = (bool) $validated['isWarranty'];
             $job->stage = JobStage::QA->value;

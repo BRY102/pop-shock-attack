@@ -83,7 +83,7 @@ html {
 }
 
 .data-table {
-    min-width: 520px;
+    min-width: 0;
 }
 
 .table-compact .data-table {
@@ -91,7 +91,13 @@ html {
 }
 
 .table-scroll .data-table {
-    min-width: 1080px;
+    min-width: 0;
+}
+
+@media (min-width: 1025px) {
+    .table-scroll .data-table {
+        min-width: 1080px;
+    }
 }
 
 .data-table th,
@@ -374,6 +380,12 @@ html {
         max-height: calc(100dvh - 2rem);
     }
 
+    .app-sheet-modal .user-edit-sheet {
+        padding: 0;
+        max-width: min(752px, calc(100vw - 2rem));
+        max-height: none;
+    }
+
     .notif-panel {
         width: min(340px, calc(100vw - 1.5rem));
         right: -8px;
@@ -405,6 +417,35 @@ html {
         flex: 0 0 min(400px, 42vw);
         width: min(400px, 42vw);
         padding: 2rem 1.75rem;
+    }
+
+    .table-container {
+        max-height: none;
+    }
+
+    .table-scroll .data-table {
+        width: max-content;
+        min-width: 100%;
+    }
+
+    .data-table th {
+        padding: 0.5rem 0.65rem;
+        font-size: 0.64rem;
+        letter-spacing: 0.03em;
+        white-space: normal;
+    }
+
+    .data-table td {
+        padding: 0.65rem 0.65rem;
+        font-size: 0.82rem;
+    }
+
+    .ov-d-table td {
+        white-space: normal;
+    }
+
+    .bj-matrix td:first-child {
+        white-space: normal;
     }
 }
 
@@ -541,7 +582,27 @@ html {
     }
 
     .table-scroll .data-table {
-        min-width: 860px;
+        width: max-content;
+        min-width: 100%;
+    }
+
+    .data-table th {
+        padding: 0.5rem 0.6rem;
+        font-size: 0.62rem;
+        letter-spacing: 0.03em;
+    }
+
+    .data-table td {
+        padding: 0.6rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .ov-d-table {
+        min-width: 0;
+    }
+
+    .ov-d-table td {
+        white-space: normal;
     }
 }
 
@@ -705,7 +766,7 @@ html {
     }
 
     .ov-d-table {
-        min-width: 520px;
+        min-width: 0;
     }
 
     .dash-hero,
@@ -988,12 +1049,21 @@ html {
     }
 
     .login-label-row {
-        gap: 0.35rem 0.75rem;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.45rem 1rem;
+        margin-bottom: 0.65rem;
     }
 
     .login-forgot {
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         letter-spacing: 0.04em;
+        margin-left: auto;
+        padding: 0.2rem 0;
+        min-height: 28px;
+        display: inline-flex;
+        align-items: center;
     }
 
     .modal-content {
@@ -1001,6 +1071,14 @@ html {
         padding: 1.5rem 1.15rem 1.5rem;
         max-height: calc(100dvh - 2rem);
         border-radius: var(--radius-md);
+    }
+
+    .app-sheet-modal .user-edit-sheet {
+        padding: 0;
+        width: min(752px, calc(100vw - 1.5rem));
+        max-width: calc(100vw - 1.5rem);
+        max-height: none;
+        border-radius: 17px;
     }
 
     .modal-content.modal-confirm {
@@ -1128,13 +1206,7 @@ html {
     }
 
     .data-table {
-        min-width: 480px;
-    }
-
-    .data-table th,
-    .data-table td {
-        padding: 0.8rem 0.85rem;
-        font-size: 0.85rem;
+        min-width: 0;
     }
 
     /* Search moves under the tabs and takes the full width */
@@ -1243,7 +1315,7 @@ html {
     }
 
     .table-scroll .data-table {
-        min-width: 640px;
+        min-width: 0;
     }
 
     .cust-tracker,
@@ -1296,11 +1368,212 @@ html {
     }
 }
 
-@media (max-width: 400px) {
-    .login-label-row {
+/* Phone + small tablet: stack every data row so columns never clip */
+@media screen and (max-width: 900px) {
+    .table-container,
+    .table-container.table-flush,
+    .list-card {
+        overflow: visible;
+        max-height: none;
+    }
+
+    .table-container .data-table,
+    .table-container.table-scroll .data-table,
+    .list-card .data-table,
+    .bj-panel table {
+        width: 100%;
+        min-width: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .table-container .data-table thead,
+    .list-card .data-table thead,
+    .bj-panel table thead {
+        display: none;
+    }
+
+    .table-container .data-table,
+    .table-container .data-table tbody,
+    .list-card .data-table,
+    .list-card .data-table tbody,
+    .bj-panel table,
+    .bj-panel table tbody {
+        display: block;
+    }
+
+    .table-container .data-table tbody tr,
+    .list-card .data-table tbody tr,
+    .bj-panel table tbody tr {
+        display: block;
+        position: relative;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-white);
+    }
+
+    .table-container .data-table tbody tr:has(.row-menu-cell),
+    .list-card .data-table tbody tr:has(.row-menu-cell) {
+        padding-right: 3rem;
+    }
+
+    .table-container .data-table tbody tr:last-child,
+    .list-card .data-table tbody tr:last-child,
+    .bj-panel table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .table-container .data-table tbody tr:hover,
+    .list-card .data-table tbody tr:hover {
+        background: var(--bg-white);
+    }
+
+    .table-container .data-table td,
+    .list-card .data-table td,
+    .bj-panel table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.28rem 0;
+        border: none;
+        text-align: right;
+        white-space: normal;
+        word-break: break-word;
+        font-size: 0.82rem;
+    }
+
+    .table-container .data-table td::before,
+    .list-card .data-table td::before,
+    .bj-panel table td::before {
+        content: attr(data-label);
+        flex: 0 0 36%;
+        max-width: 42%;
+        text-align: left;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        line-height: 1.35;
+    }
+
+    .table-container .data-table td:not([data-label])::before,
+    .table-container .data-table td[data-label=""]::before,
+    .list-card .data-table td:not([data-label])::before,
+    .list-card .data-table td[data-label=""]::before,
+    .bj-panel table td:not([data-label])::before,
+    .bj-panel table td[data-label=""]::before {
+        content: none;
+        display: none;
+    }
+
+    .table-container .data-table td.table-empty,
+    .table-container .data-table td.is-span,
+    .list-card .data-table td.table-empty,
+    .list-card .data-table td.is-span {
+        display: block;
+        text-align: center;
+        padding: 1.5rem 0.5rem;
+    }
+
+    .table-container .data-table td.table-empty::before,
+    .table-container .data-table td.is-span::before,
+    .list-card .data-table td.table-empty::before,
+    .list-card .data-table td.is-span::before {
+        content: none;
+        display: none;
+    }
+
+    .table-container .data-table td[data-label="Item"],
+    .table-container .data-table td[data-label="Unit"],
+    .table-container .data-table td[data-label="Motorcycle"],
+    .table-container .data-table td[data-label="Tuning Setup"],
+    .table-container .data-table td[data-label="Description"],
+    .table-container .data-table td[data-label="Common complaint"],
+    .list-card .data-table td[data-label="Item"],
+    .bj-panel table td[data-label="Mechanic"],
+    .bj-panel table td[data-label="Common complaint"] {
         flex-direction: column;
         align-items: flex-start;
-        gap: 0.2rem;
+        text-align: left;
+    }
+
+    .table-container .data-table td[data-label="Item"]::before,
+    .table-container .data-table td[data-label="Unit"]::before,
+    .table-container .data-table td[data-label="Motorcycle"]::before,
+    .table-container .data-table td[data-label="Tuning Setup"]::before,
+    .table-container .data-table td[data-label="Description"]::before,
+    .table-container .data-table td[data-label="Common complaint"]::before,
+    .list-card .data-table td[data-label="Item"]::before,
+    .bj-panel table td[data-label="Mechanic"]::before,
+    .bj-panel table td[data-label="Common complaint"]::before {
+        flex: none;
+        max-width: none;
+        margin-bottom: 0.1rem;
+    }
+
+    .table-container .data-table td.row-menu-cell,
+    .list-card .data-table td.row-menu-cell {
+        position: absolute;
+        top: 0.7rem;
+        right: 0.7rem;
+        width: auto;
+        padding: 0;
+        justify-content: flex-end;
+    }
+
+    .table-container .data-table td.row-menu-cell::before,
+    .list-card .data-table td.row-menu-cell::before {
+        content: none;
+        display: none;
+    }
+
+    .table-container .data-table td.cell-actions,
+    .list-card .data-table td.cell-actions {
+        justify-content: flex-end;
+        padding-top: 0.55rem;
+        flex-wrap: wrap;
+    }
+
+    .table-container .data-table td.cell-actions::before,
+    .list-card .data-table td.cell-actions::before {
+        content: none;
+        display: none;
+    }
+
+    .table-container .data-table td:empty,
+    .list-card .data-table td:empty {
+        display: none;
+    }
+
+    .table-container .data-table tbody tr.is-total,
+    .list-card .data-table tbody tr.is-total {
+        background: var(--bg-subtle);
+        padding-right: 1rem;
+    }
+
+    .table-container .data-table tbody tr.is-total td,
+    .list-card .data-table tbody tr.is-total td {
+        font-weight: 700;
+    }
+
+    .item-cell {
+        justify-content: flex-start;
+        width: 100%;
+    }
+
+    .data-table td.num,
+    .data-table td.num-start,
+    .data-table td.num-strong {
+        white-space: normal;
+    }
+}
+
+@media (max-width: 400px) {
+    .login-label-row {
+        gap: 0.5rem 1rem;
     }
 }
 

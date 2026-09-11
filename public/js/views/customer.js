@@ -118,7 +118,6 @@ function technicianNotes(job) {
         if (job.suspension_type) notes.push(`Suspension: ${job.suspension_type}`);
         if (job.suspension_brand) notes.push(`Brand: ${job.suspension_brand}`);
         if (job.oil_viscosity) notes.push(`Viscosity: ${job.oil_viscosity}`);
-        if (job.spring_rate) notes.push(`Spring Rate: ${job.spring_rate} kg/mm`);
         if (job.stage === 'QA') notes.push('In quality check');
         if (job.stage === 'Release') notes.push('Released after QA');
     } else {

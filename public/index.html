@@ -416,22 +416,9 @@
                         <label>Other Suspension Brand</label>
                         <input type="text" id="spec_susp_brand_other" placeholder="Suspension brand">
                     </div>
-                    <div class="form-row form-row-tight form-row-2">
-                        <div style="flex: 1;">
-                            <label
-                                style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Spring
-                                Rate (kg/mm)</label>
-                            <input type="number" id="spec_spring_rate" step="0.01" min="0.1" max="99.99"
-                                placeholder="Spring rate" required
-                                style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                        </div>
-                        <div style="flex: 1;">
-                            <label
-                                style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Fork
-                                Oil Viscosity</label>
-                            <select id="spec_oil_viscosity" required
-                                style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;"></select>
-                        </div>
+                    <div class="input-group">
+                        <label>Fork Oil Viscosity</label>
+                        <select id="spec_oil_viscosity" required></select>
                     </div>
                 </div>
 
@@ -520,68 +507,204 @@
         </div>
     </div>
 
-    <div class="modal hidden" id="modal-edit-item">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="itemModalTitle">Manage Inventory Item</h2>
-                <button class="modal-close" onclick="closeModal('modal-edit-item')">&times;</button>
+    <div class="modal hidden app-sheet-modal" id="modal-edit-item">
+        <div class="modal-content user-edit-sheet">
+            <div class="user-edit-head">
+                <div class="user-edit-title">
+                    <span class="user-edit-avatar" aria-hidden="true" data-icon="package"></span>
+                    <div>
+                        <h2 id="itemModalTitle">Add New Item</h2>
+                        <p id="itemModalSub">Add a consumable to the shop inventory.</p>
+                    </div>
+                </div>
+                <button type="button" class="user-edit-close" onclick="closeModal('modal-edit-item')"
+                    aria-label="Close">
+                    <span data-icon="x"></span>
+                </button>
             </div>
             <form onsubmit="submitItemForm(event)">
                 <input type="hidden" id="edit_item_mode" value="add">
                 <input type="hidden" id="edit_item_id">
 
-                <div class="input-group">
-                    <label>Item Name</label>
-                    <input type="text" id="m_item_name" required>
+                <div class="user-edit-fields">
+                    <label class="user-edit-field">
+                        <span class="user-edit-label">
+                            <span data-icon="package"></span>
+                            Item Name <em>*</em>
+                        </span>
+                        <span class="user-edit-shell">
+                            <span class="user-edit-ico" data-icon="package"></span>
+                            <input type="text" id="m_item_name" required autocomplete="off" placeholder="e.g. Touring Oil">
+                        </span>
+                    </label>
+
+                    <label class="user-edit-field">
+                        <span class="user-edit-label">
+                            <span data-icon="file-text"></span>
+                            Description <em>*</em>
+                        </span>
+                        <span class="user-edit-shell">
+                            <span class="user-edit-ico" data-icon="file-text"></span>
+                            <input type="text" id="m_item_desc" required autocomplete="off" placeholder="Short description">
+                        </span>
+                    </label>
+
+                    <div class="user-edit-two">
+                        <label class="user-edit-field">
+                            <span class="user-edit-label">
+                                <span data-icon="layers"></span>
+                                Current Stock <em>*</em>
+                            </span>
+                            <span class="user-edit-shell">
+                                <span class="user-edit-ico" data-icon="layers"></span>
+                                <input type="number" id="m_item_stock" min="0" required placeholder="0">
+                            </span>
+                        </label>
+
+                        <label class="user-edit-field">
+                            <span class="user-edit-label">
+                                <span data-icon="triangle-alert"></span>
+                                Low Stock Alert <em>*</em>
+                            </span>
+                            <span class="user-edit-shell">
+                                <span class="user-edit-ico" data-icon="triangle-alert"></span>
+                                <input type="number" id="m_item_threshold" min="0" required placeholder="5">
+                            </span>
+                            <small class="user-edit-hint">
+                                <span data-icon="info"></span>
+                                <span>Alert when stock reaches this number.</span>
+                            </small>
+                        </label>
+                    </div>
+
+                    <label class="user-edit-field">
+                        <span class="user-edit-label">
+                            <span data-icon="circle-dollar"></span>
+                            Item Price (₱) <em>*</em>
+                        </span>
+                        <span class="user-edit-shell">
+                            <span class="user-edit-ico" data-icon="circle-dollar"></span>
+                            <input type="number" id="m_item_price" step="0.01" min="0" required placeholder="0.00">
+                        </span>
+                    </label>
                 </div>
-                <div class="input-group">
-                    <label>Description</label>
-                    <input type="text" id="m_item_desc" required>
+
+                <div class="user-edit-actions">
+                    <button type="button" class="user-edit-cancel" onclick="closeModal('modal-edit-item')">Cancel</button>
+                    <button type="submit" class="user-edit-save">
+                        <span data-icon="save"></span>
+                        <span id="itemEditSaveLabel">Save Item</span>
+                    </button>
                 </div>
-                <div class="input-group">
-                    <label>Current Stock</label>
-                    <input type="number" id="m_item_stock" min="0" required>
-                </div>
-                <div class="input-group">
-                    <label>Low Stock Threshold</label>
-                    <input type="number" id="m_item_threshold" min="0" required>
-                </div>
-                <div class="input-group">
-                    <label>Item Price (₱)</label>
-                    <input type="number" id="m_item_price" step="0.01" min="0" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">Save Item</button>
             </form>
         </div>
     </div>
 
-    <div class="modal hidden" id="modal-manage-user">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="userModalTitle">Manage User Account</h2>
-                <button class="modal-close" onclick="closeModal('modal-manage-user')">&times;</button>
+    <div class="modal hidden app-sheet-modal" id="modal-manage-user">
+        <div class="modal-content user-edit-sheet">
+            <div class="user-edit-head">
+                <div class="user-edit-title">
+                    <span class="user-edit-avatar" aria-hidden="true" data-icon="user"></span>
+                    <div>
+                        <h2 id="userModalTitle">Edit User</h2>
+                        <p id="userModalSub">Update this account's details.</p>
+                    </div>
+                </div>
+                <button type="button" class="user-edit-close" onclick="closeModal('modal-manage-user')"
+                    aria-label="Close">
+                    <span data-icon="x"></span>
+                </button>
             </div>
             <form onsubmit="submitUserForm(event)">
                 <input type="hidden" id="edit_user_mode" value="add">
                 <input type="hidden" id="edit_user_id">
 
-                <div class="input-group">
-                    <label>Username</label>
-                    <input type="text" id="m_username" required>
+                <div class="user-edit-fields">
+                    <label class="user-edit-field">
+                        <span class="user-edit-label">
+                            <span data-icon="user"></span>
+                            Username <em>*</em>
+                        </span>
+                        <span class="user-edit-shell">
+                            <span class="user-edit-ico" data-icon="user"></span>
+                            <input type="text" id="m_username" required autocomplete="off" placeholder="Username">
+                        </span>
+                    </label>
+
+                    <label class="user-edit-field">
+                        <span class="user-edit-label">
+                            <span data-icon="lock"></span>
+                            Password <em id="userPasswordRequired">*</em>
+                        </span>
+                        <span class="user-edit-shell">
+                            <span class="user-edit-ico" data-icon="lock"></span>
+                            <input type="password" id="m_password" required minlength="8"
+                                placeholder="Minimum 8 characters" autocomplete="new-password">
+                            <button type="button" class="user-edit-pass-toggle" id="userPassToggle"
+                                onclick="toggleUserPassword()" aria-label="Show password">
+                                <svg class="icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path
+                                        d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0">
+                                    </path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="icon-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path
+                                        d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49">
+                                    </path>
+                                    <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path>
+                                    <path
+                                        d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143">
+                                    </path>
+                                    <path d="m2 2 20 20"></path>
+                                </svg>
+                            </button>
+                        </span>
+                        <small class="user-edit-hint">
+                            <span data-icon="info"></span>
+                            <span id="userPasswordHint">Minimum 8 characters.</span>
+                        </small>
+                    </label>
+
+                    <div class="user-edit-field">
+                        <span class="user-edit-label">
+                            <span data-icon="shield-check"></span>
+                            System Role <em>*</em>
+                        </span>
+                        <div class="user-edit-dropdown">
+                            <select id="m_role" class="user-edit-role-native" required tabindex="-1" aria-hidden="true">
+                                <option value="customer">Customer</option>
+                                <option value="staff">Staff / Technician</option>
+                                <option value="admin">Admin / Owner</option>
+                            </select>
+                            <button type="button" class="user-edit-shell user-edit-select" id="m_role_btn"
+                                aria-haspopup="listbox" aria-expanded="false" aria-controls="m_role_menu"
+                                onclick="toggleUserRoleMenu(event)">
+                                <span class="user-edit-ico" data-icon="users"></span>
+                                <span class="user-edit-role-text" id="m_role_label">Customer</span>
+                                <span class="user-edit-caret" data-icon="chevron-down"></span>
+                            </button>
+                            <div class="user-edit-role-menu hidden" id="m_role_menu" role="listbox">
+                                <button type="button" role="option" class="user-edit-role-option" data-value="customer"
+                                    onclick="pickUserRole(event)">Customer</button>
+                                <button type="button" role="option" class="user-edit-role-option" data-value="staff"
+                                    onclick="pickUserRole(event)">Staff / Technician</button>
+                                <button type="button" role="option" class="user-edit-role-option" data-value="admin"
+                                    onclick="pickUserRole(event)">Admin / Owner</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label>Password</label>
-                    <input type="password" id="m_password" required minlength="8">
+
+                <div class="user-edit-actions">
+                    <button type="button" class="user-edit-cancel" onclick="closeModal('modal-manage-user')">Cancel</button>
+                    <button type="submit" class="user-edit-save">
+                        <span data-icon="save"></span>
+                        <span id="userEditSaveLabel">Save Changes</span>
+                    </button>
                 </div>
-                <div class="input-group">
-                    <label>System Role</label>
-                    <select id="m_role" required>
-                        <option value="customer">Customer</option>
-                        <option value="staff">Staff / Technician</option>
-                        <option value="admin">Admin / Owner</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width:100%;">Save Account</button>
             </form>
         </div>
     </div>

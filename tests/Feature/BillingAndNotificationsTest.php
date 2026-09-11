@@ -55,6 +55,7 @@ class BillingAndNotificationsTest extends TestCase
             'plate_number' => 'ABC-1234',
             'stage' => $stage,
             'date_in' => '2026-07-06',
+            'mechanic_name' => 'Rico',
         ]);
     }
 
@@ -91,7 +92,6 @@ class BillingAndNotificationsTest extends TestCase
             'oilViscosity' => '10W',
             'suspensionBrand' => 'YSS',
             'suspensionType' => 'Telescopic Fork',
-            'springRate' => 0.85,
             'rawOil' => 'Daily Oil',
             'rawOsSize' => 'Oil Seal 41x54x11',
             'rawOsQty' => 2,

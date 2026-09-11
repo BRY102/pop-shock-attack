@@ -31,6 +31,7 @@ class JobWorkflowTest extends TestCase
             'plate_number' => 'TST-0001',
             'stage' => $stage,
             'date_in' => '2026-07-05',
+            'mechanic_name' => $stage === 'Intake' ? null : 'Rico',
         ]);
     }
 
@@ -62,7 +63,6 @@ class JobWorkflowTest extends TestCase
             'oilViscosity' => '10W',
             'suspensionBrand' => 'YSS',
             'suspensionType' => 'Telescopic Fork',
-            'springRate' => 0.85,
             'rawOil' => 'Daily Oil',
             'rawOsSize' => 'Oil Seal 41x54x11',
             'rawOsQty' => 2,
@@ -194,8 +194,32 @@ class JobWorkflowTest extends TestCase
         $this->assertSame('Intake', $job->fresh()->stage);
         $this->assertNull($job->fresh()->warranty_expires_at);
 
+        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Disassembly'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('mechanic');
+
+        $job->update(['mechanic_name' => 'Rico']);
+
         $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Disassembly'])->assertOk();
         $this->assertSame('Disassembly', $job->fresh()->stage);
+    }
+
+    public function test_staff_cannot_move_a_unit_forward_until_a_lead_tech_is_assigned(): void
+    {
+        $this->actAsStaff();
+        $job = $this->makeJob('Disassembly');
+        $job->update(['mechanic_name' => null]);
+
+        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Tuning'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('mechanic');
+
+        $this->assertSame('Disassembly', $job->fresh()->stage);
+
+        $job->update(['mechanic_name' => 'Rico']);
+
+        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Tuning'])->assertOk();
+        $this->assertSame('Tuning', $job->fresh()->stage);
     }
 
     public function test_qa_can_send_a_unit_back_to_tuning_for_rework(): void
@@ -265,14 +289,13 @@ class JobWorkflowTest extends TestCase
             'oilViscosity' => '15W',
             'suspensionBrand' => 'Ohlins',
             'suspensionType' => 'Inverted (USD) Fork',
-            'springRate' => 1.05,
         ]))->assertOk();
 
         $fresh = $job->fresh();
         $this->assertSame('15W', $fresh->oil_viscosity);
         $this->assertSame('Ohlins', $fresh->suspension_brand);
         $this->assertSame('Inverted (USD) Fork', $fresh->suspension_type);
-        $this->assertSame(1.05, $fresh->spring_rate);
+        $this->assertNull($fresh->spring_rate);
     }
 
     public function test_a_suspension_setup_outside_the_shop_vocabulary_is_rejected(): void
@@ -303,7 +326,6 @@ class JobWorkflowTest extends TestCase
         $first = $this->makeJob('Tuning');
         $this->putJson("/api/jobs/{$first->id}/specs", $this->specsPayload([
             'oilViscosity' => '10W',
-            'springRate' => 0.85,
         ]))->assertOk();
         $this->putJson("/api/jobs/{$first->id}/stage", ['stage' => 'Release'])->assertOk();
 
@@ -314,17 +336,15 @@ class JobWorkflowTest extends TestCase
             'plate_number' => $first->plate_number,
             'stage' => 'Tuning',
             'date_in' => '2026-07-20',
+            'mechanic_name' => 'Rico',
         ]);
         $this->putJson("/api/jobs/{$second->id}/specs", $this->specsPayload([
             'oilViscosity' => '20W',
-            'springRate' => 1.10,
         ]))->assertOk();
 
         // Each visit keeps its own setup, so the change is on record.
         $this->assertSame('10W', $first->fresh()->oil_viscosity);
-        $this->assertSame(0.85, $first->fresh()->spring_rate);
         $this->assertSame('20W', $second->fresh()->oil_viscosity);
-        $this->assertSame(1.10, $second->fresh()->spring_rate);
     }
 
     public function test_specs_can_only_be_logged_while_a_unit_is_in_tuning(): void

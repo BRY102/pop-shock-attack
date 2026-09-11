@@ -124,7 +124,6 @@ class DemoSeeder extends Seeder
             $job->oil_viscosity = $viscosities[$i % count($viscosities)];
             $job->suspension_brand = $suspensionBrands[$i % count($suspensionBrands)];
             $job->suspension_type = $suspensionTypes[$i % count($suspensionTypes)];
-            $job->spring_rate = round(0.75 + (($i % 6) * 0.05), 2);
 
             $job->released_at = $dateIn->copy()->addDays(3)->toDateString();
             $job->warranty_expires_at = $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months'));

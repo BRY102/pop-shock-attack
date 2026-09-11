@@ -41,6 +41,14 @@ class UpdateStageRequest extends FormRequest
 
                 if (! $current->canTransitionTo($requested)) {
                     $validator->errors()->add('stage', $this->rejectionMessage($current, $requested));
+                    return;
+                }
+
+                if ($current->isForwardTo($requested) && blank($job->mechanic_name)) {
+                    $validator->errors()->add(
+                        'mechanic',
+                        'Assign a lead tech before moving this unit.'
+                    );
                 }
             },
         ];

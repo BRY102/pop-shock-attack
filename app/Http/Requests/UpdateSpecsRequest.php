@@ -32,7 +32,6 @@ class UpdateSpecsRequest extends FormRequest
             'oilViscosity' => ['required', 'string', Rule::in(config('shop.oil_viscosities'))],
             'suspensionBrand' => 'required|string|max:100',
             'suspensionType' => ['required', 'string', Rule::in(config('shop.suspension_types'))],
-            'springRate' => 'required|numeric|min:0.1|max:99.99',
             'rawOil' => 'nullable|string|max:255',
             'rawOsSize' => 'nullable|string|max:255',
             'rawOsQty' => 'nullable|integer|min:0|max:10',
@@ -61,6 +60,13 @@ class UpdateSpecsRequest extends FormRequest
                     $validator->errors()->add(
                         'stage',
                         "Tuning specs can only be logged while a unit is in Tuning; this one is at {$job->stage}."
+                    );
+                }
+
+                if (blank($job->mechanic_name)) {
+                    $validator->errors()->add(
+                        'mechanic',
+                        'Assign a lead tech before logging specs.'
                     );
                 }
 

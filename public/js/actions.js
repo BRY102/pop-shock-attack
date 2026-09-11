@@ -185,6 +185,13 @@ window.submitIntake = async function (e) {
 };
 
 window.moveStage = async function (id, nextStage) {
+    const job = dbJobs.find(j => String(j.id) === String(id));
+    const sendingBack = job && job.stage === 'QA' && nextStage === 'Tuning';
+    if (job && !sendingBack && !jobHasLeadTech(job)) {
+        showNotification('Assign a lead tech before moving this unit.', 'error');
+        return;
+    }
+
     try {
         const response = await apiFetch(`/api/jobs/${id}/stage`, {
             method: 'PUT',
@@ -251,11 +258,16 @@ window.deleteJob = async function (id) {
 // ------------------------------------------------------------
 
 window.openSpecs = function (id) {
+    const job = dbJobs.find(j => String(j.id) === String(id));
+    if (job && !jobHasLeadTech(job)) {
+        showNotification('Assign a lead tech before logging specs.', 'error');
+        return;
+    }
+
     document.getElementById('spec_job_id').value = id;
     const claimBox = document.getElementById('spec_is_warranty');
     claimBox.checked = false;
 
-    const job = dbJobs.find(j => String(j.id) === String(id));
     const slot = document.getElementById('spec_warranty_proof');
     if (job && slot) {
         // Coverage lives on earlier Released visits, which are not on the
@@ -332,7 +344,6 @@ window.submitSpecs = async function (e) {
         oilViscosity: document.getElementById('spec_oil_viscosity').value,
         suspensionBrand: suspensionBrand,
         suspensionType: document.getElementById('spec_susp_type').value,
-        springRate: document.getElementById('spec_spring_rate').value,
 
         // Raw values so the backend can deduct inventory
         rawOil: oil,
@@ -379,12 +390,18 @@ window.openItemModal = function (mode, id = null, returnView = 'inventory') {
     document.getElementById('edit_item_mode').value = mode;
     const modal = document.getElementById('modal-edit-item');
     const form = modal.querySelector('form');
+    const saveLabel = document.getElementById('itemEditSaveLabel');
+
+    paintSheetIcons();
 
     if (mode === 'add') {
         document.getElementById('itemModalTitle').innerText = 'Add New Item';
+        document.getElementById('itemModalSub').innerText = 'Add a consumable to the shop inventory.';
         form.reset();
+        if (saveLabel) saveLabel.textContent = 'Save Item';
     } else {
         document.getElementById('itemModalTitle').innerText = 'Edit Item';
+        document.getElementById('itemModalSub').innerText = "Update this item's stock and price.";
         const item = dbInv.find(i => i.id === id);
 
         if (!item) {
@@ -398,9 +415,10 @@ window.openItemModal = function (mode, id = null, returnView = 'inventory') {
         document.getElementById('m_item_stock').value = item.stock || 0;
         document.getElementById('m_item_threshold').value = item.threshold || 0;
         document.getElementById('m_item_price').value = item.price || 0;
+        if (saveLabel) saveLabel.textContent = 'Save Changes';
     }
 
-    modal.classList.remove('hidden');
+    openModal('modal-edit-item');
 };
 
 window.submitItemForm = async function (e) {
@@ -504,18 +522,113 @@ window.deleteItem = async function (id) {
 // User accounts
 // ------------------------------------------------------------
 
+function paintSheetIcons() {
+    document.querySelectorAll('.app-sheet-modal [data-icon]').forEach((slot) => {
+        if (slot.dataset.filled === '1') return;
+        slot.innerHTML = icon(slot.dataset.icon);
+        slot.dataset.filled = '1';
+    });
+}
+
+window.toggleUserPassword = function () {
+    const input = document.getElementById('m_password');
+    const toggle = document.getElementById('userPassToggle');
+    if (!input || !toggle) return;
+
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    toggle.classList.toggle('is-visible', show);
+    toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+};
+
+function resetUserPasswordToggle() {
+    const input = document.getElementById('m_password');
+    const toggle = document.getElementById('userPassToggle');
+    if (input) input.type = 'password';
+    toggle?.classList.remove('is-visible');
+    toggle?.setAttribute('aria-label', 'Show password');
+}
+
+function syncUserRoleLabel() {
+    const select = document.getElementById('m_role');
+    const label = document.getElementById('m_role_label');
+    if (!select || !label) return;
+    const opt = select.options[select.selectedIndex];
+    label.textContent = opt ? opt.text : select.value;
+    document.querySelectorAll('#m_role_menu .user-edit-role-option').forEach((btn) => {
+        const on = btn.dataset.value === select.value;
+        btn.classList.toggle('is-active', on);
+        btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+}
+
+window.pickUserRole = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const select = document.getElementById('m_role');
+    if (!select) return;
+    select.value = e.currentTarget.dataset.value;
+    syncUserRoleLabel();
+    closeUserRoleMenu();
+};
+
+window.closeUserRoleMenu = function () {
+    const menu = document.getElementById('m_role_menu');
+    const btn = document.getElementById('m_role_btn');
+    menu?.classList.add('hidden');
+    btn?.setAttribute('aria-expanded', 'false');
+    btn?.classList.remove('is-open');
+};
+
+window.toggleUserRoleMenu = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const menu = document.getElementById('m_role_menu');
+    const btn = document.getElementById('m_role_btn');
+    if (!menu || !btn) return;
+
+    const isOpen = !menu.classList.contains('hidden');
+    closeUserRoleMenu();
+    if (isOpen) return;
+
+    menu.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    btn.classList.add('is-open');
+};
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest?.('.user-edit-dropdown')) closeUserRoleMenu();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeUserRoleMenu();
+});
+
 window.openUserModal = function (mode, id = null) {
     document.getElementById('edit_user_mode').value = mode;
     const form = document.getElementById('modal-manage-user').querySelector('form');
     const passwordInput = document.getElementById('m_password');
+    const requiredMark = document.getElementById('userPasswordRequired');
+    const hint = document.getElementById('userPasswordHint');
+    const saveLabel = document.getElementById('userEditSaveLabel');
+
+    paintSheetIcons();
+    resetUserPasswordToggle();
+    closeUserRoleMenu();
 
     if (mode === 'add') {
         document.getElementById('userModalTitle').innerText = 'Add User';
+        document.getElementById('userModalSub').innerText = 'Create a new shop account.';
         form.reset();
         passwordInput.required = true;
         passwordInput.placeholder = `Minimum ${PASSWORD_MIN_LENGTH} characters`;
+        requiredMark?.classList.remove('hidden');
+        if (hint) hint.textContent = `Minimum ${PASSWORD_MIN_LENGTH} characters.`;
+        if (saveLabel) saveLabel.textContent = 'Save Account';
+        syncUserRoleLabel();
     } else {
         document.getElementById('userModalTitle').innerText = 'Edit User';
+        document.getElementById('userModalSub').innerText = "Update this account's details.";
         const user = dbUsers.find(u => u.id === id);
 
         if (!user) {
@@ -529,7 +642,11 @@ window.openUserModal = function (mode, id = null) {
         passwordInput.value = '';
         passwordInput.required = false;
         passwordInput.placeholder = 'Leave blank to keep current password';
+        requiredMark?.classList.add('hidden');
+        if (hint) hint.textContent = 'Leave blank to keep the current password.';
         document.getElementById('m_role').value = user.role;
+        if (saveLabel) saveLabel.textContent = 'Save Changes';
+        syncUserRoleLabel();
     }
 
     openModal('modal-manage-user');

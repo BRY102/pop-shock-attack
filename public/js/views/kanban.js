@@ -4,6 +4,36 @@
 // and log specs from here.
 // ============================================================
 
+function jobHasLeadTech(job) {
+    return String(job?.mechanic_name || '').trim() !== '';
+}
+
+function kanbanTechPicker(job) {
+    const names = dbMechanics.map(m => m.name);
+    if (job.mechanic_name && !names.includes(job.mechanic_name)) {
+        names.unshift(job.mechanic_name);
+    }
+
+    let options = `<option value="">Select lead tech</option>`;
+    names.forEach((name) => {
+        options += `<option value="${esc(name)}" ${job.mechanic_name === name ? 'selected' : ''}>${esc(name)}</option>`;
+    });
+
+    const missing = !jobHasLeadTech(job);
+    const emptyNote = names.length === 0
+        ? 'Ask an admin to add technicians first.'
+        : 'Assign a lead tech before moving.';
+
+    return `
+        <div class="kanban-tech${missing ? ' is-required' : ''}">
+            <label>Lead Tech <em>*</em></label>
+            <select aria-label="Lead tech" onchange="assignMechanic('${esc(String(job.id))}', this.value)">
+                ${options}
+            </select>
+            ${missing ? `<small>${emptyNote}</small>` : ''}
+        </div>`;
+}
+
 function buildKanbanCard(job, stage) {
     const wBadge = job.is_warranty_claim ? `<span class="badge-warranty">RE-SERVICE</span>` : '';
     const suspension = suspensionLines(job);
@@ -15,26 +45,11 @@ function buildKanbanCard(job, stage) {
         ? `<div class="specs-box">${suspensionHtml}<strong>Oil:</strong> ${esc(job.specs.oil)}<br><strong>Oil Seal:</strong> ${esc(job.specs.oilSeal)}<br><strong>Dust Seal:</strong> ${esc(job.specs.dustSeal)}<br><strong>Springs:</strong> ${esc(job.specs.springs)}<hr style="margin:5px 0; border:0; border-top:1px dashed #ccc;"><strong style="color:#28a745;">Bill: ₱${Number(job.specs.totalBill || 0).toLocaleString()}</strong></div>`
         : '';
 
-    // Mechanic assignment (staff can set it during Disassembly)
     let mechanicHtml = '';
-    if (currentRole === 'staff' && stage === 'Disassembly') {
-        let options = `<option value="">-- Unassigned --</option>`;
-        const names = dbMechanics.map(m => m.name);
-        if (job.mechanic_name && !names.includes(job.mechanic_name)) {
-            names.unshift(job.mechanic_name);
-        }
-        names.forEach(m => {
-            options += `<option value="${esc(m)}" ${job.mechanic_name === m ? 'selected' : ''}>${esc(m)}</option>`;
-        });
-        mechanicHtml = `
-            <div style="margin-top: 10px; background: #f8f9fa; padding: 8px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                <label style="font-size: 0.75rem; font-weight: 700; color: #6b7280; text-transform: uppercase;">Assign Mechanic:</label>
-                <select style="width: 100%; padding: 0.4rem; margin-top: 4px; border-radius: 4px; border: 1px solid #ccc; font-family: inherit; font-size: 0.85rem;" onchange="assignMechanic('${job.id}', this.value)">
-                    ${options}
-                </select>
-            </div>`;
+    if (currentRole === 'staff' && stage !== 'Release') {
+        mechanicHtml = kanbanTechPicker(job);
     } else if (job.mechanic_name) {
-        mechanicHtml = `<div style="margin-top: 10px;"><p style="font-size: 0.85rem;"><strong>Assigned Tech:</strong> <span style="color:var(--text-primary); font-weight:700;">${esc(job.mechanic_name)}</span></p></div>`;
+        mechanicHtml = `<div class="kanban-tech is-set"><p><strong>Lead Tech:</strong> ${esc(job.mechanic_name)}</p></div>`;
     }
 
     // Stage action buttons (staff only)
@@ -42,18 +57,26 @@ function buildKanbanCard(job, stage) {
     if (currentRole === 'staff') {
         const idx = STAGES.indexOf(stage);
         const delBtn = `<button class="btn-sm btn-danger" onclick="deleteJob('${job.id}')" style="margin-top:5px;">Cancel Job</button>`;
+        const needsTech = !jobHasLeadTech(job);
+        const assignFirst = `<button type="button" class="btn-sm" disabled>Assign a lead tech first</button>`;
 
         if (stage === 'Tuning') {
-            btnHtml = `<div class="action-btns"><button class="btn-sm" style="background:var(--primary);" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>${delBtn}</div>`;
+            btnHtml = `<div class="action-btns">${needsTech
+                ? assignFirst
+                : `<button class="btn-sm" style="background:var(--primary);" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>`}${delBtn}</div>`;
         } else if (stage === 'QA') {
             // No cancel here: a billed unit has to go back to Tuning first, which
             // also returns its parts to stock. The API enforces the same rule.
             btnHtml = `<div class="action-btns">
-                <button class="btn-sm" onclick="moveStage('${job.id}', 'Release')">Move to Release</button>
+                ${needsTech
+                    ? assignFirst
+                    : `<button class="btn-sm" onclick="moveStage('${job.id}', 'Release')">Move to Release</button>`}
                 <button class="btn-sm" style="background:#f59e0b; color:#fff;" onclick="moveStage('${job.id}', 'Tuning')">${icon('undo')} Back to Tuning</button>
             </div>`;
         } else if (idx < STAGES.length - 1) {
-            btnHtml = `<div class="action-btns"><button class="btn-sm" onclick="moveStage('${job.id}', '${STAGES[idx + 1]}')">Move to ${STAGES[idx + 1]}</button>${delBtn}</div>`;
+            btnHtml = `<div class="action-btns">${needsTech
+                ? assignFirst
+                : `<button class="btn-sm" onclick="moveStage('${job.id}', '${STAGES[idx + 1]}')">Move to ${STAGES[idx + 1]}</button>`}${delBtn}</div>`;
         }
     }
     if (stage === 'Release') {

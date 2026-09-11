@@ -55,6 +55,77 @@
     flex-direction: column;
 }
 
+.kanban-tech {
+    margin-top: 10px;
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+
+.kanban-tech.is-required {
+    border-color: #f4aeba;
+    background: #fff7f8;
+}
+
+.kanban-tech.is-set {
+    background: none;
+    border: none;
+    padding: 8px 0 0;
+}
+
+.kanban-tech label,
+.kanban-tech.is-set p {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.kanban-tech.is-set p {
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+    color: var(--text-primary);
+}
+
+.kanban-tech label em {
+    color: #e51a2d;
+    font-style: normal;
+}
+
+.kanban-tech select {
+    width: 100%;
+    margin-top: 4px;
+    padding: 0.4rem 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: 0.85rem;
+    background: #fff;
+}
+
+.kanban-tech small {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #b42318;
+}
+
+.btn-sm:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: #9aa3b1;
+    color: #fff;
+}
+
+.btn-sm:disabled:hover {
+    background: #9aa3b1;
+}
+
 /* ------------------------------------------------- */
 /* SMALL BUTTONS                                     */
 /* ------------------------------------------------- */
@@ -2132,6 +2203,435 @@ div[style*="fff3cd"] {
     background: #fffbeb !important;
     border-left-color: #f59e0b !important;
     border-radius: var(--radius-sm);
+}
+
+/* ------------------------------------------------- */
+/* SHEET FORMS (Add / Edit User, Add / Edit Item)    */
+/* Layout matches the MOTOHUB edit-user sheet.       */
+/* ------------------------------------------------- */
+.app-sheet-modal {
+    padding: 18px;
+    background: #07182f99;
+    overflow-y: auto;
+    align-items: flex-start;
+}
+
+.app-sheet-modal .user-edit-sheet {
+    width: min(752px, 100%);
+    max-width: min(752px, calc(100vw - 36px));
+    max-height: none;
+    padding: 0;
+    margin: auto;
+    border-radius: 17px;
+    overflow: hidden;
+    background: #fff;
+    color: #17345e;
+    box-shadow: 0 24px 60px #07182f55;
+}
+
+.app-sheet-modal .user-edit-head {
+    min-height: 122px;
+    padding: 29px 31px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0;
+    border-bottom: 1px solid #edf2f8;
+    border-radius: 17px 17px 0 0;
+    background: radial-gradient(circle at 95% -75%, #e4effe 0 26%, transparent 27%), #fff;
+}
+
+.app-sheet-modal .user-edit-title {
+    display: flex;
+    gap: 19px;
+    align-items: center;
+    min-width: 0;
+}
+
+.app-sheet-modal .user-edit-avatar {
+    width: 64px;
+    height: 64px;
+    flex: 0 0 64px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ff334a, #ca071d);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    box-shadow: 0 7px 14px #df163533;
+}
+
+.app-sheet-modal .user-edit-avatar .icon {
+    width: 28px;
+    height: 28px;
+}
+
+.app-sheet-modal .user-edit-head h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.7px;
+    line-height: 1.15;
+    color: #17345e;
+    padding-right: 0;
+}
+
+.app-sheet-modal .user-edit-head p {
+    margin: 4px 0 0;
+    color: #4f6990;
+    font-size: 15px;
+    font-weight: 400;
+}
+
+.app-sheet-modal .user-edit-close {
+    background: transparent;
+    color: #38557a;
+    border: 0;
+    padding: 8px;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    border-radius: 8px;
+}
+
+.app-sheet-modal .user-edit-close:hover {
+    background: #edf3fb;
+}
+
+.app-sheet-modal .user-edit-close .icon {
+    width: 22px;
+    height: 22px;
+}
+
+.app-sheet-modal .user-edit-fields {
+    padding: 19px 33px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.app-sheet-modal .user-edit-field {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.app-sheet-modal .user-edit-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.app-sheet-modal .user-edit-label {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    font-weight: 700;
+    font-size: 16px;
+    color: #17345e;
+}
+
+.app-sheet-modal .user-edit-label .icon {
+    width: 18px;
+    height: 18px;
+    color: #59769c;
+}
+
+.app-sheet-modal .user-edit-label em {
+    color: #e51a2d;
+    font-style: normal;
+}
+
+.app-sheet-modal .user-edit-shell {
+    height: 57px;
+    border: 2px solid #dbe7f5;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    gap: 17px;
+    padding: 0 17px;
+    color: #59769c;
+    background: #fbfdff;
+}
+
+.app-sheet-modal .user-edit-shell:focus-within,
+.app-sheet-modal .user-edit-select.is-open {
+    border-color: #b7cce6;
+    box-shadow: 0 0 0 3px #e4effe;
+}
+
+.app-sheet-modal .user-edit-ico,
+.app-sheet-modal .user-edit-caret {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    color: #59769c;
+}
+
+.app-sheet-modal .user-edit-ico .icon,
+.app-sheet-modal .user-edit-caret .icon {
+    width: 18px;
+    height: 18px;
+}
+
+.app-sheet-modal .user-edit-caret {
+    pointer-events: none;
+}
+
+.app-sheet-modal .user-edit-shell input,
+.app-sheet-modal .user-edit-shell select {
+    min-width: 0;
+    flex: 1;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: #17345e;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 600;
+    padding: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-sheet-modal .user-edit-shell input::placeholder {
+    color: #99aecc;
+    font-weight: 600;
+}
+
+.app-sheet-modal .user-edit-shell input:-webkit-autofill,
+.app-sheet-modal .user-edit-shell input:-webkit-autofill:hover,
+.app-sheet-modal .user-edit-shell input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 40px #fbfdff inset;
+    -webkit-text-fill-color: #17345e;
+    transition: background-color 9999s ease-out;
+}
+
+.app-sheet-modal .user-edit-select {
+    width: 100%;
+    cursor: pointer;
+    font: inherit;
+    text-align: left;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.app-sheet-modal .user-edit-role-text {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #17345e;
+    font-size: 17px;
+    font-weight: 600;
+}
+
+.app-sheet-modal .user-edit-caret .icon {
+    transition: transform 0.15s ease;
+}
+
+.app-sheet-modal .user-edit-select.is-open .user-edit-caret .icon {
+    transform: rotate(180deg);
+}
+
+.app-sheet-modal .user-edit-dropdown {
+    position: relative;
+}
+
+.app-sheet-modal .user-edit-role-native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.app-sheet-modal .user-edit-role-menu {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 8px);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px;
+    background: #fff;
+    border: 2px solid #dbe7f5;
+    border-radius: 11px;
+    box-shadow: 0 16px 36px #17345e22;
+}
+
+.app-sheet-modal .user-edit-role-option {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    color: #17345e;
+    text-align: left;
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+    padding: 12px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.app-sheet-modal .user-edit-role-option:hover,
+.app-sheet-modal .user-edit-role-option:focus {
+    outline: none;
+    background: #edf3fb;
+}
+
+.app-sheet-modal .user-edit-role-option.is-active {
+    color: #d8324b;
+    background: #fff0f2;
+}
+
+.app-sheet-modal .user-edit-pass-toggle {
+    border: 0;
+    background: transparent;
+    color: #5d7599;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.app-sheet-modal .user-edit-pass-toggle svg {
+    width: 20px;
+    height: 20px;
+}
+
+.app-sheet-modal .user-edit-pass-toggle .icon-eye-off {
+    display: none;
+}
+
+.app-sheet-modal .user-edit-pass-toggle.is-visible .icon-eye {
+    display: none;
+}
+
+.app-sheet-modal .user-edit-pass-toggle.is-visible .icon-eye-off {
+    display: block;
+}
+
+.app-sheet-modal .user-edit-hint {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #506b91;
+    font-size: 14px;
+}
+
+.app-sheet-modal .user-edit-hint .icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.app-sheet-modal .user-edit-actions {
+    display: flex;
+    gap: 10px;
+    padding: 12px 33px 35px;
+    background: #fff;
+    border-radius: 0 0 17px 17px;
+}
+
+.app-sheet-modal .user-edit-cancel,
+.app-sheet-modal .user-edit-save {
+    height: 56px;
+    flex: 1;
+    border: 0;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.app-sheet-modal .user-edit-cancel {
+    color: #36547a;
+    background: #edf3fb;
+}
+
+.app-sheet-modal .user-edit-cancel:hover {
+    background: #e3ebf6;
+}
+
+.app-sheet-modal .user-edit-save {
+    color: #fff;
+    background: linear-gradient(100deg, #ea1b2d, #d30d21);
+    box-shadow: 0 6px 12px #e51a2d33;
+}
+
+.app-sheet-modal .user-edit-save:hover {
+    filter: brightness(1.03);
+}
+
+.app-sheet-modal .user-edit-save .icon {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 800px) {
+    .app-sheet-modal .user-edit-head {
+        padding: 23px 20px;
+        min-height: 0;
+    }
+
+    .app-sheet-modal .user-edit-fields {
+        padding: 19px 20px 10px;
+    }
+
+    .app-sheet-modal .user-edit-two {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .app-sheet-modal .user-edit-actions {
+        padding: 12px 20px 24px;
+    }
+}
+
+@media (max-width: 520px) {
+    .app-sheet-modal .user-edit-head h2 {
+        font-size: 23px;
+    }
+
+    .app-sheet-modal .user-edit-head p {
+        font-size: 13px;
+    }
+
+    .app-sheet-modal .user-edit-avatar {
+        width: 52px;
+        height: 52px;
+        flex-basis: 52px;
+    }
+
+    .app-sheet-modal .user-edit-avatar .icon {
+        width: 22px;
+        height: 22px;
+    }
+
+    .app-sheet-modal .user-edit-fields {
+        gap: 20px;
+    }
+
+    .app-sheet-modal .user-edit-cancel,
+    .app-sheet-modal .user-edit-save {
+        font-size: 14px;
+        gap: 7px;
+    }
 }
 
 /* ------------------------------------------------- */

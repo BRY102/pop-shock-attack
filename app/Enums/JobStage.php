@@ -42,4 +42,15 @@ enum JobStage: string
     {
         return in_array($stage, $this->allowedTransitions(), true);
     }
+
+    /**
+     * True when the move advances the unit (not QA sending it back to Tuning).
+     */
+    public function isForwardTo(self $stage): bool
+    {
+        $order = array_search($this, self::cases(), true);
+        $next = array_search($stage, self::cases(), true);
+
+        return $order !== false && $next !== false && $next > $order;
+    }
 }

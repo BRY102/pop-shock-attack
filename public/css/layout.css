@@ -222,11 +222,12 @@
 .login-forgot {
     font-size: 0.78rem;
     font-weight: 700;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.06em;
     text-transform: uppercase;
     color: var(--text-secondary) !important;
     text-decoration: none;
     white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .login-forgot:hover {
@@ -321,6 +322,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .login-form .login-field input,
     .login-field-ico {
         transition: none;
@@ -404,7 +406,9 @@
 }
 
 @keyframes login-spin {
-    to { transform: rotate(360deg); }
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
