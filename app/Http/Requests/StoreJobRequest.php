@@ -13,6 +13,14 @@ class StoreJobRequest extends FormRequest
         return true; // role checked by route middleware
     }
 
+    protected function prepareForValidation(): void
+    {
+        $time = $this->input('timeIn');
+        if (is_string($time) && preg_match('/^\d{2}:\d{2}/', $time)) {
+            $this->merge(['timeIn' => substr($time, 0, 5)]);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -27,6 +35,7 @@ class StoreJobRequest extends FormRequest
                 ),
             ],
             'dateIn' => 'required|date|before_or_equal:today',
+            'timeIn' => 'required|date_format:H:i',
             'complaint' => 'required|string|min:3|max:500',
         ];
     }
@@ -36,6 +45,7 @@ class StoreJobRequest extends FormRequest
         return [
             'plate.unique' => 'That plate / engine number already has an active job in the shop.',
             'dateIn.before_or_equal' => 'A unit cannot be dated after today — that would put it in the wrong month on the reports.',
+            'timeIn.required' => 'Set the time the unit came in.',
             'complaint.required' => 'Write why the unit came in, the same way the paper ticket used to.',
         ];
     }

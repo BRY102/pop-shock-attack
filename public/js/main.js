@@ -10,6 +10,8 @@ window.addEventListener('DOMContentLoaded', () => {
     if (brandSelect) {
         MOTO_BRANDS.forEach(b => brandSelect.add(new Option(b, b)));
         brandSelect.add(new Option('Others (type it below)', 'Others'));
+        window.buildIntakeBrandMenu?.();
+        window.syncIntakeBrandMark?.();
     }
 
     // Fill the tuning form's suspension dropdowns from the shared lists, so the

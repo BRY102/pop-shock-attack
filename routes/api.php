@@ -27,12 +27,13 @@ Route::middleware('throttle:5,1')->group(function () {
 | Authenticated routes (Authorization: Bearer <token>)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'seen'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
 
     // Notifications (every role has their own)
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/mark-read', [NotificationController::class, 'markAllRead']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markOneRead']);
 
     // Customer portal
     Route::middleware('role:customer')->group(function () {

@@ -1,6 +1,15 @@
 <?php
 
 return [
+    // Printed on every customer bill. The frontend copies these strings
+    // because the SPA does not fetch this file at runtime.
+    'identity' => [
+        'name' => 'Pops Shock Attack',
+        'tagline' => 'Suspension Specialists & Tuning',
+        'address' => 'San Pedro, Laguna',
+        'receipt_prefix' => 'PSA',
+    ],
+
     // How long a completed service is covered, counted from release day.
     'warranty_months' => env('SHOP_WARRANTY_MONTHS', 6),
 
@@ -12,6 +21,10 @@ return [
     // New passwords (register, owner create/edit, counter reset).
     // Login still accepts older shorter passwords so existing accounts work.
     'password_min_length' => 8,
+
+    // A user counts as Active on Manage Users while they have been seen
+    // within this many seconds (notification polling keeps a session live).
+    'online_within_seconds' => 120,
 
     // Base front-shock labor by motorcycle class. The tuning form and
     // BillingService both read this list so a price change happens once.
@@ -32,6 +45,15 @@ return [
         'big_bike_labor_threshold' => 2800,
         'dust_seal' => 75,
         'springs' => 580,
+    ],
+
+    // Logged on the Add Expense form. Frontend lists the same values.
+    'expense_categories' => [
+        'Utilities',
+        'Rent',
+        'Inventory Restock',
+        'Marketing',
+        'Miscellaneous',
     ],
 
     // The suspension layouts the shop services.

@@ -1,0 +1,8 @@
+.env
+.env.*
+.git
+/vendor
+/node_modules
+/storage/logs
+/public/__verify.html
+tmp-*

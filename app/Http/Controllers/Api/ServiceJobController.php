@@ -203,6 +203,7 @@ class ServiceJobController extends Controller
             'plate_number' => $validated['plate'],
             'stage' => JobStage::Intake->value,
             'date_in' => $validated['dateIn'],
+            'time_in' => $validated['timeIn'],
             'complaint' => $validated['complaint'],
         ]);
 
@@ -219,6 +220,11 @@ class ServiceJobController extends Controller
     public function updateStage(UpdateStageRequest $request, ServiceJob $job): JsonResponse
     {
         $job->stage = $request->validated()['stage'];
+
+        // Stamp the bill date once. Later ratings must not rewrite it.
+        if ($job->stage === JobStage::Release->value && $job->released_at === null) {
+            $job->released_at = now()->toDateString();
+        }
 
         // Coverage runs from the first release only, so a unit that bounces back
         // to Tuning and is released again does not earn a fresh warranty window.

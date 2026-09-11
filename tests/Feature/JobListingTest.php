@@ -100,4 +100,25 @@ class JobListingTest extends TestCase
             ->assertJsonPath('1.plate_number', 'OLD-0001')
             ->assertJsonMissing(['plate_number' => 'TUNE-0001']);
     }
+
+    public function test_released_jobs_include_bill_dates_and_receipt_fields(): void
+    {
+        $job = ServiceJob::create([
+            'customer' => 'walkin',
+            'moto_model' => 'Yamaha NMAX 155',
+            'plate_number' => 'REL-0002',
+            'stage' => 'Release',
+            'date_in' => '2026-04-10',
+        ]);
+        $job->released_at = '2026-04-13';
+        $job->save();
+
+        $this->getJson('/api/jobs/released')
+            ->assertOk()
+            ->assertJsonFragment([
+                'plate_number' => 'REL-0002',
+                'date_in' => '2026-04-10',
+                'date_released' => '2026-04-13',
+            ]);
+    }
 }

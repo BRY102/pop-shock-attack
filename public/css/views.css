@@ -532,6 +532,136 @@
     width: 3.5rem;
 }
 
+.bill-sheet th:nth-child(4),
+.bill-sheet td:nth-child(4),
+.bill-sheet th:nth-child(5),
+.bill-sheet td:nth-child(5) {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.bill-meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.7rem 1.15rem;
+    margin: 0.75rem 0 1rem;
+    font-size: 0.82rem;
+}
+
+.bill-meta dt {
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+}
+
+.bill-meta dd {
+    margin: 0.12rem 0 0;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.bill-due td {
+    color: #2d5a27;
+    font-size: 1rem;
+}
+
+.bill-warranty-note {
+    margin: 0.85rem 0 0;
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.bill-keep {
+    margin: 0.35rem 0 0;
+    font-size: 0.8rem;
+    color: #666;
+    font-style: italic;
+}
+
+.official-bill-head,
+.print-pack-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.15rem;
+}
+
+.official-bill-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.official-kicker {
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #b91c1c;
+    margin: 0 0 0.15rem;
+}
+
+.official-bill-head h1,
+.print-pack-head h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.85rem;
+    letter-spacing: 1px;
+    margin: 0;
+    line-height: 1.1;
+}
+
+.official-bill-head p,
+.print-pack-head p {
+    margin: 0.1rem 0;
+    color: #555;
+    font-size: 0.85rem;
+}
+
+.official-bill-no {
+    margin-left: auto;
+    text-align: right;
+}
+
+.official-bill-no span {
+    display: block;
+    font-size: 0.7rem;
+    color: #777;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.official-bill-no strong {
+    font-size: 1.05rem;
+}
+
+.cell-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    justify-content: flex-end;
+    white-space: nowrap;
+}
+
+.bill-detail-body {
+    padding: 0 0.15rem 0.35rem;
+}
+
+.official-bill {
+    page-break-inside: avoid;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px dashed #d1d5db;
+}
+
+.official-bill:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
 .cust-sheet th:last-child,
 .cust-sheet td:last-child {
     text-align: right;
@@ -3115,9 +3245,15 @@ button.bj-kpi:hover,
     overflow-x: auto;
 }
 
-.kanban-card.is-focus {
+.kanban-card.is-focus,
+.approval-card.is-focus {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
+}
+
+.data-table tr.is-focus td {
+    background: #fff7f5;
+    box-shadow: inset 3px 0 0 var(--primary);
 }
 
 .warranty-proof {
@@ -3553,6 +3689,39 @@ button.bj-kpi:hover,
 }
 
 /* ------------------------------------------------- */
+/* USER PRESENCE (Manage Users status column)        */
+/* ------------------------------------------------- */
+.users-presence {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.users-presence-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ca3af;
+    flex-shrink: 0;
+}
+
+.users-presence-dot.is-live {
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+}
+
+.users-presence .badge-good::before,
+.users-presence .badge-idle::before,
+.users-presence .badge-pending {
+    margin-top: 0;
+}
+
+.users-presence .badge-good::before,
+.users-presence .badge-idle::before {
+    display: none;
+}
+
+/* ------------------------------------------------- */
 /* PRINT STYLES                                      */
 /* ------------------------------------------------- */
 @media print {
@@ -3567,8 +3736,10 @@ button.bj-kpi:hover,
     .card { box-shadow: none; border: 1px solid #ccc; }
 
     /* The expense report replaces the page it was launched from */
-    body.printing-report #view-system { display: none !important; }
+    body.printing-report #view-system,
+    body.printing-report #view-login,
+    body.printing-report .login-loader { display: none !important; }
     body.printing-report .feedback-drawer,
     body.printing-report .feedback-backdrop { display: none !important; }
-    body.printing-report .print-only { display: block; padding: 1rem; }
+    body.printing-report .print-only { display: block !important; padding: 1rem; }
 }

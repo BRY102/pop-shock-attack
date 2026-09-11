@@ -20,6 +20,7 @@ class ServiceJob extends Model
         'plate_number',
         'stage',
         'date_in',
+        'time_in',
         'complaint',
         'mechanic_name',
         'is_warranty_claim',
@@ -29,10 +30,20 @@ class ServiceJob extends Model
         'specs' => 'array',
         'is_warranty_claim' => 'boolean',
         'warranty_expires_at' => 'date',
+        'released_at' => 'date',
         'spring_rate' => 'float',
         'rating' => 'integer',
         'rated_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (ServiceJob $job) {
+            if ($job->stage === JobStage::Release->value && $job->released_at === null) {
+                $job->released_at = now()->toDateString();
+            }
+        });
+    }
 
     public function appUser()
     {

@@ -23,6 +23,7 @@ class JobStageChanged extends Notification
     public function toDatabase(object $notifiable): array
     {
         return [
+            'type' => 'job_stage',
             'job_id' => $this->job->id,
             'moto_model' => $this->job->moto_model,
             'plate_number' => $this->job->plate_number,

@@ -28,6 +28,7 @@ class DemoSeederTest extends TestCase
             $this->assertIsArray($job->specs, "Job {$job->plate_number} lost its specs");
             $this->assertArrayHasKey('totalBill', $job->specs);
             $this->assertNotNull($job->warranty_expires_at, "Job {$job->plate_number} lost its warranty date");
+            $this->assertNotNull($job->released_at, "Job {$job->plate_number} lost its release date");
         }
 
         $revenue = $released->sum(fn (ServiceJob $job) => $job->specs['totalBill']);

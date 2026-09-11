@@ -52,11 +52,12 @@ class AuthController extends Controller
             return response()->json(['message' => 'Account pending staff approval.'], 403);
         }
 
+        $user->forceFill(['last_seen_at' => now()])->save();
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
             'message' => 'Login successful',
-            'user' => new UserResource($user),
+            'user' => new UserResource($user->fresh()),
             'token' => $token,
         ]);
     }
@@ -66,7 +67,9 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->currentAccessToken()->delete();
+        $user = $request->user();
+        $user->currentAccessToken()->delete();
+        $user->forceFill(['last_seen_at' => null])->save();
 
         return response()->json(['message' => 'Logged out successfully']);
     }

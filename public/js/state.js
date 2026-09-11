@@ -41,6 +41,9 @@ const SUSPENSION_TYPES = ['Telescopic Fork', 'Inverted (USD) Fork', 'Mono-shock'
 // here can still be entered under "Others".
 const SUSPENSION_BRANDS = ['Stock / OEM', 'YSS', 'Ohlins', 'RCB', 'KYB', 'Showa'];
 
+// Must match config/shop.php expense_categories.
+const EXPENSE_CATEGORIES = ['Utilities', 'Rent', 'Inventory Restock', 'Marketing', 'Miscellaneous'];
+
 // Data caches, refreshed from the API before each view render
 let dbUsers = [];
 let dbJobs = [];

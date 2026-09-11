@@ -86,6 +86,7 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Honda Beat',
             'plate' => 'NEW-0001',
             'dateIn' => '2026-07-05',
+            'timeIn' => '09:30',
             'complaint' => 'Front fork leaking oil',
         ])->assertCreated();
 
@@ -94,6 +95,7 @@ class JobWorkflowTest extends TestCase
             'stage' => 'Intake',
             'complaint' => 'Front fork leaking oil',
         ]);
+        $this->assertStringStartsWith('09:30', (string) \App\Models\ServiceJob::where('plate_number', 'NEW-0001')->value('time_in'));
     }
 
     public function test_a_plate_cannot_have_two_active_jobs_at_once(): void
@@ -106,6 +108,7 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Suzuki Raider 150',
             'plate' => 'TST-0001',
             'dateIn' => '2026-07-06',
+            'timeIn' => '09:30',
             'complaint' => 'Still leaking after last visit',
         ])->assertUnprocessable();
 
@@ -122,6 +125,7 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Suzuki Raider 150',
             'plate' => 'TST-0001',
             'dateIn' => '2026-07-06',
+            'timeIn' => '09:30',
             'complaint' => 'Returning for a fresh rebuild',
         ])->assertCreated();
 
@@ -149,6 +153,7 @@ class JobWorkflowTest extends TestCase
             'moto' => 'Honda Beat',
             'plate' => 'NEW-0003',
             'dateIn' => now()->addDay()->toDateString(),
+            'timeIn' => '09:30',
             'complaint' => 'Front fork leaking oil',
         ])->assertUnprocessable();
     }
@@ -163,6 +168,7 @@ class JobWorkflowTest extends TestCase
         $job->refresh();
         $this->assertNotNull($job->warranty_expires_at);
         $this->assertTrue($job->warranty_expires_at->isSameDay(now()->addMonths(6)));
+        $this->assertTrue($job->released_at->isSameDay(now()));
         $this->assertStringStartsWith('Active', $job->warranty_status);
     }
 
@@ -220,6 +226,7 @@ class JobWorkflowTest extends TestCase
 
         $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Release'])->assertOk();
         $original = $job->fresh()->warranty_expires_at;
+        $originalReleased = $job->fresh()->released_at;
 
         // A unit that was pushed back for rework and released a second time
         // keeps the coverage window that started on its first release.
@@ -231,6 +238,7 @@ class JobWorkflowTest extends TestCase
         $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Release'])->assertOk();
 
         $this->assertTrue($job->fresh()->warranty_expires_at->isSameDay($original));
+        $this->assertTrue($job->fresh()->released_at->isSameDay($originalReleased));
     }
 
     public function test_logging_specs_deducts_consumables_and_advances_to_qa(): void

@@ -20,6 +20,8 @@ class ServiceJobResource extends JsonResource
             'plate_number' => $this->plate_number,
             'stage' => $this->stage,
             'date_in' => $this->date_in,
+            'time_in' => $this->formatTimeIn($this->time_in),
+            'date_released' => $this->released_at?->toDateString(),
             'complaint' => $this->complaint,
             'specs' => $this->specs,
             'oil_viscosity' => $this->oil_viscosity,
@@ -36,5 +38,18 @@ class ServiceJobResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
+    }
+
+    private function formatTimeIn(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('H:i');
+        }
+
+        return substr((string) $value, 0, 5);
     }
 }

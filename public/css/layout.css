@@ -239,19 +239,24 @@
     border-radius: 8px;
 }
 
-.login-pass-wrap {
+.login-field {
     position: relative;
 }
 
-.login-pass-wrap input {
-    padding-left: 2.6rem;
-    padding-right: 2.7rem;
+.login-form .login-field input {
+    padding-left: 2.7rem;
+    transition: padding-left 0.28s ease, border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
 }
 
-.login-pass-ico,
+.login-form .login-field-pass input {
+    padding-right: 2.75rem;
+}
+
+.login-field-ico,
 .login-pass-toggle {
     position: absolute;
     top: 50%;
+    z-index: 2;
     transform: translateY(-50%);
     width: 20px;
     height: 20px;
@@ -261,23 +266,46 @@
     pointer-events: none;
 }
 
-.login-pass-ico {
+.login-field-ico {
     left: 0.9rem;
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(-50%) translateX(0) scale(1);
+    transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s ease;
 }
 
-.login-pass-ico svg,
+.login-field-ico svg,
 .login-pass-toggle svg {
     width: 18px;
     height: 18px;
 }
 
+.login-field:focus-within .login-field-ico,
+.login-field.is-filled .login-field-ico {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-50%) translateX(-10px) scale(0.85);
+}
+
+.login-form .login-field:focus-within input,
+.login-form .login-field.is-filled input {
+    padding-left: 1rem;
+}
+
 .login-pass-toggle {
-    right: 0.75rem;
+    right: 0.55rem;
+    width: 36px;
+    height: 36px;
     pointer-events: auto;
     border: 0;
     background: transparent;
     padding: 0;
     cursor: pointer;
+    color: #9ca3af;
+}
+
+.login-pass-toggle:hover {
+    color: #4b5563;
 }
 
 .login-pass-toggle .icon-eye-off {
@@ -290,6 +318,13 @@
 
 .login-pass-toggle.is-visible .icon-eye-off {
     display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .login-form .login-field input,
+    .login-field-ico {
+        transition: none;
+    }
 }
 
 .login-register {
@@ -401,34 +436,11 @@
     transition: width 0.35s ease, min-width 0.35s ease;
 }
 
-.sidebar-collapse {
-    width: 26px;
-    height: 26px;
-    flex-shrink: 0;
-    border: 0;
-    border-radius: 50%;
-    background: var(--primary);
-    color: #fff;
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-    padding: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
-}
-
-.sidebar-collapse svg {
-    width: 14px;
-    height: 14px;
-}
-
-/* Wordmark and role sit on one baseline, left-aligned with the nav below so
-   the sidebar has a single left edge instead of a centred block over a list. */
 .sidebar-brand {
     padding: 1.5rem 0.9rem 1.25rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     display: flex;
     align-items: center;
-    justify-content: space-between;
     gap: 0.65rem;
 }
 
@@ -464,13 +476,13 @@
     background: rgba(217, 56, 30, 0.16);
     border: 1px solid rgba(217, 56, 30, 0.4);
     color: #f0857a;
-    padding: 2px 7px;
+    padding: 4px 10px;
     border-radius: var(--radius-pill);
-    font-size: 0.58rem;
-    letter-spacing: 0.8px;
+    font-size: 0.78rem;
+    letter-spacing: 0.7px;
     font-weight: 700;
     text-transform: uppercase;
-    line-height: 1.5;
+    line-height: 1.3;
     white-space: nowrap;
     flex-shrink: 0;
 }
@@ -482,13 +494,16 @@
     list-style: none;
     overflow-y: auto;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
 }
 
 /* Inset rounded rows: the active item reads as a selected pill, and a short
    brand rail on its left edge marks position without boxing the whole row. */
 .nav-item {
     position: relative;
-    padding: 0.7rem 0.85rem;
+    padding: 0.85rem 0.95rem;
     color: #9ca3af;
     cursor: pointer;
     transition: color 0.18s ease, background 0.18s ease, padding 0.35s ease;
@@ -498,7 +513,7 @@
     display: flex;
     align-items: center;
     gap: 0.7rem;
-    margin: 2px 0;
+    margin: 0;
     overflow: hidden;
 }
 
@@ -603,22 +618,51 @@
 
 #view-system.sidebar-collapsed .sidebar-brand {
     justify-content: center;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding: 1.15rem 0.45rem;
 }
 
-#view-system.sidebar-collapsed .sidebar-brand-copy,
+#view-system.sidebar-collapsed .sidebar-brand-copy {
+    max-width: none;
+    opacity: 1;
+    overflow: visible;
+    justify-content: center;
+}
+
+#view-system.sidebar-collapsed .sidebar-brand h2 {
+    display: none;
+}
+
+#view-system.sidebar-collapsed .role-badge {
+    font-size: 0.72rem;
+    letter-spacing: 0.4px;
+    padding: 0.45rem 0.2rem;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.15;
+    max-width: 100%;
+}
+
 #view-system.sidebar-collapsed .nav-item span,
 #view-system.sidebar-collapsed .sidebar-logout span {
     opacity: 0;
     max-width: 0;
+    width: 0;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     pointer-events: none;
 }
 
 #view-system.sidebar-collapsed .nav-item {
     justify-content: center;
-    padding-left: 0.7rem;
-    padding-right: 0.7rem;
+    gap: 0;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+#view-system.sidebar-collapsed .nav-item .icon {
+    margin: 0;
+    display: block;
 }
 
 #view-system.sidebar-collapsed .nav-item.active::before {
@@ -630,8 +674,16 @@
     padding-right: 0.75rem;
 }
 
+#view-system.sidebar-collapsed .sidebar-footer .btn {
+    gap: 0;
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 #view-system.sidebar-collapsed .sidebar-logout .icon {
     display: block;
+    margin: 0;
 }
 
 .sidebar-backdrop {
@@ -639,7 +691,49 @@
 }
 
 .menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0;
+}
+
+.menu-toggle svg {
+    width: 22px;
+    height: 22px;
+}
+
+.menu-toggle:hover {
+    background: #f3f4f6;
+}
+
+.menu-icon-close {
     display: none;
+}
+
+#view-system.sidebar-open .menu-icon-open {
+    display: none;
+}
+
+#view-system.sidebar-open .menu-icon-close {
+    display: block;
+}
+
+@media (min-width: 1025px) {
+    .menu-icon-open {
+        display: block !important;
+    }
+
+    .menu-icon-close {
+        display: none !important;
+    }
 }
 
 .header-start {

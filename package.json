@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
+        "build": "node -e \"console.log('skip vite; frontend is public/js')\"",
         "dev": "vite"
     },
     "devDependencies": {

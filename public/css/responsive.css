@@ -5,6 +5,15 @@
 /* ================================================= */
 
 /* Always-on: never let a grid item overflow a narrow screen */
+html {
+    overflow-x: clip;
+}
+
+#view-system,
+#view-login {
+    max-width: 100%;
+}
+
 .grid-layout {
     grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
 }
@@ -110,40 +119,14 @@
 /* TABLET + PHONE — drawer navigation                */
 /* ------------------------------------------------- */
 @media (max-width: 1024px) {
-    .sidebar-collapse {
-        display: none;
-    }
-
     .menu-toggle {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        height: 40px;
-        flex-shrink: 0;
-        border: 1px solid var(--border);
-        border-radius: var(--radius-sm);
-        background: var(--bg-white);
-        color: var(--text-primary);
-        cursor: pointer;
-        padding: 0;
+        width: 44px;
+        height: 44px;
     }
 
     .menu-toggle svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    .menu-icon-close {
-        display: none;
-    }
-
-    #view-system.sidebar-open .menu-icon-open {
-        display: none;
-    }
-
-    #view-system.sidebar-open .menu-icon-close {
-        display: block;
+        width: 22px;
+        height: 22px;
     }
 
     .sidebar-backdrop {
@@ -188,22 +171,35 @@
     }
 
     .top-header {
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "start tools"
+            "actions actions";
+        align-items: center;
+        gap: 0.75rem 0.85rem;
         padding: 1rem 1.25rem;
         padding-top: max(1rem, env(safe-area-inset-top));
         min-height: 0;
-        align-items: flex-start;
     }
 
     .header-start {
+        grid-area: start;
         align-items: center;
     }
 
+    .header-tools {
+        grid-area: tools;
+    }
+
     .header-actions {
+        grid-area: actions;
         flex-wrap: wrap;
-        justify-content: flex-end;
+        justify-content: flex-start;
         align-items: center;
         gap: 8px;
+        width: 100%;
+        min-width: 0;
     }
 
     .header-actions .btn {
@@ -212,8 +208,35 @@
         padding: 0 0.9rem;
     }
 
+    .header-actions .btn-expense {
+        flex: 1 1 100%;
+        width: 100%;
+        justify-content: center;
+        height: 48px;
+        min-height: 48px;
+        padding: 0 1rem;
+        font-size: 0.95rem;
+        border-radius: var(--radius-md);
+    }
+
+    .filter-group {
+        flex: 1 1 240px;
+        min-width: 0;
+    }
+
+    .notif-bell {
+        width: 44px;
+        height: 44px;
+    }
+
+    .kanban-board {
+        padding-right: 1.25rem;
+        scroll-padding-inline: 0.5rem;
+    }
+
     .search-bar {
         min-width: 160px;
+        flex: 1 1 180px;
     }
 
     .btn-inline {
@@ -426,7 +449,7 @@
     }
 
     .login-feature-pills {
-        margin-top: 0.85rem;
+        display: none;
     }
 
     .login-panel-left::after {
@@ -503,6 +526,22 @@
 
     .bj-claim-detail {
         grid-template-columns: 1fr;
+    }
+
+    .dash-hero {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dash-hero > :last-child {
+        grid-column: 1 / -1;
+    }
+
+    .bill-meta {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .table-scroll .data-table {
+        min-width: 860px;
     }
 }
 
@@ -602,6 +641,17 @@
         text-align: center;
     }
 
+    .header-actions .btn-expense {
+        flex: 1 1 100%;
+        width: 100%;
+        justify-content: center;
+        height: 48px;
+        min-height: 48px;
+        padding: 0 1rem;
+        font-size: 0.95rem;
+        border-radius: var(--radius-md);
+    }
+
     .content-body {
         padding: 1rem;
         padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
@@ -664,7 +714,7 @@
     }
 
     .stats-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 0.75rem;
         margin-bottom: 1.25rem;
     }
@@ -912,6 +962,40 @@
         padding: 0.8rem 0.9rem;
     }
 
+    .login-form .login-field input {
+        padding: 0.8rem 0.9rem 0.8rem 2.7rem;
+    }
+
+    .login-form .login-field-pass input {
+        padding-right: 2.85rem;
+    }
+
+    .login-form .login-field:focus-within input,
+    .login-form .login-field.is-filled input {
+        padding-left: 0.9rem;
+    }
+
+    .login-field-ico {
+        left: 0.85rem;
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .login-pass-toggle {
+        width: 44px;
+        height: 44px;
+        right: 0.1rem;
+    }
+
+    .login-label-row {
+        gap: 0.35rem 0.75rem;
+    }
+
+    .login-forgot {
+        font-size: 0.7rem;
+        letter-spacing: 0.04em;
+    }
+
     .modal-content {
         max-width: calc(100vw - 1.5rem);
         padding: 1.5rem 1.15rem 1.5rem;
@@ -934,6 +1018,33 @@
         padding-right: 0.5rem;
     }
 
+    #modal-intake .intake-sheet {
+        padding: 1.35rem 1rem 1.15rem;
+    }
+
+    #modal-intake .intake-head h2 {
+        font-size: 1.25rem;
+    }
+
+    #modal-intake .intake-two-col {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    #modal-intake .intake-control input,
+    #modal-intake .intake-control select,
+    #modal-intake .intake-textarea-wrap textarea {
+        font-size: 16px;
+    }
+
+    #modal-intake .intake-actions {
+        flex-wrap: wrap;
+    }
+
+    #modal-intake .intake-actions .btn {
+        flex: 1 1 calc(50% - 0.45rem);
+    }
+
     .login-panel-left {
         padding: 1.1rem 1rem 1rem;
         gap: 0.75rem;
@@ -949,22 +1060,21 @@
         max-width: 50%;
     }
 
+    .login-tagline h2 {
+        font-size: 1.02rem;
+        margin-bottom: 0;
+    }
+
     .login-tagline p {
         display: none;
     }
 
     .login-feature-pills {
-        gap: 0.4rem;
-        margin-top: 0.65rem;
-    }
-
-    .login-feature-pills span {
-        font-size: 0.7rem;
-        padding: 0.3rem 0.7rem;
+        display: none;
     }
 
     .login-card-centered {
-        padding: 1.35rem 1.15rem 1.75rem;
+        padding: 1.35rem 1.15rem max(1.75rem, env(safe-area-inset-bottom));
     }
 
     .brand-header {
@@ -1049,6 +1159,149 @@
         padding: 0.8rem 0.9rem;
         min-height: 44px;
     }
+
+    .notif-bell {
+        width: 44px;
+        height: 44px;
+    }
+
+    .pu-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    .bill-meta {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.55rem 1rem;
+    }
+
+    .bill-sheet thead {
+        display: none;
+    }
+
+    .bill-sheet,
+    .bill-sheet tbody,
+    .bill-sheet tfoot {
+        display: block;
+        width: 100%;
+    }
+
+    .bill-sheet tr {
+        display: block;
+        padding: 0.7rem 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .bill-sheet td {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.75rem;
+        text-align: right !important;
+        width: auto;
+        padding: 0.18rem 0;
+        border-bottom: 0;
+    }
+
+    .bill-sheet td::before {
+        content: attr(data-label);
+        font-weight: 700;
+        color: #6b7280;
+        text-align: left;
+        flex: 0 0 5.5rem;
+    }
+
+    .bill-sheet td[colspan]::before {
+        content: none;
+    }
+
+    .bill-sheet tfoot tr {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.35rem 0;
+        border-bottom: 0;
+    }
+
+    .bill-sheet tfoot td[colspan] {
+        flex: 1;
+        text-align: left !important;
+    }
+
+    .bill-sheet tfoot td.bill-num {
+        flex: 0 0 auto;
+    }
+
+    .cell-actions {
+        flex-direction: column;
+        align-items: stretch;
+        min-width: 7.5rem;
+    }
+
+    .cell-actions .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .table-scroll .data-table {
+        min-width: 640px;
+    }
+
+    .cust-tracker,
+    .stage-tracker {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 4px;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .exp-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .exp-head-date {
+        text-align: left;
+    }
+
+    #modal-add-expense .modal-content {
+        width: calc(100vw - 1.5rem);
+    }
+
+    .exp-actions {
+        flex-wrap: wrap;
+    }
+
+    .exp-actions .btn {
+        flex: 1 1 calc(50% - 0.4rem);
+    }
+
+    .modal-actions {
+        flex-wrap: wrap;
+    }
+
+    .modal-actions .btn {
+        flex: 1 1 calc(50% - 0.4rem);
+        min-width: 8rem;
+    }
+
+    .official-bill-head,
+    .print-pack-head {
+        flex-wrap: wrap;
+    }
+
+    .official-bill-no {
+        margin-left: 0;
+        text-align: left;
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+    .login-label-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.2rem;
+    }
 }
 
 /* Very small phones — keep 2-up stats; stack only form pairs */
@@ -1069,5 +1322,17 @@
 
     .form-row-2>* {
         flex: 1 1 100% !important;
+    }
+
+    .bill-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-alerts {
+        grid-template-columns: 1fr;
+    }
+
+    .rev-kpis {
+        grid-template-columns: 1fr;
     }
 }

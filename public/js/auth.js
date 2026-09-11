@@ -28,6 +28,34 @@ window.toggleLoginPassword = function () {
     toggle.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
 };
 
+function syncLoginFieldState(input) {
+    const field = input.closest('.login-field');
+    if (!field) return;
+    field.classList.toggle('is-filled', input.value.length > 0);
+}
+
+function initLoginFields() {
+    document.querySelectorAll('.login-field input').forEach((input) => {
+        const sync = () => syncLoginFieldState(input);
+        if (!input.dataset.loginFieldBound) {
+            input.dataset.loginFieldBound = '1';
+            input.addEventListener('focus', sync);
+            input.addEventListener('input', sync);
+            input.addEventListener('change', sync);
+            input.addEventListener('blur', sync);
+        }
+        sync();
+    });
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLoginFields);
+} else {
+    initLoginFields();
+}
+
+window.addEventListener('load', initLoginFields);
+
 window.handleRegister = async function (e) {
     e.preventDefault();
 
@@ -209,6 +237,7 @@ function clearWorkspaceState() {
     dbCounterSales = [];
     notifUnreadCount = 0;
     notifItems = [];
+    window.stopUsersPresencePoll?.();
 
     const nav = document.getElementById('sidebarNav');
     const content = document.getElementById('mainContentArea');
@@ -234,6 +263,7 @@ function clearWorkspaceState() {
         panel.innerHTML = '';
         panel.classList.add('hidden');
     }
+    document.getElementById('notifBell')?.setAttribute('aria-expanded', 'false');
     window.closeFeedbackDrawer?.();
     document.getElementById('feedbackWrap')?.classList.add('hidden');
 }

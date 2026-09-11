@@ -353,11 +353,43 @@ class BillingAndNotificationsTest extends TestCase
         $this->getJson('/api/notifications')
             ->assertOk()
             ->assertJsonPath('unread_count', 1)
-            ->assertJsonPath('notifications.0.data.stage', 'Release');
+            ->assertJsonPath('notifications.0.data.stage', 'Release')
+            ->assertJsonPath('notifications.0.data.type', 'job_stage')
+            ->assertJsonPath('notifications.0.unread', true);
 
         $this->putJson('/api/notifications/mark-read')->assertOk();
 
         $this->getJson('/api/notifications')->assertJsonPath('unread_count', 0);
+    }
+
+    public function test_a_user_can_mark_one_notification_read(): void
+    {
+        $job = $this->makeJob('QA');
+        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Release'])->assertOk();
+
+        Sanctum::actingAs($this->customer);
+        $id = $this->customer->notifications()->first()->id;
+
+        $this->putJson("/api/notifications/{$id}/read")->assertOk();
+        $this->getJson('/api/notifications')->assertJsonPath('unread_count', 0);
+        $this->assertNotNull($this->customer->notifications()->first()->read_at);
+    }
+
+    public function test_a_user_cannot_mark_someone_elses_notification_read(): void
+    {
+        $owner = AppUser::create([
+            'username' => 'owner_tester', 'password' => 'secret123',
+            'role' => 'admin', 'status' => 'approved',
+        ]);
+
+        $job = $this->makeJob('QA');
+        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Release'])->assertOk();
+
+        $ownerNotifId = $owner->notifications()->first()->id;
+
+        Sanctum::actingAs($this->customer);
+        $this->putJson("/api/notifications/{$ownerNotifId}/read")->assertNotFound();
+        $this->assertNull($owner->notifications()->first()->read_at);
     }
 
     public function test_logout_revokes_the_token(): void

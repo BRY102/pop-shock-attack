@@ -14,16 +14,18 @@ function isMobileNav() {
 function syncMenuToggle(open) {
     const toggle = document.getElementById('menuToggle');
     if (!toggle) return;
-    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+    if (isMobileNav()) {
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+        return;
+    }
+    const collapsed = document.getElementById('view-system')?.classList.contains('sidebar-collapsed');
+    toggle.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    toggle.setAttribute('aria-label', collapsed ? 'Expand menu' : 'Collapse menu');
 }
 
 function syncCollapseToggle() {
-    const btn = document.getElementById('sidebarCollapse');
-    const collapsed = document.getElementById('view-system')?.classList.contains('sidebar-collapsed');
-    if (!btn) return;
-    btn.setAttribute('aria-label', collapsed ? 'Expand menu' : 'Collapse menu');
-    btn.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    syncMenuToggle(document.getElementById('view-system')?.classList.contains('sidebar-open'));
 }
 
 function restoreSidebarCollapse() {
@@ -59,10 +61,9 @@ window.openSidebar = function () {
     if (!isMobileNav()) return;
     const system = document.getElementById('view-system');
     const backdrop = document.getElementById('sidebarBackdrop');
-    const notifPanel = document.getElementById('notifPanel');
     system?.classList.add('sidebar-open');
     backdrop?.classList.remove('hidden');
-    notifPanel?.classList.add('hidden');
+    window.closeNotifPanel?.();
     window.closeFeedbackDrawer?.();
     syncMenuToggle(true);
 };
@@ -75,6 +76,15 @@ window.toggleSidebar = function (e) {
     } else {
         openSidebar();
     }
+};
+
+window.toggleNavMenu = function (e) {
+    e?.stopPropagation();
+    if (isMobileNav()) {
+        toggleSidebar(e);
+        return;
+    }
+    toggleSidebarCollapse(e);
 };
 
 // Which screens each role gets, in menu order, with the icon that labels it.
@@ -154,8 +164,12 @@ window.loadView = async function (viewType) {
         el.classList.toggle('active', el.dataset.view === viewType);
     });
     closeSidebar();
+    if (viewType !== 'users') window.stopUsersPresencePoll?.();
     document.getElementById('view-system')?.classList.remove('header-compact');
     if (viewType !== 'kanban') window.pendingKanbanFocus = null;
+    if (viewType !== 'inventory') window.pendingInventoryFocus = null;
+    if (viewType !== 'customer') window.pendingCustomerJobId = null;
+    if (viewType !== 'users' && viewType !== 'approvals') window.pendingResetUsername = null;
 
     const renderers = {
         overview: renderOverview,
@@ -215,4 +229,5 @@ document.addEventListener('keydown', (e) => {
 
 window.addEventListener('resize', () => {
     if (!isMobileNav()) closeSidebar();
+    syncCollapseToggle();
 });

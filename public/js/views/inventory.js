@@ -85,7 +85,7 @@ function inventoryRows() {
     }
 
     return items.map(item => `
-        <tr>
+        <tr data-item-id="${esc(item.id)}">
             <td>
                 <div class="item-cell">
                     <span class="item-thumb">${icon('package')}</span>
@@ -115,6 +115,7 @@ function refreshInventoryList() {
     document.querySelectorAll('.list-tab').forEach(tab => {
         tab.classList.toggle('is-active', tab.dataset.tab === inventoryFilter);
     });
+    focusPendingInventoryRow();
 }
 
 window.setInventoryFilter = function (key) {
@@ -161,4 +162,15 @@ function renderInventory(ctx) {
             </table></div>
         </div>
     `;
+    focusPendingInventoryRow();
+}
+
+function focusPendingInventoryRow() {
+    const pending = window.pendingInventoryFocus;
+    if (!pending?.id) return;
+    const row = [...document.querySelectorAll('#invTableBody tr[data-item-id]')]
+        .find(el => el.dataset.itemId === String(pending.id));
+    if (!row) return;
+    row.classList.add('is-focus');
+    row.scrollIntoView({ block: 'center', behavior: 'smooth' });
 }

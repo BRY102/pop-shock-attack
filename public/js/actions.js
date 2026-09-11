@@ -24,7 +24,94 @@ window.toggleOtherBrand = function () {
     group.classList.toggle('hidden', !isOther);
     input.required = isOther;
     if (!isOther) input.value = '';
+    syncIntakeBrandMark();
 };
+
+window.syncIntakeBrandMark = function () {
+    const select = document.getElementById('in_brand');
+    const mark = document.getElementById('in_brand_mark');
+    const label = document.getElementById('in_brand_label');
+    if (!select || !mark) return;
+    const value = select.value || '';
+    mark.textContent = value && value !== 'Others' ? value.charAt(0) : '?';
+    if (label) {
+        const opt = select.options[select.selectedIndex];
+        label.textContent = opt ? opt.text : value;
+    }
+    document.querySelectorAll('#in_brand_menu .intake-dropdown-option').forEach((btn) => {
+        btn.classList.toggle('is-active', btn.dataset.value === value);
+    });
+};
+
+window.buildIntakeBrandMenu = function () {
+    const select = document.getElementById('in_brand');
+    const menu = document.getElementById('in_brand_menu');
+    if (!select || !menu) return;
+
+    menu.innerHTML = [...select.options].map((opt) => `
+        <button type="button" role="option" class="intake-dropdown-option${opt.selected ? ' is-active' : ''}"
+                data-value="${esc(opt.value)}" onclick="pickIntakeBrand(event)">
+            <span class="intake-brand-mark" aria-hidden="true">${opt.value === 'Others' ? '?' : esc(opt.value.charAt(0))}</span>
+            ${esc(opt.text)}
+        </button>`).join('');
+};
+
+window.pickIntakeBrand = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const select = document.getElementById('in_brand');
+    if (!select) return;
+    select.value = e.currentTarget.dataset.value;
+    toggleOtherBrand();
+    closeIntakeBrandMenu();
+};
+
+window.closeIntakeBrandMenu = function () {
+    const menu = document.getElementById('in_brand_menu');
+    const btn = document.getElementById('in_brand_btn');
+    menu?.classList.add('hidden');
+    btn?.setAttribute('aria-expanded', 'false');
+    btn?.classList.remove('is-open');
+};
+
+window.toggleIntakeBrandMenu = function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const menu = document.getElementById('in_brand_menu');
+    const btn = document.getElementById('in_brand_btn');
+    if (!menu || !btn) return;
+
+    const isOpen = !menu.classList.contains('hidden');
+    closeIntakeBrandMenu();
+    if (isOpen) return;
+
+    menu.classList.remove('hidden');
+    btn.setAttribute('aria-expanded', 'true');
+    btn.classList.add('is-open');
+};
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest?.('.intake-dropdown')) closeIntakeBrandMenu();
+});
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeIntakeBrandMenu();
+});
+
+window.updateIntakeComplaintCount = function () {
+    const field = document.getElementById('in_complaint');
+    const count = document.getElementById('in_complaint_count');
+    if (!field || !count) return;
+    count.textContent = `${field.value.length} / 500`;
+};
+
+function paintIntakeIcons() {
+    document.querySelectorAll('#modal-intake [data-icon]').forEach((slot) => {
+        if (slot.dataset.filled === '1') return;
+        slot.innerHTML = icon(slot.dataset.icon);
+        slot.dataset.filled = '1';
+    });
+}
 
 window.openIntake = function () {
     const dateField = document.getElementById('in_date');
@@ -32,6 +119,15 @@ window.openIntake = function () {
         dateField.value = toISODate();
         dateField.max = toISODate();
     }
+    const timeField = document.getElementById('in_time');
+    if (timeField) {
+        const now = new Date();
+        timeField.value = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+    }
+    paintIntakeIcons();
+    closeIntakeBrandMenu();
+    syncIntakeBrandMark();
+    updateIntakeComplaintCount();
     openModal('modal-intake');
 };
 
@@ -62,6 +158,7 @@ window.submitIntake = async function (e) {
         moto: `${brand} ${document.getElementById('in_moto').value.trim()}`.trim(),
         plate: plate,
         dateIn: document.getElementById('in_date').value,
+        timeIn: document.getElementById('in_time').value.slice(0, 5),
         complaint: document.getElementById('in_complaint').value.trim(),
     };
 
@@ -71,6 +168,7 @@ window.submitIntake = async function (e) {
         if (response.ok) {
             e.target.reset();
             toggleOtherBrand(); // re-hide the "Others" field after the reset
+            updateIntakeComplaintCount();
             closeModal('modal-intake');
             showNotification('Intake successfully registered!', 'success');
             invalidate('jobs');
@@ -622,13 +720,15 @@ window.approveUser = async function (id) {
 
 window.submitExpense = async function (e) {
     e.preventDefault();
-    const description = document.getElementById('exp_desc').value;
+    const description = document.getElementById('exp_desc').value.trim();
     const amount = parseFloat(document.getElementById('exp_amount').value);
+    const date = document.getElementById('exp_date').value;
+    const category = document.getElementById('exp_category').value;
 
     try {
         const response = await apiFetch('/api/expenses', {
             method: 'POST',
-            body: JSON.stringify({ description, amount, date: toISODate() }),
+            body: JSON.stringify({ description, amount, date, category }),
         });
 
         if (response.ok) {
@@ -638,12 +738,39 @@ window.submitExpense = async function (e) {
             invalidate('expenses');
             await loadView('overview');
         } else {
-            showNotification('Error saving expense to database.', 'error');
+            const data = await response.json().catch(() => ({}));
+            showNotification(data.message || 'Error saving expense to database.', 'error');
         }
     } catch (error) {
         console.error(error);
         showNotification('Server connection error.', 'error');
     }
+};
+
+window.openExpenseModal = function () {
+    const today = toISODate();
+    const dateField = document.getElementById('exp_date');
+    if (dateField) {
+        dateField.value = today;
+        dateField.max = today;
+    }
+    const label = document.getElementById('exp_today_label');
+    if (label) {
+        const pretty = new Date(`${today}T00:00:00`).toLocaleDateString('en-US', {
+            weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+        });
+        label.textContent = `Date: ${pretty}`;
+    }
+    const category = document.getElementById('exp_category');
+    if (category) category.value = 'Utilities';
+    const amount = document.getElementById('exp_amount');
+    if (amount) amount.value = '';
+    const notes = document.getElementById('exp_desc');
+    if (notes) notes.value = '';
+    document.querySelectorAll('#modal-add-expense .exp-label-icon[data-icon]').forEach(slot => {
+        slot.innerHTML = icon(slot.dataset.icon);
+    });
+    openModal('modal-add-expense');
 };
 
 // ------------------------------------------------------------

@@ -1276,7 +1276,7 @@ window.openFinancialReview = function () {
         ? `<tr><td colspan="3" style="text-align:center; padding: 1.25rem; color: #777;">No expenses logged this month.</td></tr>`
         : monthExpenses.map(exp => `<tr>
                 <td>${esc(exp.date)}</td>
-                <td><strong>${esc(exp.desc)}</strong></td>
+                <td><strong>${esc(exp.category || 'Expense')}</strong> · ${esc(exp.desc)}</td>
                 <td style="font-weight:bold; color:#b45309;">${peso(exp.amount)}</td>
             </tr>`).join('');
 
@@ -1326,16 +1326,18 @@ window.printExpenseReport = function () {
 
     const rows = sorted.map(exp => `<tr>
         <td>${esc(exp.date)}</td>
+        <td>${esc(exp.category || '')}</td>
         <td>${esc(exp.desc)}</td>
         <td>${peso(exp.amount)}</td>
     </tr>`).join('');
 
+    clearPrintHosts();
     document.getElementById('printExpenseReport').innerHTML = `
         <div class="print-report">
             <h1>MotoTrack Expense Report</h1>
             <p class="print-meta">Pops Shock Attack &middot; generated ${esc(toISODate())} &middot; ${sorted.length} entr${sorted.length === 1 ? 'y' : 'ies'}</p>
             <table class="data-table">
-                <thead><tr><th>Date</th><th>Description</th><th>Amount</th></tr></thead>
+                <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount</th></tr></thead>
                 <tbody>${rows}</tbody>
             </table>
             <p class="print-total">Total expenses: ${peso(total)}</p>
@@ -1400,7 +1402,7 @@ window.openInventoryAudit = function () {
 // The header button doubles as a menu: the money entries the owner records
 // daily up top, the once-a-month reviews and printouts below them.
 function addExpenseButton() {
-    return `<button type="button" class="btn btn-expense" onclick="openModal('modal-add-expense')">${icon('plus')} Add Expense</button>`;
+    return `<button type="button" class="btn btn-expense" onclick="openExpenseModal()">${icon('plus')} Add Expense</button>`;
 }
 
 function renderOverview(ctx) {

@@ -12,14 +12,6 @@ const STAGE_STATUS_COPY = {
     Release: 'Ready for pickup',
 };
 
-const BILL_ITEM_LABELS = {
-    labor: 'Labor',
-    oil: 'Oil',
-    oilSeal: 'Oil Seal',
-    dustSeal: 'Dust Seal',
-    springs: 'Springs',
-};
-
 function timeAgo(iso) {
     if (!iso) return '';
     const then = new Date(iso);
@@ -56,6 +48,11 @@ function sortJobsNewest(jobs) {
 let selectedPrevJobId = null;
 
 function featuredJob(jobs) {
+    const pendingId = window.pendingCustomerJobId;
+    if (pendingId) {
+        const match = jobs.find(j => String(j.id) === String(pendingId));
+        if (match) return match;
+    }
     const sorted = sortJobsNewest(jobs);
     return sorted.find(j => j.stage !== 'Release') || sorted[0];
 }
@@ -166,56 +163,11 @@ function billBreakdownHtml(job) {
             <p class="cust-muted">Billing appears after the shop logs tuning specs.</p>`;
     }
 
-    const covered = job.specs.billCovered || job.is_warranty_claim;
-    const lines = Array.isArray(job.specs.billLines) && job.specs.billLines.length > 0
-        ? job.specs.billLines
-        : [{
-            key: 'labor',
-            label: 'Base Engine/Labor',
-            qty: 1,
-            amount: Number(job.specs.enginePrice || 0),
-        }];
-
-    const laborLine = lines.find(line => line.key === 'labor');
-    const partLines = lines.filter(line => line.key !== 'labor');
-    const laborAmount = Number(laborLine?.amount ?? job.specs.enginePrice ?? 0);
-    const partsTotal = partLines.reduce((sum, line) => sum + Number(line.amount || 0), 0);
-    const shopValue = Number(job.specs.billSubtotal ?? (partsTotal + laborAmount));
-    const total = Number(job.specs.totalBill ?? 0);
-
-    const usedParts = partLines.filter(line => {
-        const label = String(line.label || '').trim();
-        return label && label !== 'None' && label !== '—';
-    });
-
-    const itemRows = usedParts.map(line => {
-        const item = BILL_ITEM_LABELS[line.key] || line.label || 'Item';
-        return `<tr>
-            <td>${esc(item)}</td>
-            <td>${esc(line.label || '—')}</td>
-            <td>${esc(String(line.qty ?? 1))}</td>
-            <td>${peso(line.amount)}</td>
-        </tr>`;
-    }).join('');
-
-    const waiverRow = covered
-        ? `<tr class="cust-sum-row"><td colspan="3">Covered by warranty</td><td>−${peso(shopValue)}</td></tr>`
-        : '';
-
+    const bill = billView(job);
     return `
         <h2>Total Billed &amp; Breakdown</h2>
-        <div class="cust-sheet-wrap">
-            <table class="cust-sheet">
-                <thead><tr><th>Item</th><th>Spec</th><th>Qty</th><th>Amount</th></tr></thead>
-                <tbody>${itemRows}</tbody>
-                <tfoot>
-                    <tr class="cust-sum-row cust-subtotal"><td colspan="3">Subtotal</td><td>${peso(partsTotal)}</td></tr>
-                    <tr class="cust-sum-row"><td colspan="3">Labor Fee (${peso(laborAmount)})</td><td>${peso(laborAmount)}</td></tr>
-                    ${waiverRow}
-                </tfoot>
-            </table>
-        </div>
-        <p class="cust-bill-total">Total Billed: ${peso(total)}</p>`;
+        ${billTableHtml(job)}
+        <p class="cust-bill-total">Total Billed: ${peso(bill.due)}</p>`;
 }
 
 function custJobCard(job, plateJobs) {
@@ -280,12 +232,13 @@ function custRatingBlock(job) {
 }
 
 function custActionsCard(job) {
-    const printBtn = job.specs
+    const printBill = job.specs
         ? `<button type="button" class="cust-btn" onclick="printReceipt('${job.id}')">${icon('printer')} Print Detailed Receipt</button>`
         : `<p class="cust-muted">A receipt is available after billing is logged.</p>`;
+
     return `
         <h2>Action Panel</h2>
-        <div class="cust-actions">${printBtn}</div>`;
+        <div class="cust-actions">${printBill}</div>`;
 }
 
 function custVehicleCard(job, plateJobs) {
@@ -422,6 +375,7 @@ function renderCustomerPrevious(ctx) {
     selectedPrevJobId = null;
 
     if (released.length === 0) {
+        ctx.actions.innerHTML = '';
         ctx.content.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">${icon('calendar-clock')}</div>
@@ -431,6 +385,7 @@ function renderCustomerPrevious(ctx) {
         return;
     }
 
+    ctx.actions.innerHTML = '';
     ctx.content.innerHTML = `
         <div class="cust-prev-page">
             ${released.map(previousJobRow).join('')}

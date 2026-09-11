@@ -26,6 +26,7 @@ async function loadHistoryList(q = '') {
         }
 
         const jobs = sortHistoryJobs(await response.json());
+        dbHistoryCache = jobs;
         renderHistoryResults(jobs, term);
     } catch (error) {
         console.error(error);

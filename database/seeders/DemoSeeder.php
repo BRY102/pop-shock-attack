@@ -126,6 +126,7 @@ class DemoSeeder extends Seeder
             $job->suspension_type = $suspensionTypes[$i % count($suspensionTypes)];
             $job->spring_rate = round(0.75 + (($i % 6) * 0.05), 2);
 
+            $job->released_at = $dateIn->copy()->addDays(3)->toDateString();
             $job->warranty_expires_at = $dateIn->copy()->addDays(3)->addMonths(config('shop.warranty_months'));
 
             // Leave two visits unrated so Overview can show coverage below 100%.
@@ -176,17 +177,18 @@ class DemoSeeder extends Seeder
 
         // --- Shop expenses across the same months ---
         $expenses = [
-            ['[Demo] Shop electricity bill', 2200, 80],
-            ['[Demo] Restock fork oil supplier', 4500, 72],
-            ['[Demo] Replacement hand tools', 1800, 55],
-            ['[Demo] Shop electricity bill', 2350, 50],
-            ['[Demo] Seal supplier delivery', 3600, 38],
-            ['[Demo] Compressor maintenance', 1500, 24],
-            ['[Demo] Shop electricity bill', 2280, 19],
-            ['[Demo] Restock lowering springs', 5200, 6],
+            ['Utilities', '[Demo] Shop electricity bill', 2200, 80],
+            ['Inventory Restock', '[Demo] Restock fork oil supplier', 4500, 72],
+            ['Miscellaneous', '[Demo] Replacement hand tools', 1800, 55],
+            ['Utilities', '[Demo] Shop electricity bill', 2350, 50],
+            ['Inventory Restock', '[Demo] Seal supplier delivery', 3600, 38],
+            ['Miscellaneous', '[Demo] Compressor maintenance', 1500, 24],
+            ['Utilities', '[Demo] Shop electricity bill', 2280, 19],
+            ['Inventory Restock', '[Demo] Restock lowering springs', 5200, 6],
         ];
-        foreach ($expenses as [$description, $amount, $daysAgo]) {
+        foreach ($expenses as [$category, $description, $amount, $daysAgo]) {
             Expense::create([
+                'category' => $category,
                 'description' => $description,
                 'amount' => $amount,
                 'date' => now()->subDays($daysAgo)->toDateString(),

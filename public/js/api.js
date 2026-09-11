@@ -162,6 +162,7 @@ async function fetchExpensesFromDatabase() {
         dbExpenses = rows.map(exp => ({
             id: exp.id,
             desc: exp.description,
+            category: exp.category || 'Miscellaneous',
             amount: Number(exp.amount),
             date: exp.date,
         }));

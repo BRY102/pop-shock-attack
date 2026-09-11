@@ -28,9 +28,10 @@ class ExpenseController extends Controller
         $validated = $request->validated();
 
         $expense = Expense::create([
+            'category' => $validated['category'],
             'description' => $validated['description'],
             'amount' => $validated['amount'],
-            'date' => $validated['date'] ?? now()->toDateString(),
+            'date' => $validated['date'],
         ]);
 
         return response()->json([

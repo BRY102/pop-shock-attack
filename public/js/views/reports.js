@@ -1,7 +1,7 @@
 // ============================================================
 // MotoTrack — Sales & financial reports (admin)
-// Released-job transactions with date filtering, printing, and
-// CSV export for record keeping.
+// Released-job transactions with date filtering, official bill
+// printouts, and line-item CSV export.
 // ============================================================
 
 // The rows currently on screen, so an export always matches what the
@@ -12,8 +12,6 @@ let reportPeriod = { start: '', end: '' };
 function renderReports(ctx) {
     ctx.title.innerText = 'Sales';
     ctx.desc.innerText = 'Released jobs and totals.';
-    // Filtering is the one primary action here, so it is the only solid button.
-    // Export and print are secondary, so they take the neutral ghost style.
     ctx.actions.innerHTML = `
         <div class="filter-group">
             <input type="date" id="filterStart" class="date-filter" aria-label="From date">
@@ -22,7 +20,7 @@ function renderReports(ctx) {
         </div>
         <button class="btn btn-primary" onclick="filterReports()">${icon('search')} Filter Data</button>
         <button class="btn btn-ghost" onclick="exportReportCsv()">${icon('download')} Export CSV</button>
-        <button class="btn btn-ghost" onclick="window.print()">${icon('printer')} Print Report</button>
+        <button class="btn btn-ghost" onclick="printSalesBillingReport()">${icon('printer')} Print Bills</button>
     `;
 
     reportPeriod = { start: '', end: '' };
@@ -52,12 +50,15 @@ window.filterReports = async function () {
     }
 };
 
-// "Daily Oil x1; Oil Seal 41x54x11 x2" — one readable cell for both the
-// on-screen table and the exported file.
-function partsUsedText(specs) {
-    const parts = consumablesOf(specs).map(line => `${line.name} x${line.qty}`);
-    return parts.length > 0 ? parts.join('; ') : 'None';
-}
+window.printSalesBillingReport = function () {
+    const periodLabel = reportPeriod.start
+        ? `${reportPeriod.start} to ${reportPeriod.end}`
+        : 'All released services';
+    printBillingReport(reportRows, {
+        periodLabel,
+        counterSales: counterSalesInPeriod(),
+    });
+};
 
 function renderReportTable(jobsArray) {
     reportRows = jobsArray;
@@ -65,16 +66,23 @@ function renderReportTable(jobsArray) {
     let totalSales = 0;
     let totalPartsCost = 0;
     let rowsHtml = `<div class="table-container table-scroll"><table class="data-table"><thead><tr>
-        <th class="cell-keep">Date</th><th class="cell-keep">Customer</th><th>Motorcycle</th><th>Service Type</th>
-        <th>Parts Used</th><th class="num-start">Parts Cost</th><th class="num-start">Total Billed</th>
+        <th class="cell-keep">Receipt No.</th>
+        <th class="cell-keep">Date in</th>
+        <th>Released</th>
+        <th class="cell-keep">Customer</th>
+        <th>Motorcycle</th>
+        <th>Type</th>
+        <th class="num-start">Amount due</th>
+        <th></th>
     </tr></thead><tbody>`;
 
     if (jobsArray.length === 0) {
-        rowsHtml += `<tr><td colspan="7" class="table-empty">No released services in this period.</td></tr>`;
+        rowsHtml += `<tr><td colspan="8" class="table-empty">No released services in this period.</td></tr>`;
     }
 
     jobsArray.forEach(job => {
-        totalSales += Number(job.specs.totalBill || 0);
+        const bill = billView(job);
+        totalSales += bill.due;
         totalPartsCost += Number(job.specs.partsCost || 0);
 
         const typeBadge = job.is_warranty_claim
@@ -82,27 +90,28 @@ function renderReportTable(jobsArray) {
             : `<span class="badge-service new">New Service</span>`;
 
         rowsHtml += `<tr>
-            <td class="cell-keep">${esc(job.date_in)}</td>
-            <td class="cell-keep"><span class="cell-title">${esc(displayName(job.customer))}</span></td>
+            <td class="cell-keep"><span class="cell-title">${esc(bill.receiptNo)}</span></td>
+            <td class="cell-keep">${esc(prettyDate(bill.dateIn))}</td>
+            <td>${esc(prettyDate(bill.dateReleased))}</td>
+            <td class="cell-keep"><span class="cell-title">${esc(bill.customer)}</span></td>
             <td>
-                <span class="cell-title">${esc(job.moto_model)}</span>
-                <span class="cell-sub">${esc(job.plate_number)}</span>
+                <span class="cell-title">${esc(bill.moto)}</span>
+                <span class="cell-sub">${esc(bill.plate)}</span>
             </td>
             <td>${typeBadge}</td>
-            <td>
-                <span class="cell-title">Base / labor ${peso(job.specs.enginePrice || 0)}</span>
-                <span class="cell-sub">${esc(partsUsedText(job.specs))}</span>
+            <td class="num-start num-strong">${peso(bill.due)}</td>
+            <td class="cell-actions">
+                <button type="button" class="btn btn-ghost btn-sm" onclick="openBillDetail('${esc(String(job.id))}')">View bill</button>
+                <button type="button" class="btn btn-ghost btn-sm" onclick="printReceipt('${esc(String(job.id))}')">${icon('printer')} Print</button>
             </td>
-            <td class="num-start num-muted">${peso(job.specs.partsCost || 0)}</td>
-            <td class="num-start num-strong">${peso(job.specs.totalBill || 0)}</td>
         </tr>`;
     });
 
     if (jobsArray.length > 0) {
         rowsHtml += `<tr class="is-total">
-            <td colspan="5">Total for ${jobsArray.length} service${jobsArray.length === 1 ? '' : 's'}</td>
-            <td class="num-start">${peso(totalPartsCost)}</td>
+            <td colspan="6">Total for ${jobsArray.length} service${jobsArray.length === 1 ? '' : 's'}</td>
             <td class="num-start">${peso(totalSales)}</td>
+            <td></td>
         </tr>`;
     }
 
@@ -112,12 +121,9 @@ function renderReportTable(jobsArray) {
         ? `${esc(reportPeriod.start)} to ${esc(reportPeriod.end)}`
         : 'All released services';
 
-    // Walk-in income has no job behind it, so it gets its own table below the
-    // transactions. Total Sales counts both, matching what Overview reports.
     const counterSales = counterSalesInPeriod();
     const counterTotal = counterSales.reduce((sum, sale) => sum + sale.amount, 0);
-    totalSales += counterTotal;
-
+    const grandSales = totalSales + counterTotal;
     const walkInNote = counterTotal > 0 ? ` &middot; includes ${peso(counterTotal)} walk-in` : '';
 
     document.getElementById('mainContentArea').innerHTML = `
@@ -127,7 +133,7 @@ function renderReportTable(jobsArray) {
                 <span class="section-meta">${periodLabel}${walkInNote}</span>
             </div>
             <div class="dash-hero">
-                ${summaryCard('banknote', 'is-money-in', peso(totalSales), 'Total Sales')}
+                ${summaryCard('banknote', 'is-money-in', peso(grandSales), 'Total Sales')}
                 ${summaryCard('inbox', 'is-money-out', peso(totalPartsCost), 'Parts Cost')}
                 ${summaryCard('check', 'is-brand', jobsArray.length, 'Services Released')}
             </div>
@@ -144,8 +150,6 @@ function renderReportTable(jobsArray) {
         ${counterSalesTable(counterSales, counterTotal)}`;
 }
 
-// The three figures at the top of the page. No trend pill here — this page is
-// filtered by an arbitrary date range, so a month-on-month delta would lie.
 function summaryCard(iconName, tint, value, label) {
     return `
         <div class="dash-metric is-plain">
@@ -157,7 +161,6 @@ function summaryCard(iconName, tint, value, label) {
         </div>`;
 }
 
-// Counter sales inside the active date filter (all of them when unfiltered).
 function counterSalesInPeriod() {
     if (!reportPeriod.start) return dbCounterSales;
     return dbCounterSales.filter(sale => sale.date >= reportPeriod.start && sale.date <= reportPeriod.end);
@@ -195,7 +198,6 @@ function counterSalesTable(sales, total) {
         </section>`;
 }
 
-// Quote a CSV field only when it needs it, doubling any embedded quotes.
 function csvCell(value) {
     const text = String(value ?? '');
     return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
@@ -207,35 +209,71 @@ window.exportReportCsv = function () {
         return;
     }
 
-    const rows = [
-        ['Date', 'Customer', 'Motorcycle', 'Plate / Engine No.', 'Service Type', 'Base / Labor', 'Parts Used', 'Parts Cost', 'Total Billed'],
-    ];
+    const rows = [[
+        'Receipt No.',
+        'Date in',
+        'Date released',
+        'Customer',
+        'Motorcycle',
+        'Plate / Engine No.',
+        'Service Type',
+        'Mechanic',
+        'Labor spec',
+        'Labor amount',
+        'Fork oil',
+        'Fork oil amount',
+        'Oil seal',
+        'Oil seal qty',
+        'Oil seal amount',
+        'Dust seal',
+        'Dust seal qty',
+        'Dust seal amount',
+        'Springs',
+        'Springs amount',
+        'Subtotal',
+        'Warranty coverage',
+        'Amount due',
+        'Parts cost',
+    ]];
 
     reportRows.forEach(job => {
+        const line = csvLineItems(job);
         rows.push([
-            job.date_in,
-            job.customer,
-            job.moto_model,
-            job.plate_number,
-            job.is_warranty_claim ? 'Warranty Claim' : 'New Service',
-            Number(job.specs.enginePrice || 0),
-            partsUsedText(job.specs),
+            line.receiptNo,
+            line.dateIn,
+            line.dateReleased,
+            line.customer,
+            line.moto,
+            line.plate,
+            line.type,
+            line.mechanic,
+            line.laborSpec,
+            line.laborAmount,
+            line.oilSpec,
+            line.oilAmount,
+            line.oilSealSpec,
+            line.oilSealQty,
+            line.oilSealAmount,
+            line.dustSealSpec,
+            line.dustSealQty,
+            line.dustSealAmount,
+            line.springsSpec,
+            line.springsAmount,
+            line.subtotal,
+            line.warrantyCoverage,
+            line.amountDue,
             Number(job.specs.partsCost || 0),
-            Number(job.specs.totalBill || 0),
         ]);
     });
 
     const csv = rows.map(row => row.map(csvCell).join(',')).join('\r\n');
-
-    // The BOM is what makes Excel read the peso sign and any accented
-    // customer name as UTF-8 instead of mojibake.
     const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const suffix = reportPeriod.start ? `${reportPeriod.start}_to_${reportPeriod.end}` : toISODate();
 
     const link = document.createElement('a');
     link.href = url;
-    link.download = `mototrack_sales_${suffix}.csv`;
+    link.download = `mototrack_billing_${suffix}.csv`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

@@ -206,7 +206,7 @@ window.toggleFeedbackDrawer = async function () {
         return;
     }
 
-    document.getElementById('notifPanel')?.classList.add('hidden');
+    window.closeNotifPanel?.();
     window.closeQuickMenu?.();
     window.closeSidebar?.();
 

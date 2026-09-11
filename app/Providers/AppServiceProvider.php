@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,5 +24,9 @@ class AppServiceProvider extends ServiceProvider
         // Serve resources as plain JSON (no "data" envelope) so responses
         // keep the exact shape the frontend consumes.
         JsonResource::withoutWrapping();
+
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }
