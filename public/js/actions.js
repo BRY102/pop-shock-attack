@@ -187,7 +187,7 @@ window.submitIntake = async function (e) {
 window.moveStage = async function (id, nextStage) {
     const job = dbJobs.find(j => String(j.id) === String(id));
     const sendingBack = job && job.stage === 'QA' && nextStage === 'Tuning';
-    if (job && !sendingBack && !jobHasLeadTech(job)) {
+    if (job && !sendingBack && stageNeedsLeadTech(job.stage) && !jobHasLeadTech(job)) {
         showNotification('Assign a lead tech before moving this unit.', 'error');
         return;
     }

@@ -194,17 +194,23 @@ class JobWorkflowTest extends TestCase
         $this->assertSame('Intake', $job->fresh()->stage);
         $this->assertNull($job->fresh()->warranty_expires_at);
 
-        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Disassembly'])
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors('mechanic');
-
-        $job->update(['mechanic_name' => 'Rico']);
-
         $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Disassembly'])->assertOk();
         $this->assertSame('Disassembly', $job->fresh()->stage);
+        $this->assertNull($job->fresh()->mechanic_name);
     }
 
-    public function test_staff_cannot_move_a_unit_forward_until_a_lead_tech_is_assigned(): void
+    public function test_staff_can_move_intake_to_disassembly_without_a_lead_tech(): void
+    {
+        $this->actAsStaff();
+        $job = $this->makeJob('Intake');
+
+        $this->putJson("/api/jobs/{$job->id}/stage", ['stage' => 'Disassembly'])->assertOk();
+
+        $this->assertSame('Disassembly', $job->fresh()->stage);
+        $this->assertNull($job->fresh()->mechanic_name);
+    }
+
+    public function test_staff_cannot_leave_disassembly_until_a_lead_tech_is_assigned(): void
     {
         $this->actAsStaff();
         $job = $this->makeJob('Disassembly');

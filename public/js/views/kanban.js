@@ -8,6 +8,10 @@ function jobHasLeadTech(job) {
     return String(job?.mechanic_name || '').trim() !== '';
 }
 
+function stageNeedsLeadTech(stage) {
+    return stage !== 'Intake' && stage !== 'Release';
+}
+
 function kanbanTechPicker(job) {
     const names = dbMechanics.map(m => m.name);
     if (job.mechanic_name && !names.includes(job.mechanic_name)) {
@@ -46,7 +50,7 @@ function buildKanbanCard(job, stage) {
         : '';
 
     let mechanicHtml = '';
-    if (currentRole === 'staff' && stage !== 'Release') {
+    if (currentRole === 'staff' && stageNeedsLeadTech(stage)) {
         mechanicHtml = kanbanTechPicker(job);
     } else if (job.mechanic_name) {
         mechanicHtml = `<div class="kanban-tech is-set"><p><strong>Lead Tech:</strong> ${esc(job.mechanic_name)}</p></div>`;
@@ -57,7 +61,7 @@ function buildKanbanCard(job, stage) {
     if (currentRole === 'staff') {
         const idx = STAGES.indexOf(stage);
         const delBtn = `<button class="btn-sm btn-danger" onclick="deleteJob('${job.id}')" style="margin-top:5px;">Cancel Job</button>`;
-        const needsTech = !jobHasLeadTech(job);
+        const needsTech = stageNeedsLeadTech(stage) && !jobHasLeadTech(job);
         const assignFirst = `<button type="button" class="btn-sm" disabled>Assign a lead tech first</button>`;
 
         if (stage === 'Tuning') {

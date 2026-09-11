@@ -53,4 +53,13 @@ enum JobStage: string
 
         return $order !== false && $next !== false && $next > $order;
     }
+
+    /**
+     * Intake can still move to Disassembly unassigned. From Disassembly on,
+     * a lead tech has to be on the card before the unit can leave.
+     */
+    public function requiresLeadTechBeforeLeaving(): bool
+    {
+        return $this !== self::Intake && $this !== self::Release;
+    }
 }

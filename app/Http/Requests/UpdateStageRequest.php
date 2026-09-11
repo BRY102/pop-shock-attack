@@ -44,7 +44,11 @@ class UpdateStageRequest extends FormRequest
                     return;
                 }
 
-                if ($current->isForwardTo($requested) && blank($job->mechanic_name)) {
+                if (
+                    $current->requiresLeadTechBeforeLeaving()
+                    && $current->isForwardTo($requested)
+                    && blank($job->mechanic_name)
+                ) {
                     $validator->errors()->add(
                         'mechanic',
                         'Assign a lead tech before moving this unit.'
