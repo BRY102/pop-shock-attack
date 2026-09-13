@@ -250,6 +250,8 @@ function clearWorkspaceState() {
     if (nav) nav.innerHTML = '';
     if (content) content.innerHTML = '';
     if (actions) actions.innerHTML = '';
+    const pageToolbar = document.getElementById('pageToolbar');
+    if (pageToolbar) pageToolbar.innerHTML = '';
     if (title) title.innerText = 'Dashboard';
     if (desc) {
         desc.innerText = '';
@@ -338,7 +340,14 @@ function resetSession() {
     currentUser = null;
     currentRole = null;
 
-    document.getElementById('view-system').classList.remove('active-view');
+    document.getElementById('view-system').classList.remove('active-view', 'page-backjobs');
+    const hero = document.getElementById('pageHero');
+    if (hero) {
+        hero.innerHTML = '';
+        hero.hidden = true;
+    }
+    const toolbar = document.getElementById('pageToolbar');
+    if (toolbar) toolbar.innerHTML = '';
     document.getElementById('view-system').classList.add('hidden');
     document.getElementById('view-login').classList.remove('hidden');
     document.getElementById('view-login').classList.add('active-view');

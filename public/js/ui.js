@@ -305,6 +305,10 @@ window.toggleRowMenu = function (e, id) {
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest?.('.row-menu-wrap')) closeRowMenus();
+    if (typeof backjobFilterOpen !== 'undefined' && backjobFilterOpen && !e.target.closest?.('.bj-filter-wrap')) {
+        backjobFilterOpen = false;
+        if (typeof renderBackjobResults === 'function') renderBackjobResults();
+    }
 });
 
 document.addEventListener('keydown', (e) => {

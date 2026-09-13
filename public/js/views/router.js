@@ -156,7 +156,44 @@ const FETCHERS = {
     mechanics: fetchMechanicsFromDatabase,
 };
 
-// Ignore stale background refreshes after the user has navigated on
+let lastViewType = '';
+let actionsWereMobile = null;
+
+function actionsStayInHeader(viewType) {
+    return !isMobileNav() || viewType === 'backjobs';
+}
+
+function actionHost(viewType) {
+    return document.getElementById(actionsStayInHeader(viewType) ? 'headerActions' : 'pageToolbar');
+}
+
+function clearActionHosts() {
+    const header = document.getElementById('headerActions');
+    const toolbar = document.getElementById('pageToolbar');
+    if (header) header.innerHTML = '';
+    if (toolbar) toolbar.innerHTML = '';
+}
+
+function parkPageActions() {
+    const header = document.getElementById('headerActions');
+    const toolbar = document.getElementById('pageToolbar');
+    if (!header || !toolbar || !lastViewType) return;
+    const dest = actionHost(lastViewType);
+    const src = dest === header ? toolbar : header;
+    while (src.firstChild) dest.appendChild(src.firstChild);
+}
+
+function syncPageHero() {
+    const hero = document.getElementById('pageHero');
+    const title = document.getElementById('pageTitle')?.innerText.trim() || '';
+    const desc = document.getElementById('pageDesc')?.innerText.trim() || '';
+    if (!hero) return;
+    hero.innerHTML = title
+        ? `<h1>${esc(title)}</h1>${desc ? `<p>${esc(desc)}</p>` : ''}`
+        : '';
+    hero.hidden = !title;
+}
+
 let loadSequence = 0;
 
 window.loadView = async function (viewType) {
@@ -166,31 +203,36 @@ window.loadView = async function (viewType) {
     closeSidebar();
     if (viewType !== 'users') window.stopUsersPresencePoll?.();
     document.getElementById('view-system')?.classList.remove('header-compact');
+    document.getElementById('view-system')?.classList.toggle('page-backjobs', viewType === 'backjobs');
     if (viewType !== 'kanban') window.pendingKanbanFocus = null;
     if (viewType !== 'inventory') window.pendingInventoryFocus = null;
     if (viewType !== 'customer') window.pendingCustomerJobId = null;
     if (viewType !== 'users' && viewType !== 'approvals') window.pendingResetUsername = null;
 
     const renderers = {
-        overview: renderOverview,
-        approvals: renderApprovals,
-        reports: renderReports,
-        kanban: renderKanban,
-        history: renderHistory,
-        backjobs: renderBackjobs,
-        inventory: renderInventory,
-        users: renderUsers,
-        customer: renderCustomerDashboard,
-        'customer-prev': renderCustomerPrevious,
+        overview: typeof renderOverview === 'function' ? renderOverview : null,
+        approvals: typeof renderApprovals === 'function' ? renderApprovals : null,
+        reports: typeof renderReports === 'function' ? renderReports : null,
+        kanban: typeof renderKanban === 'function' ? renderKanban : null,
+        history: typeof renderHistory === 'function' ? renderHistory : null,
+        backjobs: typeof renderBackjobs === 'function' ? renderBackjobs : null,
+        inventory: typeof renderInventory === 'function' ? renderInventory : null,
+        users: typeof renderUsers === 'function' ? renderUsers : null,
+        customer: typeof renderCustomerDashboard === 'function' ? renderCustomerDashboard : null,
+        'customer-prev': typeof renderCustomerPrevious === 'function' ? renderCustomerPrevious : null,
     };
 
     const render = renderers[viewType];
     if (!render) return;
 
+    lastViewType = viewType;
+    actionsWereMobile = isMobileNav();
+    clearActionHosts();
+
     const ctx = {
         title: document.getElementById('pageTitle'),
         desc: document.getElementById('pageDesc'),
-        actions: document.getElementById('headerActions'),
+        actions: actionHost(viewType),
         content: document.getElementById('mainContentArea'),
     };
     ctx.desc?.classList.remove('bj-crumbs');
@@ -203,8 +245,9 @@ window.loadView = async function (viewType) {
 
     // 1) Paint immediately from cache when we can — navigation feels instant
     if (cacheReady && sequence === loadSequence) {
-        ctx.actions.innerHTML = '';
+        if (ctx.actions) ctx.actions.innerHTML = '';
         render(ctx);
+        syncPageHero();
     }
 
     // 2) Refresh this view's data (plus notifications) in the background
@@ -218,8 +261,9 @@ window.loadView = async function (viewType) {
     // 3) Re-paint only if we haven't painted yet or the data actually changed,
     //    and only if the user hasn't already navigated somewhere else.
     if (sequence === loadSequence && (!cacheReady || snapshot() !== before)) {
-        ctx.actions.innerHTML = '';
+        if (ctx.actions) ctx.actions.innerHTML = '';
         render(ctx);
+        syncPageHero();
     }
 };
 
@@ -230,4 +274,9 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('resize', () => {
     if (!isMobileNav()) closeSidebar();
     syncCollapseToggle();
+    const mobile = isMobileNav();
+    if (actionsWereMobile !== mobile) {
+        actionsWereMobile = mobile;
+        parkPageActions();
+    }
 });

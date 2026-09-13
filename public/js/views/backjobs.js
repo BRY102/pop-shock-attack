@@ -1,15 +1,17 @@
 // ============================================================
 // MotoTrack — Back-jobs (admin / staff)
-// Open warranty claims first. Click a row to open the job.
+// Open warranty claims first. Click a row to expand details.
 // Mechanic stats sit on a second tab, not beside the list.
 // ============================================================
 
 let backjobRows = [];
 let backjobSearch = '';
 let backjobMechanic = '';
-let backjobStatus = 'open';
+let backjobStatus = 'all';
 let backjobTab = 'claims';
 let backjobOpenId = null;
+let backjobSort = 'newest';
+let backjobFilterOpen = false;
 
 function mechanicKey(job) {
     return (job.mechanic_name || '').trim() || 'Unassigned';
@@ -23,8 +25,9 @@ function sortBackjobs(jobs) {
     return [...jobs].sort((a, b) => {
         const openDelta = Number(isOpenClaim(b)) - Number(isOpenClaim(a));
         if (openDelta !== 0) return openDelta;
-        const byDate = String(b.date_in || '').localeCompare(String(a.date_in || ''));
-        return byDate !== 0 ? byDate : Number(b.id) - Number(a.id);
+        const byDate = String(a.date_in || '').localeCompare(String(b.date_in || ''));
+        const dated = backjobSort === 'oldest' ? byDate : -byDate;
+        return dated !== 0 ? dated : Number(b.id) - Number(a.id);
     });
 }
 
@@ -96,20 +99,24 @@ function mechanicRows(jobs) {
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
 }
 
-function monthStamp() {
+function monthStamp(offset = 0) {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function monthClaimRate(stamp) {
+    const monthJobs = allShopJobs().filter(job => String(job.date_in || '').startsWith(stamp));
+    if (monthJobs.length === 0) return 0;
+    return (monthJobs.filter(job => job.is_warranty_claim).length / monthJobs.length) * 100;
 }
 
 function backjobKpis() {
-    const month = monthStamp();
-    const monthJobs = allShopJobs().filter(job => String(job.date_in || '').startsWith(month));
-    const monthRate = monthJobs.length > 0
-        ? (monthJobs.filter(job => job.is_warranty_claim).length / monthJobs.length) * 100
-        : 0;
+    const monthRate = monthClaimRate(monthStamp(0));
+    const lastRate = monthClaimRate(monthStamp(-1));
     const active = backjobRows.filter(isOpenClaim).length;
     const partsCost = backjobRows.reduce((sum, job) => sum + Number(job.specs?.partsCost || 0), 0);
-    return { active, monthRate, partsCost };
+    return { active, monthRate, lastRate, partsCost };
 }
 
 function filteredBackjobPool() {
@@ -134,13 +141,36 @@ function partsListHtml(job) {
     return `<ul class="bj-parts">${parts.map(line => `<li>${esc(line.name)} (x${line.qty})</li>`).join('')}</ul>`;
 }
 
-function claimStatusHtml(job) {
+function claimStatusHtml(job, compact) {
     if (!isOpenClaim(job)) return `<span class="bj-status is-closed">Closed</span>`;
-    return `<span class="bj-status is-open">${esc(job.stage)}</span>`;
+    return `<span class="bj-status is-open">${compact ? 'Open' : esc(job.stage)}</span>`;
 }
 
 function mechanicLabel(name) {
     return name === 'Unassigned' ? 'Unassigned' : displayName(name);
+}
+
+function bjInitials(name) {
+    const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+function bjAvatar(name) {
+    return `<span class="bj-avatar" aria-hidden="true">${esc(bjInitials(name))}</span>`;
+}
+
+function mechanicOptions() {
+    const names = [];
+    const seen = {};
+    backjobRows.forEach((job) => {
+        const name = mechanicKey(job);
+        if (seen[name]) return;
+        seen[name] = true;
+        names.push(name);
+    });
+    return names.sort((a, b) => mechanicLabel(a).localeCompare(mechanicLabel(b)));
 }
 
 function backjobHeaderHtml() {
@@ -148,10 +178,17 @@ function backjobHeaderHtml() {
         ? `<button type="button" class="btn btn-primary" onclick="logBackjobClaim()">${icon('plus')} Log claim</button>`
         : '';
     return `
-        <input type="search" id="backjobSearchInput" class="search-bar"
-               placeholder="Plate, complaint, or mechanic"
-               value="${esc(backjobSearch)}"
-               oninput="searchBackjobsLive()">
+        <div class="bj-search">
+            <span class="bj-search-ico" aria-hidden="true">${icon('search')}</span>
+            <input type="search" id="backjobSearchInput" class="search-bar"
+                   placeholder="Plate, complaint, or mechanic"
+                   value="${esc(backjobSearch)}"
+                   oninput="searchBackjobsLive()">
+            <button type="button" class="bj-search-filter" onclick="toggleBackjobFilter(event)"
+                    aria-label="Filter claims">
+                ${icon('sliders')}
+            </button>
+        </div>
         ${claimBtn}`;
 }
 
@@ -187,7 +224,7 @@ async function loadBackjobs() {
 
 function renderBackjobs(ctx) {
     ctx.title.innerText = 'Back-jobs';
-    ctx.desc.innerText = 'Open warranty claims first. Click a row to open the job.';
+    ctx.desc.innerText = 'Open warranty claims first. Click a row to expand the job.';
     ctx.desc.classList.remove('bj-crumbs');
     ctx.actions.innerHTML = backjobHeaderHtml();
 
@@ -215,22 +252,36 @@ window.clearBackjobSearch = function () {
 window.filterBackjobMechanic = function (name) {
     backjobMechanic = String(name || '').trim();
     backjobTab = 'claims';
+    backjobFilterOpen = false;
     renderBackjobResults();
 };
 
 window.clearBackjobMechanic = function () {
     backjobMechanic = '';
+    backjobFilterOpen = false;
     renderBackjobResults();
 };
 
 window.setBackjobStatus = function (status) {
-    backjobStatus = status;
+    backjobStatus = backjobStatus === status ? 'all' : status;
     backjobTab = 'claims';
     renderBackjobResults();
 };
 
 window.setBackjobTab = function (tab) {
     backjobTab = tab;
+    backjobFilterOpen = false;
+    renderBackjobResults();
+};
+
+window.setBackjobSort = function (sort) {
+    backjobSort = sort === 'oldest' ? 'oldest' : 'newest';
+    renderBackjobResults();
+};
+
+window.toggleBackjobFilter = function (event) {
+    event?.stopPropagation();
+    backjobFilterOpen = !backjobFilterOpen;
     renderBackjobResults();
 };
 
@@ -279,28 +330,29 @@ function renderBackjobResults() {
 
     const kpis = backjobKpis();
     const { jobs, counts } = filteredBackjobPool();
-    const mechChip = backjobMechanic
-        ? `<button type="button" class="bj-chip" onclick="clearBackjobMechanic()">
-                ${esc(mechanicLabel(backjobMechanic))} <span aria-hidden="true">×</span>
-           </button>`
-        : '';
 
     content.innerHTML = `
         <div class="bj-page">
             ${backjobKpiHtml(kpis)}
             <div class="bj-toolbar">
-                <div class="list-tabs" role="tablist" aria-label="Back-jobs views">
-                    <button type="button" class="list-tab${backjobTab === 'claims' ? ' is-active' : ''}"
-                            onclick="setBackjobTab('claims')">Claims</button>
-                    <button type="button" class="list-tab${backjobTab === 'mechanics' ? ' is-active' : ''}"
+                <div class="bj-filters" role="tablist" aria-label="Back-jobs filters">
+                    <button type="button" class="bj-tab${backjobTab === 'claims' ? ' is-selected' : ''}"
+                            onclick="setBackjobTab('claims')">Claims <strong>${counts.all}</strong></button>
+                    <button type="button" class="bj-tab${backjobTab === 'mechanics' ? ' is-selected' : ''}"
                             onclick="setBackjobTab('mechanics')">By mechanic</button>
-                </div>
-                <div class="list-tabs bj-status-tabs" role="tablist" aria-label="Claim status">
                     ${statusChip('open', 'Open', counts.open)}
                     ${statusChip('closed', 'Closed', counts.closed)}
-                    ${statusChip('all', 'All', counts.all)}
                 </div>
-                ${mechChip}
+                <div class="bj-toolbar-actions">
+                    <label class="bj-sort">
+                        <span>Sort by</span>
+                        <select aria-label="Sort claims" onchange="setBackjobSort(this.value)">
+                            <option value="newest"${backjobSort === 'newest' ? ' selected' : ''}>Newest</option>
+                            <option value="oldest"${backjobSort === 'oldest' ? ' selected' : ''}>Oldest</option>
+                        </select>
+                    </label>
+                    ${filterControlHtml()}
+                </div>
             </div>
             ${backjobTab === 'mechanics' ? mechanicPanelHtml(jobs) : claimsPanelHtml(jobs, counts)}
         </div>
@@ -308,16 +360,40 @@ function renderBackjobResults() {
 }
 
 function statusChip(key, label, count) {
-    return `<button type="button" class="list-tab${backjobStatus === key ? ' is-active' : ''}"
+    return `<button type="button" class="bj-tab${backjobStatus === key ? ' is-selected' : ''}"
                     onclick="setBackjobStatus('${key}')">
-                ${label} <span class="list-tab-count">${count}</span>
+                ${esc(label)} <strong>${count}</strong>
             </button>`;
+}
+
+function filterControlHtml() {
+    const names = mechanicOptions();
+    const menu = backjobFilterOpen
+        ? `<div class="bj-filter-menu" role="listbox" aria-label="Filter by mechanic">
+                <button type="button" class="${backjobMechanic ? '' : 'is-on'}"
+                        onclick="clearBackjobMechanic()">All mechanics</button>
+                ${names.map(name => `
+                    <button type="button" data-mech="${esc(name)}"
+                            class="${backjobMechanic === name ? 'is-on' : ''}"
+                            onclick="filterBackjobMechanic(this.dataset.mech)">
+                        ${esc(mechanicLabel(name))}
+                    </button>`).join('')}
+           </div>`
+        : '';
+    return `
+        <div class="bj-filter-wrap">
+            <button type="button" class="bj-tool-btn${backjobMechanic || backjobFilterOpen ? ' is-on' : ''}"
+                    onclick="toggleBackjobFilter(event)">
+                ${icon('filter')} Filter
+            </button>
+            ${menu}
+        </div>`;
 }
 
 function claimsPanelHtml(jobs, counts) {
     if (jobs.length === 0) {
-        const hint = backjobStatus === 'open' && counts.closed > 0
-            ? `<p>No open claims. <button type="button" class="btn-inline" onclick="setBackjobStatus('all')">View all</button></p>`
+        const hint = backjobStatus === 'open'
+            ? `<p>No open claims right now.</p>`
             : `<p>Try a plate number, part of the complaint, or a mechanic name.</p>`;
         return `
             <div class="empty-state">
@@ -327,60 +403,155 @@ function claimsPanelHtml(jobs, counts) {
             </div>`;
     }
 
-    return `<div class="bj-claim-list">${jobs.map(claimRowHtml).join('')}</div>`;
+    return `
+        <div class="bj-claims-table">
+            <div class="bj-table-head" aria-hidden="true">
+                <span></span>
+                <span>ID / Unit</span>
+                <span>Customer</span>
+                <span>Parts (Shop Covered)</span>
+                <span>Customer Rating</span>
+                <span>Assigned To</span>
+                <span>Status</span>
+                <span>Date</span>
+                <span></span>
+            </div>
+            ${jobs.map(claimRowHtml).join('')}
+        </div>`;
 }
 
 function claimRowHtml(job) {
     const open = String(backjobOpenId) === String(job.id);
     const mechanic = mechanicLabel(mechanicKey(job));
+    const customer = displayName(job.customer);
     const onBoard = isOpenClaim(job);
     const openLabel = onBoard ? 'Open in Workflow' : 'Open in History';
-    const printBtn = job.specs
-        ? `<button type="button" class="btn btn-ghost" data-id="${esc(job.id)}" onclick="event.stopPropagation(); printReceipt(this.dataset.id)">${icon('printer')} Print</button>`
+    const printItem = job.specs
+        ? `<button type="button" role="menuitem" data-id="${esc(job.id)}"
+                   onclick="event.stopPropagation(); closeRowMenus(); printReceipt(this.dataset.id)">
+                ${icon('printer')} Print
+           </button>`
         : '';
-    const customerRate = Number(job.rating) >= 1
-        ? `${starsDisplay(job.rating)} ${Number(job.rating)}/5${job.rating_comment ? `<p>${esc(job.rating_comment)}</p>` : ''}`
-        : '<p class="bj-muted">Not rated</p>';
+    const rated = Number(job.rating) >= 1 && Number(job.rating) <= 5;
+    const ratingHtml = rated
+        ? `<span class="bj-rating">${starsDisplay(job.rating)} <small>${Number(job.rating)}/5</small></span>`
+        : `<span class="bj-muted">Not rated</span>`;
+    const complaint = job.complaint ? esc(job.complaint) : 'No complaint logged';
+    const partsHtml = open
+        ? partsListHtml(job)
+        : `<span class="bj-complaint-line">${complaint}</span>`;
+    const printBtn = job.specs
+        ? `<button type="button" class="bj-print" data-id="${esc(job.id)}"
+                   onclick="event.stopPropagation(); printReceipt(this.dataset.id)">
+                ${icon('printer')} Print
+           </button>`
+        : '';
 
     return `
         <article class="bj-claim${open ? ' is-expanded' : ''}${onBoard ? ' is-active-job' : ''}">
-            <div class="bj-claim-row">
-                <button type="button" class="bj-claim-main" data-id="${esc(job.id)}"
-                        onclick="openBackjob(this.dataset.id)">
-                    <strong class="bj-plate">${esc(job.plate_number)}</strong>
-                    <span class="bj-model">${esc(job.moto_model)}</span>
-                    <span class="bj-complaint">${job.complaint ? esc(job.complaint) : 'No complaint logged'}</span>
-                    <span class="bj-tech">${esc(mechanic)}</span>
-                    ${claimStatusHtml(job)}
-                    <time datetime="${esc(job.date_in || '')}">${esc(job.date_in || '—')}</time>
-                </button>
-                <button type="button" class="bj-claim-toggle" data-id="${esc(job.id)}"
-                        aria-expanded="${open ? 'true' : 'false'}"
-                        aria-label="${open ? 'Hide details' : 'Show details'}"
-                        onclick="toggleBackjobRow(this.dataset.id)">
-                    ${icon('chevron-down')}
-                </button>
-            </div>
+            <button type="button" class="bj-card-sum" data-id="${esc(job.id)}"
+                    onclick="toggleBackjobRow(this.dataset.id)">
+                <span class="bj-job-top">
+                    <span class="bj-bike-thumb">${icon('bike')}</span>
+                    <span class="bj-job-main">
+                        <b>${esc(job.plate_number)}</b>
+                        <span>${esc(job.moto_model)}</span>
+                        <small>${icon('user')} ${esc(customer)}</small>
+                    </span>
+                    <span class="bj-card-meta">
+                        ${claimStatusHtml(job, true)}
+                        <time datetime="${esc(job.date_in || '')}">${esc(job.date_in || '—')}</time>
+                    </span>
+                    <span class="bj-chevron${open ? ' is-open' : ''}" aria-hidden="true">${icon('chevron-right')}</span>
+                </span>
+                <span class="bj-issue">
+                    <span class="bj-card-comp">${complaint}</span>
+                    <span class="bj-card-rate">${ratingHtml}</span>
+                </span>
+            </button>
             ${open ? `
-                <div class="bj-claim-detail">
+            <div class="bj-card-detail">
+                <div class="bj-detail-head">
+                    <span class="bj-bike-thumb">${icon('bike')}</span>
                     <div>
-                        <h3>Customer</h3>
-                        <p>${esc(displayName(job.customer))}</p>
+                        <b>${esc(job.plate_number)}</b>
+                        <span>${esc(job.moto_model)}</span>
                     </div>
-                    <div>
-                        <h3>Parts (shop covered)</h3>
-                        ${partsListHtml(job)}
+                    <time datetime="${esc(job.date_in || '')}">${esc(job.date_in || '—')}</time>
+                </div>
+                <div class="bj-detail-body">
+                    <div class="bj-detail-people">
+                        <p>
+                            <span>${icon('user')}</span>
+                            <span><small>Customer</small><b>${esc(customer)}</b></span>
+                        </p>
+                        <p>
+                            <span>${icon('wrench')}</span>
+                            <span><small>Mechanic</small><b>${esc(mechanic)}</b></span>
+                        </p>
                     </div>
-                    <div>
-                        <h3>Customer rating</h3>
-                        ${customerRate}
-                    </div>
-                    <div class="bj-claim-actions">
-                        <button type="button" class="btn btn-primary" data-id="${esc(job.id)}"
-                                onclick="openBackjob(this.dataset.id)">${openLabel}</button>
+                    <h4>${icon('package')} Parts (Shop Covered)</h4>
+                    ${partsListHtml(job)}
+                    <h4>${icon('star')} Customer Rating</h4>
+                    ${ratingHtml}
+                    <h4>${icon('file-text')} Job Description</h4>
+                    <p>${complaint}</p>
+                    <div class="bj-card-actions">
+                        <button type="button" class="bj-history" data-id="${esc(job.id)}"
+                                onclick="event.stopPropagation(); openBackjob(this.dataset.id)">${openLabel}</button>
                         ${printBtn}
                     </div>
-                </div>` : ''}
+                </div>
+            </div>` : ''}
+            <div class="bj-row-grid">
+                <div class="bj-check-cell">
+                    <button type="button" class="bj-chevron${open ? ' is-open' : ''}" data-id="${esc(job.id)}"
+                            aria-expanded="${open ? 'true' : 'false'}"
+                            aria-label="${open ? 'Hide details' : 'Show details'}"
+                            onclick="event.stopPropagation(); toggleBackjobRow(this.dataset.id)">
+                        ${icon('chevron-right')}
+                    </button>
+                </div>
+                <button type="button" class="bj-unit-cell" data-id="${esc(job.id)}"
+                        onclick="toggleBackjobRow(this.dataset.id)">
+                    <span class="bj-bike-thumb">${icon('bike')}</span>
+                    <span>
+                        <b>${esc(job.plate_number)}</b>
+                        <small>${esc(job.moto_model)}</small>
+                    </span>
+                </button>
+                <div class="bj-person-cell" data-label="Customer">
+                    ${bjAvatar(customer)}
+                    <span>${esc(customer)}</span>
+                </div>
+                <div class="bj-parts-cell" data-label="Parts (Shop Covered)">${partsHtml}</div>
+                <div class="bj-rating-cell" data-label="Customer Rating">${ratingHtml}</div>
+                <div class="bj-person-cell" data-label="Assigned To">
+                    ${bjAvatar(mechanic)}
+                    <span>${esc(mechanic)}</span>
+                </div>
+                <div data-label="Status">${claimStatusHtml(job)}</div>
+                <time class="bj-date" datetime="${esc(job.date_in || '')}" data-label="Date">${esc(job.date_in || '—')}</time>
+                <div class="bj-row-actions">
+                    <div class="row-menu-wrap">
+                        <button type="button" class="row-menu-btn" onclick="toggleRowMenu(event, 'bj-${esc(job.id)}')"
+                                aria-haspopup="true" aria-expanded="false" aria-label="Actions">
+                            ${icon('ellipsis')}
+                        </button>
+                        <div class="row-menu hidden" id="rowMenu-bj-${esc(job.id)}" role="menu">
+                            <button type="button" role="menuitem" data-id="${esc(job.id)}"
+                                    onclick="event.stopPropagation(); closeRowMenus(); openBackjob(this.dataset.id)">
+                                ${icon('calendar-clock')} ${openLabel}
+                            </button>
+                            ${printItem}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            ${open ? `<div class="bj-claim-foot">
+                <button type="button" class="bj-history" data-id="${esc(job.id)}"
+                        onclick="event.stopPropagation(); openBackjob(this.dataset.id)">${openLabel}</button>
+            </div>` : ''}
         </article>`;
 }
 
@@ -401,18 +572,21 @@ function mechanicPanelHtml(jobs) {
             ? 'Not rated'
             : `${starsDisplay(row.ratingAvg)} ${row.ratingAvg.toFixed(1)}/5 · ${row.ratingCount}`;
         return `<tr>
-            <td>
-                <strong>${esc(mechanicLabel(row.name))}</strong>
-                <b>${row.count}</b>
-                <small>${row.name === 'Unassigned' ? 'No lead tech' : 'Assigned tech'}</small>
-                <small>${customerRate}</small>
+            <td data-label="Mechanic">
+                <div class="bj-person-cell">
+                    ${bjAvatar(mechanicLabel(row.name))}
+                    <span>
+                        <strong>${esc(mechanicLabel(row.name))}</strong>
+                        <small>${row.count} claim${row.count === 1 ? '' : 's'} · ${customerRate}</small>
+                    </span>
+                </div>
             </td>
-            <td>
+            <td data-label="Common complaint">
                 ${esc(row.root)}
                 ${row.part ? `<small>Parts reused: ${esc(row.part)}</small>` : ''}
             </td>
-            <td>${esc(quality)}</td>
-            <td>
+            <td data-label="First-time rate">${esc(quality)}</td>
+            <td data-label="Status">
                 <span class="bj-quality ${row.status.cls}">${esc(row.status.label)}</span>
                 <button type="button" data-mech="${esc(row.name)}" onclick="filterBackjobMechanic(this.dataset.mech)">View claims</button>
             </td>
@@ -421,7 +595,6 @@ function mechanicPanelHtml(jobs) {
 
     return `
         <section class="bj-panel bj-matrix">
-            <h2>By mechanic</h2>
             <div class="bj-table-scroll">
                 <table>
                     <thead><tr>
@@ -438,32 +611,35 @@ function mechanicPanelHtml(jobs) {
 
 function backjobKpiHtml(kpis) {
     const rateWarn = kpis.monthRate >= 3;
+    const openLabel = kpis.active === 1 ? 'There is 1 back-job' : (
+        kpis.active > 0 ? `There are ${kpis.active} back-jobs` : 'There is no back-job'
+    );
     return `
         <div class="bj-kpis">
-            <button type="button" class="bj-kpi warning${backjobStatus === 'open' && backjobTab === 'claims' ? ' is-on' : ''}"
+            <button type="button" class="bj-kpi red${backjobStatus === 'open' && backjobTab === 'claims' ? ' is-on' : ''}"
                     onclick="setBackjobStatus('open')">
-                <div>
-                    <h3>${kpis.active}</h3>
-                    <p>Open now</p>
-                    <small>${kpis.active > 0 ? 'Tap to show open claims' : 'None in the shop'}</small>
-                </div>
-                ${icon('triangle-alert')}
+                <span class="bj-stat-icon">${icon('triangle-alert')}</span>
+                <span class="bj-stat-copy">
+                    <strong>${kpis.active}</strong>
+                    <span>Open now</span>
+                    <small>${openLabel}</small>
+                </span>
             </button>
-            <article class="bj-kpi ${rateWarn ? 'warning' : 'good'}">
-                <div>
-                    <h3>${kpis.monthRate.toFixed(1)}%</h3>
-                    <p>This month's re-service rate</p>
-                    <small>Aim below 3%</small>
-                </div>
-                ${icon(rateWarn ? 'trending-down' : 'trending-up')}
+            <article class="bj-kpi ${rateWarn ? 'amber' : 'green'}">
+                <span class="bj-stat-icon">${icon(rateWarn ? 'trending-down' : 'trending-up')}</span>
+                <span class="bj-stat-copy">
+                    <strong>${kpis.monthRate.toFixed(1)}%</strong>
+                    <span>This month's re-service rate</span>
+                    <small>vs last month ${kpis.lastRate.toFixed(1)}%</small>
+                </span>
             </article>
-            <article class="bj-kpi neutral">
-                <div>
-                    <h3>${peso(kpis.partsCost)}</h3>
-                    <p>Warranty parts cost</p>
+            <article class="bj-kpi blue">
+                <span class="bj-stat-icon">${icon('circle-dollar')}</span>
+                <span class="bj-stat-copy">
+                    <strong>${peso(kpis.partsCost)}</strong>
+                    <span>Warranty parts cost</span>
                     <small>Shop-covered on these claims</small>
-                </div>
-                ${icon('sliders')}
+                </span>
             </article>
         </div>`;
 }

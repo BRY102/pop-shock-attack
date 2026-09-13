@@ -187,6 +187,16 @@
                             <path d="m6 6 12 12" />
                         </svg>
                     </button>
+                    <div class="app-head-brand" aria-hidden="true">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="18.5" cy="17.5" r="3.5" />
+                            <circle cx="5.5" cy="17.5" r="3.5" />
+                            <circle cx="15" cy="5" r="1" />
+                            <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                        </svg>
+                        <span>MOTO<b>TRACK</b></span>
+                    </div>
                     <div class="page-title-block">
                         <h2 id="pageTitle" style="color: var(--text-primary);">Dashboard</h2>
                         <p id="pageDesc" style="color: #777; font-size: 0.9rem;">Overview</p>
@@ -219,7 +229,11 @@
                 </div>
             </div>
 
-            <div class="content-body" id="mainContentArea"></div>
+            <div class="content-body" id="pageScroll">
+                <div id="pageHero" class="page-hero" hidden></div>
+                <div id="pageToolbar" class="page-toolbar"></div>
+                <div id="mainContentArea" class="page-canvas"></div>
+            </div>
         </main>
     </div>
 

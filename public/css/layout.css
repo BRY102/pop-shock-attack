@@ -749,6 +749,12 @@
     margin-right: auto;
 }
 
+.app-head-brand,
+.page-hero,
+.page-toolbar {
+    display: none;
+}
+
 .page-title-block {
     min-width: 0;
 }
