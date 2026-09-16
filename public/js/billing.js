@@ -38,6 +38,14 @@ function findJobById(jobId) {
     return null;
 }
 
+function billedJobButtonsHtml(job, buttonClass) {
+    if (!job?.specs) return '';
+    const id = esc(String(job.id));
+    const cls = buttonClass || 'btn btn-ghost btn-sm';
+    return `<button type="button" class="${cls}" onclick="openBillDetail('${id}')">View bill</button>
+            <button type="button" class="${cls}" onclick="printReceipt('${id}')">${icon('printer')} Print</button>`;
+}
+
 function laborClassLabel(enginePrice) {
     const cls = ENGINE_CLASSES.find(row => Number(row.price) === Number(enginePrice));
     return cls ? cls.label : 'Base labor';

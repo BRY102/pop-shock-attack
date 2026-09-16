@@ -1,0 +1,121 @@
+/* ================================================= */
+/* MOTOTRACK — Responsive base                       */
+/* Split from responsive.css. Same cascade.         */
+/* ================================================= */
+
+/* Always-on: never let a grid item overflow a narrow screen */
+html {
+    overflow-x: clip;
+}
+
+#view-system,
+#view-login {
+    max-width: 100%;
+}
+
+.grid-layout {
+    grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr));
+}
+
+.stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+}
+
+.approval-grid {
+    grid-template-columns: 1fr;
+}
+
+.panel {
+    flex: 1 1 280px;
+    min-width: 0;
+}
+
+.split-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.form-row>* {
+    min-width: 0;
+}
+
+.form-row-tight {
+    margin-bottom: 0;
+}
+
+.inline-form {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    align-items: center;
+}
+
+.inline-form .search-bar {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+.modal-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 0.75rem;
+    justify-content: center;
+}
+
+.chart-container {
+    overflow: hidden;
+    max-width: 100%;
+}
+
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.data-table {
+    min-width: 0;
+}
+
+.table-compact .data-table {
+    min-width: 0;
+}
+
+.table-scroll .data-table {
+    min-width: 0;
+}
+
+@media (min-width: 1025px) {
+    .table-scroll .data-table {
+        min-width: 1080px;
+    }
+}
+
+.data-table th,
+.data-table td {
+    word-break: break-word;
+}
+
+.table-scroll .data-table th,
+.table-scroll .data-table td,
+.cell-keep {
+    word-break: normal;
+}
+
+/* Kanban: swipe sideways instead of stacking five tall columns */
+.kanban-board {
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+}
+
+.stage-column {
+    scroll-snap-align: start;
+}

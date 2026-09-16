@@ -1,0 +1,36 @@
+/* ================================================= */
+/* MANAGE USERS — PRESENCE DOTS                     */
+/* Split from views.css. Rules unchanged.          */
+/* ================================================= */
+/* ------------------------------------------------- */
+/* USER PRESENCE (Manage Users status column)        */
+/* ------------------------------------------------- */
+.users-presence {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.users-presence-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9ca3af;
+    flex-shrink: 0;
+}
+
+.users-presence-dot.is-live {
+    background: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
+}
+
+.users-presence .badge-good::before,
+.users-presence .badge-idle::before,
+.users-presence .badge-pending {
+    margin-top: 0;
+}
+
+.users-presence .badge-good::before,
+.users-presence .badge-idle::before {
+    display: none;
+}

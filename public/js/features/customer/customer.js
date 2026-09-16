@@ -365,8 +365,7 @@ function renderCustomerPrevious(ctx) {
     const detail = released.find(job => String(job.id) === String(selectedPrevJobId));
 
     if (detail) {
-        document.getElementById('view-system')?.classList.add('header-compact');
-        ctx.actions.innerHTML = `<button type="button" class="btn btn-muted" onclick="backCustPrevList()">${icon('undo')} Back to list</button>`;
+        ctx.actions.innerHTML = `<button type="button" class="btn btn-muted" onclick="backCustPrevList()">${icon('undo')} Back to list ${icon('chevron-right')}</button>`;
         ctx.content.innerHTML = customerPortalHtml(detail);
         return;
     }

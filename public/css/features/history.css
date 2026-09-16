@@ -1,0 +1,41 @@
+/* ================================================= */
+/* SERVICE HISTORY                                  */
+/* Split from views.css. Rules unchanged.          */
+/* ================================================= */
+/* ------------------------------------------------- */
+/* SERVICE HISTORY — unit summary + stage pill       */
+/* ------------------------------------------------- */
+.unit-summary {
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 2rem;
+}
+
+.unit-summary .unit-title h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.unit-summary .unit-title code {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.unit-summary .unit-title span {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}

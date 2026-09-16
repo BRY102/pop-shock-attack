@@ -140,6 +140,7 @@ const ICONS = {
     banknote: '<rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/>',
     wallet: '<path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2.3"/><path d="M15 12a1 1 0 0 0-1-1H3a2 2 0 0 0 0 4h12a1 1 0 0 0 1-1z"/>',
     'circle-dollar': '<circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 18V6"/>',
+    'philippine-peso': '<path d="M20 11H4"/><path d="M20 7H4"/><path d="M7 21V4a1 1 0 0 1 1-1h4a7 7 0 0 1 0 14H7"/>',
     'circle-check': '<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>',
     receipt: '<path d="M12 17V7"/><path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8"/><path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z"/>',
     'trending-up': '<path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/>',
@@ -305,14 +306,31 @@ window.toggleRowMenu = function (e, id) {
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest?.('.row-menu-wrap')) closeRowMenus();
+    let backjobsMenus = false;
     if (typeof backjobFilterOpen !== 'undefined' && backjobFilterOpen && !e.target.closest?.('.bj-filter-wrap')) {
         backjobFilterOpen = false;
-        if (typeof renderBackjobResults === 'function') renderBackjobResults();
+        backjobsMenus = true;
     }
+    if (typeof backjobSortOpen !== 'undefined' && backjobSortOpen && !e.target.closest?.('.bj-sort-wrap')) {
+        backjobSortOpen = false;
+        backjobsMenus = true;
+    }
+    if (backjobsMenus && typeof renderBackjobResults === 'function') renderBackjobResults();
 });
 
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeRowMenus();
+    if (e.key !== 'Escape') return;
+    closeRowMenus();
+    let backjobsMenus = false;
+    if (typeof backjobFilterOpen !== 'undefined' && backjobFilterOpen) {
+        backjobFilterOpen = false;
+        backjobsMenus = true;
+    }
+    if (typeof backjobSortOpen !== 'undefined' && backjobSortOpen) {
+        backjobSortOpen = false;
+        backjobsMenus = true;
+    }
+    if (backjobsMenus && typeof renderBackjobResults === 'function') renderBackjobResults();
 });
 
 // A fixed menu cannot follow its row, so any scroll or resize dismisses it

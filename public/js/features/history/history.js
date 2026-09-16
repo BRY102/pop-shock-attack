@@ -53,8 +53,8 @@ function renderHistory(ctx) {
                placeholder="Plate, customer, or model"
                value="${esc(pending)}"
                onkeydown="if (event.key === 'Enter') searchHistory()">
-        <button class="btn btn-primary" onclick="searchHistory()">Search</button>
-        <button class="btn btn-ghost" onclick="showAllHistory()">Show all</button>
+        <button class="btn btn-primary" onclick="searchHistory()">Search ${icon('chevron-right')}</button>
+        <button class="btn btn-ghost" onclick="showAllHistory()">Show all ${icon('chevron-right')}</button>
     `;
 
     ctx.content.innerHTML = `
@@ -153,6 +153,12 @@ function renderHistoryResults(jobs, q) {
         const warrantyColor = warrantyText.includes('Active') ? '#15803d'
             : (warrantyText.includes('Expired') ? '#b91c1c' : 'var(--text-muted)');
 
+        // Staff have no Sales page — this is their reprint surface. Admin
+        // keeps the table without a View bill / Print column.
+        const staffBill = currentRole === 'staff'
+            ? `<td class="cell-actions">${job.specs ? billedJobButtonsHtml(job) : '—'}</td>`
+            : '';
+
         rows += `<tr>
             <td class="cell-keep">${esc(job.date_in)}</td>
             <td class="cell-keep"><strong>${esc(displayName(job.customer))}</strong></td>
@@ -162,6 +168,7 @@ function renderHistoryResults(jobs, q) {
             <td style="font-size:0.8rem; color:${warrantyColor}; font-weight:600;">${esc(warrantyText)}</td>
             <td>${bill}</td>
             <td>${Number(job.rating) >= 1 ? `${starsDisplay(job.rating)} ${Number(job.rating)}/5` : '—'}</td>
+            ${staffBill}
         </tr>`;
     });
 
@@ -178,6 +185,7 @@ function renderHistoryResults(jobs, q) {
             <thead><tr>
                 <th class="cell-keep">Date In</th><th class="cell-keep">Customer</th><th>Unit</th><th>Status</th>
                 <th>Tuning Setup</th><th>Warranty</th><th>Billed</th><th>Rate</th>
+                ${currentRole === 'staff' ? '<th></th>' : ''}
             </tr></thead>
             <tbody>${rows}</tbody>
         </table></div>

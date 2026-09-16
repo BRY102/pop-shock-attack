@@ -1,0 +1,26 @@
+/* ================================================= */
+/* PRINT OVERRIDES                                  */
+/* Split from views.css. Rules unchanged.          */
+/* ================================================= */
+/* ------------------------------------------------- */
+/* PRINT STYLES                                      */
+/* ------------------------------------------------- */
+@media print {
+    body { background: #fff; overflow: auto; }
+    .sidebar, .top-header, .btn, .action-btns, .toast-container,
+    .btn-sm, .modal { display: none !important; }
+    .main-content { width: 100%; background: #fff; }
+    .content-body { padding: 1rem; height: auto; overflow: visible; }
+    .table-container { box-shadow: none; border: 1px solid #ccc; }
+    .data-table th,
+    .data-table td { border-bottom: 1px solid #ccc; padding: 0.5rem; }
+    .card { box-shadow: none; border: 1px solid #ccc; }
+
+    /* The expense report replaces the page it was launched from */
+    body.printing-report #view-system,
+    body.printing-report #view-login,
+    body.printing-report .login-loader { display: none !important; }
+    body.printing-report .feedback-drawer,
+    body.printing-report .feedback-backdrop { display: none !important; }
+    body.printing-report .print-only { display: block !important; padding: 1rem; }
+}

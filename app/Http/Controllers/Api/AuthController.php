@@ -8,12 +8,15 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\UserResource;
 use App\Models\AppUser;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
+    public function __construct(private readonly ActivityLogger $logger) {}
+
     /**
      * Public customer self-registration. Accounts start as "pending"
      * until approved by staff.
@@ -54,6 +57,7 @@ class AuthController extends Controller
 
         $user->forceFill(['last_seen_at' => now()])->save();
         $token = $user->createToken('api-token')->plainTextToken;
+        $this->logger->record($user, 'Logged in', $request->ip());
 
         return response()->json([
             'message' => 'Login successful',

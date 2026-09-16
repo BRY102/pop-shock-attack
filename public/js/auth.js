@@ -267,6 +267,10 @@ function clearWorkspaceState() {
     }
     document.getElementById('notifBell')?.setAttribute('aria-expanded', 'false');
     window.closeFeedbackDrawer?.();
+    window.closeProfileMenu?.();
+    const profileAva = document.getElementById('profileAva');
+    if (profileAva) profileAva.textContent = '?';
+    document.getElementById('profileBtn')?.setAttribute('aria-label', 'Account menu');
     document.getElementById('feedbackWrap')?.classList.add('hidden');
 }
 
@@ -290,6 +294,7 @@ async function loginSuccess(userName, roleName) {
     document.getElementById('view-system').classList.remove('hidden');
     document.getElementById('view-system').classList.add('active-view');
     window.syncFeedbackAccess?.();
+    window.paintProfile?.();
 
     await syncAllData();
     startNotifPolling();

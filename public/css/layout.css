@@ -751,7 +751,7 @@
 
 .app-head-brand,
 .page-hero,
-.page-toolbar {
+.header-actions {
     display: none;
 }
 
@@ -759,31 +759,98 @@
     min-width: 0;
 }
 
-.header-actions {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    flex: 0 1 auto;
-}
-
-.header-actions:empty {
+.page-toolbar:empty {
     display: none;
 }
 
-/* Every control in the toolbar shares one height and one radius, so a row of
-   date inputs + buttons lines up on both edges instead of stair-stepping. */
-.header-actions .btn,
-.header-actions .search-bar,
-.header-actions .filter-group {
-    height: var(--control-h);
-    min-height: var(--control-h);
-    font-size: 0.875rem;
-    border-radius: var(--radius-sm);
+/* Page actions sit under the title, same dark pill as Overview Add Expense.
+   Header keeps only the menu, feedback, and notification bell. */
+.page-toolbar:not(:empty) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin: 0 0 1.15rem;
 }
 
-.header-actions .btn {
-    padding: 0 0.95rem;
-    letter-spacing: 0.2px;
+.page-toolbar .search-bar {
+    flex: 1 1 240px;
+    min-width: 200px;
+    max-width: 420px;
+    margin-right: auto;
+    height: 40px;
+    min-height: 40px;
+    border-radius: 999px;
+}
+
+.page-toolbar .bj-search {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex: 1 1 280px;
+    min-width: 220px;
+    max-width: 480px;
+    margin-right: auto;
+}
+
+.page-toolbar .bj-search .search-bar {
+    flex: 1 1 auto;
+    width: auto;
+    max-width: none;
+    margin-right: 0;
+}
+
+.page-toolbar .filter-group {
+    margin-right: auto;
+    height: 40px;
+    min-height: 40px;
+    border-radius: 999px;
+}
+
+.page-toolbar .btn,
+.page-toolbar .btn-primary,
+.page-toolbar .btn-ghost,
+.page-toolbar .btn-muted {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 0.7rem 0 0.95rem;
+    border: 0;
+    border-radius: 999px;
+    background: #1b2430;
+    color: #fff;
+    font: inherit;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+}
+
+.page-toolbar .btn:hover,
+.page-toolbar .btn-primary:hover,
+.page-toolbar .btn-ghost:hover,
+.page-toolbar .btn-muted:hover {
+    background: #111827;
+    color: #fff;
+    border-color: transparent;
+}
+
+.page-toolbar .btn .icon {
+    width: 15px;
+    height: 15px;
+    stroke-width: 2.4;
+}
+
+.page-toolbar .btn .icon:last-child {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
 }
 
 /* The two date fields read as one control: shared frame, hairline between. */

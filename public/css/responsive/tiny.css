@@ -1,0 +1,43 @@
+/* ================================================= */
+/* MOTOTRACK — Responsive ≤400 / ≤380                */
+/* Split from responsive.css. Same cascade.         */
+/* ================================================= */
+
+@media (max-width: 400px) {
+    .login-label-row {
+        gap: 0.5rem 1rem;
+    }
+}
+
+/* Very small phones — keep 2-up stats; stack only form pairs */
+@media (max-width: 380px) {
+    .login-feature-pills {
+        display: none;
+    }
+
+    .stat-card {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0.8rem 0.75rem;
+    }
+
+    .stat-card h3 {
+        font-size: 1.25rem;
+    }
+
+    .form-row-2>* {
+        flex: 1 1 100% !important;
+    }
+
+    .bill-meta {
+        grid-template-columns: 1fr;
+    }
+
+    .dash-alerts {
+        grid-template-columns: 1fr;
+    }
+
+    .rev-kpis {
+        grid-template-columns: 1fr;
+    }
+}

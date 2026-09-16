@@ -58,6 +58,7 @@ function buildKanbanCard(job, stage) {
 
     // Stage action buttons (staff only)
     let btnHtml = '';
+    const billBtns = currentRole === 'staff' ? billedJobButtonsHtml(job, 'btn-sm') : '';
     if (currentRole === 'staff') {
         const idx = STAGES.indexOf(stage);
         const delBtn = `<button class="btn-sm btn-danger" onclick="deleteJob('${job.id}')" style="margin-top:5px;">Cancel Job</button>`;
@@ -67,7 +68,7 @@ function buildKanbanCard(job, stage) {
         if (stage === 'Tuning') {
             btnHtml = `<div class="action-btns">${needsTech
                 ? assignFirst
-                : `<button class="btn-sm" style="background:var(--primary);" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>`}${delBtn}</div>`;
+                : `<button class="btn-sm" style="background:var(--primary);" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>`}${billBtns}${delBtn}</div>`;
         } else if (stage === 'QA') {
             // No cancel here: a billed unit has to go back to Tuning first, which
             // also returns its parts to stock. The API enforces the same rule.
@@ -76,15 +77,16 @@ function buildKanbanCard(job, stage) {
                     ? assignFirst
                     : `<button class="btn-sm" onclick="moveStage('${job.id}', 'Release')">Move to Release</button>`}
                 <button class="btn-sm" style="background:#f59e0b; color:#fff;" onclick="moveStage('${job.id}', 'Tuning')">${icon('undo')} Back to Tuning</button>
+                ${billBtns}
             </div>`;
         } else if (idx < STAGES.length - 1) {
             btnHtml = `<div class="action-btns">${needsTech
                 ? assignFirst
-                : `<button class="btn-sm" onclick="moveStage('${job.id}', '${STAGES[idx + 1]}')">Move to ${STAGES[idx + 1]}</button>`}${delBtn}</div>`;
+                : `<button class="btn-sm" onclick="moveStage('${job.id}', '${STAGES[idx + 1]}')">Move to ${STAGES[idx + 1]}</button>`}${billBtns}${delBtn}</div>`;
         }
     }
     if (stage === 'Release') {
-        btnHtml = `<div class="action-btns"><span class="badge-done">${icon('check')} Completed</span></div>`;
+        btnHtml = `<div class="action-btns"><span class="badge-done">${icon('check')} Completed</span>${billBtns}</div>`;
     }
 
     const complaintHtml = job.complaint
@@ -100,7 +102,7 @@ function renderKanban(ctx) {
 
     let actHtml = `<input type="text" id="searchKanbanInput" class="search-bar" placeholder="Plate or customer" onkeyup="searchKanban()">`;
     if (currentRole === 'staff') {
-        actHtml += `<button class="btn btn-primary" onclick="openIntake()">${icon('plus')} New Intake</button>`;
+        actHtml += `<button class="btn btn-primary" onclick="openIntake()">${icon('plus')} New Intake ${icon('chevron-right')}</button>`;
     }
     ctx.actions.innerHTML = actHtml;
 

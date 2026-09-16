@@ -18,9 +18,9 @@ function renderReports(ctx) {
             <span class="filter-sep"></span>
             <input type="date" id="filterEnd" class="date-filter" aria-label="To date">
         </div>
-        <button class="btn btn-primary" onclick="filterReports()">${icon('search')} Filter Data</button>
-        <button class="btn btn-ghost" onclick="exportReportCsv()">${icon('download')} Export CSV</button>
-        <button class="btn btn-ghost" onclick="printSalesBillingReport()">${icon('printer')} Print Bills</button>
+        <button class="btn btn-primary" onclick="filterReports()">${icon('search')} Filter Data ${icon('chevron-right')}</button>
+        <button class="btn btn-ghost" onclick="exportReportCsv()">${icon('download')} Export CSV ${icon('chevron-right')}</button>
+        <button class="btn btn-ghost" onclick="printSalesBillingReport()">${icon('printer')} Print Bills ${icon('chevron-right')}</button>
     `;
 
     reportPeriod = { start: '', end: '' };

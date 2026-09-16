@@ -1,0 +1,120 @@
+/* ================================================= */
+/* MOTOTRACK — Responsive tables ≤900                */
+/* Split from responsive.css. Same cascade.         */
+/* ================================================= */
+
+/* Other pages keep a real table on phones. Swipe sideways if columns overflow.
+   Only the Back-jobs mechanic matrix still stacks into labeled cards. */
+@media screen and (max-width: 900px) {
+    .table-container,
+    .table-container.table-flush,
+    .table-container.table-scroll,
+    .list-card .table-container {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        max-height: none;
+    }
+
+    .table-container .data-table,
+    .table-container.table-scroll .data-table,
+    .list-card .data-table {
+        width: max-content;
+        min-width: 100%;
+        display: table;
+        border-collapse: collapse;
+    }
+
+    .table-container .data-table thead,
+    .list-card .data-table thead,
+    .table-container .data-table tbody,
+    .list-card .data-table tbody,
+    .table-container .data-table tbody tr,
+    .list-card .data-table tbody tr,
+    .table-container .data-table td,
+    .list-card .data-table td,
+    .table-container .data-table th,
+    .list-card .data-table th {
+        display: revert;
+    }
+
+    .table-container .data-table td::before,
+    .list-card .data-table td::before {
+        content: none;
+        display: none;
+    }
+
+    .page-backjobs .bj-panel table {
+        width: 100%;
+        min-width: 0;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    .page-backjobs .bj-panel table thead {
+        display: none;
+    }
+
+    .page-backjobs .bj-panel table,
+    .page-backjobs .bj-panel table tbody {
+        display: block;
+    }
+
+    .page-backjobs .bj-panel table tbody tr {
+        display: block;
+        position: relative;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-white);
+    }
+
+    .page-backjobs .bj-panel table tbody tr:last-child {
+        border-bottom: none;
+    }
+
+    .page-backjobs .bj-panel table td {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.28rem 0;
+        border: none;
+        text-align: right;
+        white-space: normal;
+        word-break: break-word;
+        font-size: 0.82rem;
+    }
+
+    .page-backjobs .bj-panel table td::before {
+        content: attr(data-label);
+        flex: 0 0 36%;
+        max-width: 42%;
+        text-align: left;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+        line-height: 1.35;
+    }
+
+    .page-backjobs .bj-panel table td:not([data-label])::before,
+    .page-backjobs .bj-panel table td[data-label=""]::before {
+        content: none;
+        display: none;
+    }
+
+    .page-backjobs .bj-panel table td[data-label="Mechanic"],
+    .page-backjobs .bj-panel table td[data-label="Common complaint"] {
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .page-backjobs .bj-panel table td[data-label="Mechanic"]::before,
+    .page-backjobs .bj-panel table td[data-label="Common complaint"]::before {
+        flex: none;
+        max-width: none;
+        margin-bottom: 0.1rem;
+    }
+}

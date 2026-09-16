@@ -122,6 +122,7 @@ window.toggleNotifPanel = async function () {
     bell?.setAttribute('aria-expanded', opening ? 'true' : 'false');
     if (opening) {
         window.closeFeedbackDrawer?.();
+        window.closeProfileMenu?.();
         renderNotifPanel();
     }
 };

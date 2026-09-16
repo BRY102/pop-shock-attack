@@ -149,7 +149,7 @@ window.stopUsersPresencePoll = stopUsersPresencePoll;
 function renderUsers(ctx) {
     ctx.title.innerText = 'Manage Users';
     ctx.desc.innerText = 'Accounts and mechanics.';
-    ctx.actions.innerHTML = `<button class="btn btn-primary" onclick="openUserModal('add')">${icon('plus')} Add Account</button>`;
+    ctx.actions.innerHTML = `<button class="btn btn-primary" onclick="openUserModal('add')">${icon('plus')} Add Account ${icon('chevron-right')}</button>`;
 
     let html = resetRequestCards();
     html += `<div class="table-container"><table class="data-table"><thead><tr>

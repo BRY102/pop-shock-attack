@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CounterSaleController;
 use App\Http\Controllers\Api\ExpenseController;
@@ -27,8 +28,11 @@ Route::middleware('throttle:5,1')->group(function () {
 | Authenticated routes (Authorization: Bearer <token>)
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth:sanctum', 'seen'])->group(function () {
+Route::middleware(['auth:sanctum', 'seen', 'activity'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/activity-logs', [ActivityLogController::class, 'index']);
+    Route::post('/activity-logs', [ActivityLogController::class, 'store']);
 
     // Notifications (every role has their own)
     Route::get('/notifications', [NotificationController::class, 'index']);

@@ -1,0 +1,43 @@
+/* ================================================= */
+/* SHARED EMPTY STATES                              */
+/* Split from views.css. Rules unchanged.          */
+/* ================================================= */
+/* ------------------------------------------------- */
+/* EMPTY STATES (history search, approvals)          */
+/* ------------------------------------------------- */
+.empty-state {
+    text-align: center;
+    padding: 4.5rem 1rem;
+    color: var(--text-muted);
+}
+
+.empty-state .empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1.25rem;
+    border-radius: 50%;
+    background: var(--bg-white);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    box-shadow: var(--shadow-sm);
+}
+
+.empty-state .empty-icon svg {
+    width: 26px;
+    height: 26px;
+}
+
+.empty-state h3 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+
+.empty-state p {
+    font-size: 0.9rem;
+    line-height: 1.6;
+}

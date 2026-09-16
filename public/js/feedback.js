@@ -207,6 +207,7 @@ window.toggleFeedbackDrawer = async function () {
     }
 
     window.closeNotifPanel?.();
+    window.closeProfileMenu?.();
     window.closeQuickMenu?.();
     window.closeSidebar?.();
 

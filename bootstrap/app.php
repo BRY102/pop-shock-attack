@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureUserHasRole::class,
             'seen' => \App\Http\Middleware\TouchLastSeen::class,
+            'activity' => \App\Http\Middleware\RecordActivity::class,
         ]);
         $middleware->trustProxies(at: '*');
     })

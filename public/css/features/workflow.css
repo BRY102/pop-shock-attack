@@ -1,0 +1,116 @@
+/* ================================================= */
+/* WORKFLOW (KANBAN BOARD)                          */
+/* Split from views.css. Rules unchanged.          */
+/* ================================================= */
+/* ------------------------------------------------- */
+/* KANBAN BOARD                                      */
+/* ------------------------------------------------- */
+.kanban-board {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 1.5rem;
+    height: 100%;
+}
+
+.kanban-board::-webkit-scrollbar { height: 6px; }
+.kanban-board::-webkit-scrollbar-track { background: transparent; }
+.kanban-board::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+.line-station {
+    display: flex;
+    align-items: stretch;
+    flex: 0 0 auto;
+}
+
+.line-chevron {
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #9ca3af;
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+.line-chevron .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.stage-column {
+    background: #eaecf0;
+    width: 296px;
+    min-width: 296px;
+    border-radius: var(--radius-md);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%;
+    border: 1px solid #dde1e7;
+}
+
+.stage-header {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.75rem 0.9rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    border-bottom: 2px solid #d1d5db;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1.2px;
+    background: #e4e7ec;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+}
+
+.station-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 1px;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.station-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.station-count {
+    margin-left: auto;
+    min-width: 1.5rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid #d1d5db;
+    color: var(--text-primary);
+    font-size: 0.72rem;
+    letter-spacing: 0;
+    text-align: center;
+}
+
+.stage-column.has-jobs {
+    border-color: #d4c4bf;
+}
+
+.stage-column.has-jobs .stage-header {
+    background: #f5ede9;
+    border-bottom-color: var(--primary);
+}
+
+.job-list {
+    padding: 0.9rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.job-list::-webkit-scrollbar { width: 4px; }
+.job-list::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }

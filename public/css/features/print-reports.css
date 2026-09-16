@@ -1,0 +1,346 @@
+/* ================================================= */
+/* PRINTABLE EXPENSE / SALES REPORTS                */
+/* Split from views.css. Rules unchanged.          */
+/* ================================================= */
+/* ------------------------------------------------- */
+/* PRINT-ONLY REPORT (expense report -> Save as PDF) */
+/* ------------------------------------------------- */
+.print-only {
+    display: none;
+}
+
+.print-report h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.25rem;
+}
+
+.print-report .print-meta {
+    color: #555;
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+}
+
+.print-report .print-total {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.bp-list {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 0;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent;
+}
+
+.bp-head,
+.bp-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) 6rem 9.25rem;
+    column-gap: 1.75rem;
+    align-items: center;
+}
+
+.bp-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #fff;
+    padding: 0 0 0.7rem;
+    border-bottom: 1px solid #eef0f3;
+    font-size: 0.68rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.bp-head span:nth-child(2),
+.bp-share {
+    text-align: right;
+    padding-right: 0.25rem;
+}
+
+.bp-head span:nth-child(3) {
+    text-align: right;
+}
+
+.bp-share {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #111827;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.bp-row {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.bp-row:last-child {
+    border-bottom: none;
+}
+
+.bp-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+}
+
+.bp-rank {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #4b5563;
+    flex-shrink: 0;
+}
+
+.bp-copy {
+    min-width: 0;
+}
+
+.bp-copy b {
+    display: block;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #111827;
+}
+
+.bp-copy small {
+    display: block;
+    margin-top: 0.16rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+    line-height: 1.35;
+}
+
+.bp-net {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    min-width: 0;
+    width: 100%;
+}
+
+.bp-net b {
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.bp-net small {
+    font-weight: 500;
+    color: #6b7280;
+    font-size: 0.72rem;
+    white-space: nowrap;
+}
+
+.bp-net.is-gain {
+    color: #15803d;
+}
+
+.bp-net.is-loss {
+    color: #b91c1c;
+}
+
+.bp-bar {
+    display: block;
+    width: 100%;
+    height: 5px;
+    background: #e5e7eb;
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.bp-bar i {
+    display: block;
+    height: 100%;
+    background: #16a34a;
+}
+
+.bp-bar.is-gain i {
+    background: #16a34a;
+}
+
+.bp-net.is-loss .bp-bar i,
+.bp-bar.is-loss i {
+    background: #dc2626;
+}
+
+.review-block {
+    margin-top: 1.75rem;
+}
+
+.review-block > .dash-heading {
+    margin-bottom: 0.85rem;
+}
+
+.rev-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.rev-kpis .dash-metric {
+    min-width: 0;
+}
+
+.rev-kpis .dash-metric.is-plain {
+    padding: 1.05rem 1.15rem;
+}
+
+.review-block .insight-pair {
+    margin-top: 0;
+}
+
+.rev-chart {
+    position: relative;
+    height: 148px;
+}
+
+.rev-mech-head,
+.rev-mech-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.15fr) 0.5fr;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.rev-mech-head {
+    padding: 0 0 0.7rem;
+    border-bottom: 1px solid #eef0f3;
+    font-size: 0.68rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: #9ca3af;
+    font-weight: 600;
+}
+
+.rev-mech-head span:last-child,
+.rev-mech-n {
+    text-align: right;
+}
+
+.rev-mech-row {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.rev-mech-row:last-child {
+    border-bottom: none;
+}
+
+.rev-mech-who {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #111827;
+    min-width: 0;
+}
+
+.rev-mech-ava {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    display: grid;
+    place-items: center;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #4b5563;
+    flex-shrink: 0;
+}
+
+.rev-mech-score {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #111827;
+    font-variant-numeric: tabular-nums;
+    min-width: 0;
+    white-space: nowrap;
+}
+
+.rev-mech-score .stars {
+    font-size: 0.82rem;
+    flex-shrink: 0;
+}
+
+.rev-mech-score b {
+    font-weight: 700;
+    font-size: 0.88rem;
+}
+
+.rev-mech-n {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #111827;
+    font-variant-numeric: tabular-nums;
+}
+
+.rev-feed-card {
+    margin-top: 1.25rem;
+}
+
+.rev-feed-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.85rem 1rem;
+    align-items: start;
+    padding: 0.9rem 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.rev-feed-row:last-child {
+    border-bottom: none;
+}
+
+.rev-feed-stars {
+    padding-top: 0.1rem;
+}
+
+.rev-feed-copy strong {
+    display: block;
+    font-size: 0.92rem;
+    color: #111827;
+}
+
+.rev-feed-copy span {
+    display: block;
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    color: #6b7280;
+}
+
+.rev-feed-copy p {
+    margin: 0.4rem 0 0;
+    font-size: 0.86rem;
+    color: #374151;
+    line-height: 1.45;
+}
+
+.rev-feed-date {
+    font-size: 0.78rem;
+    color: #9ca3af;
+    white-space: nowrap;
+    padding-top: 0.12rem;
+}

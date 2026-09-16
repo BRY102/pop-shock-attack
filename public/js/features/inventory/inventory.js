@@ -5,8 +5,8 @@
 // stock change does not throw the user back to the top.
 // ============================================================
 
-let inventoryFilter = 'all';
-let inventorySearch = '';
+var inventoryFilter = 'all';
+var inventorySearch = '';
 
 const INVENTORY_TABS = [
     { key: 'all', label: 'All items' },
@@ -134,7 +134,7 @@ function renderInventory(ctx) {
 
     const isAdmin = currentRole === 'admin';
     ctx.actions.innerHTML = isAdmin
-        ? `<button class="btn btn-primary" onclick="openItemModal('add')">${icon('plus')} Add New Stock Item</button>`
+        ? `<button class="btn btn-primary" onclick="openItemModal('add')">${icon('plus')} Add New Stock Item ${icon('chevron-right')}</button>`
         : '';
 
     const tabs = INVENTORY_TABS.map(tab => `

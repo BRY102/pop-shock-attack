@@ -65,6 +65,7 @@ window.openSidebar = function () {
     backdrop?.classList.remove('hidden');
     window.closeNotifPanel?.();
     window.closeFeedbackDrawer?.();
+    window.closeProfileMenu?.();
     syncMenuToggle(true);
 };
 
@@ -159,12 +160,8 @@ const FETCHERS = {
 let lastViewType = '';
 let actionsWereMobile = null;
 
-function actionsStayInHeader(viewType) {
-    return !isMobileNav() || viewType === 'backjobs';
-}
-
-function actionHost(viewType) {
-    return document.getElementById(actionsStayInHeader(viewType) ? 'headerActions' : 'pageToolbar');
+function actionHost() {
+    return document.getElementById('pageToolbar');
 }
 
 function clearActionHosts() {
@@ -177,10 +174,8 @@ function clearActionHosts() {
 function parkPageActions() {
     const header = document.getElementById('headerActions');
     const toolbar = document.getElementById('pageToolbar');
-    if (!header || !toolbar || !lastViewType) return;
-    const dest = actionHost(lastViewType);
-    const src = dest === header ? toolbar : header;
-    while (src.firstChild) dest.appendChild(src.firstChild);
+    if (!header || !toolbar) return;
+    while (header.firstChild) toolbar.appendChild(header.firstChild);
 }
 
 function syncPageHero() {
@@ -225,6 +220,8 @@ window.loadView = async function (viewType) {
     const render = renderers[viewType];
     if (!render) return;
 
+    recordPageVisit(viewType);
+
     lastViewType = viewType;
     actionsWereMobile = isMobileNav();
     clearActionHosts();
@@ -232,7 +229,7 @@ window.loadView = async function (viewType) {
     const ctx = {
         title: document.getElementById('pageTitle'),
         desc: document.getElementById('pageDesc'),
-        actions: actionHost(viewType),
+        actions: actionHost(),
         content: document.getElementById('mainContentArea'),
     };
     ctx.desc?.classList.remove('bj-crumbs');
@@ -266,6 +263,14 @@ window.loadView = async function (viewType) {
         syncPageHero();
     }
 };
+
+function recordPageVisit(viewType) {
+    if (!authToken || !viewType) return;
+    apiFetch('/api/activity-logs', {
+        method: 'POST',
+        body: JSON.stringify({ view: viewType }),
+    }).catch(() => {});
+}
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeSidebar();
