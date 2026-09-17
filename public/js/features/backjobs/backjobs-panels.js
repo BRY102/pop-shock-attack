@@ -43,22 +43,12 @@ function mechanicOptions() {
 }
 
 function backjobHeaderHtml() {
-    const claimBtn = currentRole === 'staff'
-        ? `<button type="button" class="btn btn-primary" onclick="logBackjobClaim()">${icon('plus')} Log claim ${icon('chevron-right')}</button>`
-        : '';
-    return `
-        <div class="bj-search">
-            <span class="bj-search-ico" aria-hidden="true">${icon('search')}</span>
-            <input type="search" id="backjobSearchInput" class="search-bar"
-                   placeholder="Plate, complaint, or mechanic"
-                   value="${esc(backjobSearch)}"
-                   oninput="searchBackjobsLive()">
-            <button type="button" class="bj-search-filter" onclick="toggleBackjobFilter(event)"
-                    aria-label="Filter claims">
-                ${icon('sliders')}
-            </button>
-        </div>
-        ${claimBtn}`;
+    return '';
+}
+
+function backjobLogClaimHtml() {
+    if (currentRole !== 'staff') return '';
+    return `<button type="button" class="btn btn-primary bj-log-claim" onclick="logBackjobClaim()">${icon('plus')} Log claim ${icon('chevron-right')}</button>`;
 }
 
 function refreshBackjobHeader() {
@@ -66,64 +56,113 @@ function refreshBackjobHeader() {
     if (actions) actions.innerHTML = backjobHeaderHtml();
 }
 
-function statusChip(key, label, count) {
-    return `<button type="button" class="bj-tab${backjobStatus === key ? ' is-selected' : ''}"
-                    onclick="setBackjobStatus('${key}')">
-                ${esc(label)} <strong>${count}</strong>
-            </button>`;
+function backjobViewLabel() {
+    return backjobTab === 'mechanics' ? 'By mechanic' : 'Claims';
 }
 
-function sortControlHtml() {
-    const newest = backjobSort !== 'oldest';
-    const menu = backjobSortOpen
-        ? `<div class="bj-sort-menu" role="listbox" aria-label="Sort claims">
-                <button type="button" class="${newest ? 'is-on' : ''}"
-                        onclick="event.stopPropagation(); setBackjobSort('newest')">
-                    Newest${newest ? icon('check') : ''}
-                </button>
-                <button type="button" class="${newest ? '' : 'is-on'}"
-                        onclick="event.stopPropagation(); setBackjobSort('oldest')">
-                    Oldest${newest ? '' : icon('check')}
-                </button>
-           </div>`
-        : '';
+function backjobStatusLabel() {
+    if (backjobStatus === 'open') return 'Open';
+    if (backjobStatus === 'closed') return 'Closed';
+    return 'All Status';
+}
+
+function backjobSortLabel() {
+    return backjobSort === 'oldest' ? 'Oldest' : 'Newest';
+}
+
+function backjobMechanicFilterLabel() {
+    return backjobMechanic ? mechanicLabel(backjobMechanic) : 'All mechanics';
+}
+
+function backjobSelectHtml(kind, fieldLabel, buttonId, currentLabel) {
     return `
-        <div class="bj-sort-wrap">
-            <button type="button" class="bj-sort${backjobSortOpen ? ' is-open' : ''}"
-                    onclick="toggleBackjobSort(event)"
-                    aria-haspopup="listbox"
-                    aria-expanded="${backjobSortOpen ? 'true' : 'false'}"
-                    aria-label="Sort claims">
-                <span>Sort by</span>
-                <strong>${newest ? 'Newest' : 'Oldest'}</strong>
+        <div class="wrn-field wrn-select-wrap">
+            <span class="wrn-field-label">${esc(fieldLabel)}</span>
+            <button type="button" class="wrn-select" id="${esc(buttonId)}"
+                    onclick="toggleBackjobMenu(event, '${esc(kind)}')"
+                    aria-haspopup="listbox" aria-expanded="false"
+                    aria-label="${esc(fieldLabel)}">
+                <em>${esc(currentLabel)}</em>
                 ${icon('chevron-down')}
             </button>
-            ${menu}
         </div>`;
 }
 
-function filterControlHtml() {
-    const names = mechanicOptions();
-    const menu = backjobFilterOpen
-        ? `<div class="bj-filter-menu" role="listbox" aria-label="Filter by mechanic">
-                <button type="button" class="${backjobMechanic ? '' : 'is-on'}"
-                        onclick="clearBackjobMechanic()">All mechanics</button>
-                ${names.map(name => `
-                    <button type="button" data-mech="${esc(name)}"
-                            class="${backjobMechanic === name ? 'is-on' : ''}"
-                            onclick="filterBackjobMechanic(this.dataset.mech)">
-                        ${esc(mechanicLabel(name))}
-                    </button>`).join('')}
-           </div>`
-        : '';
+function backjobCurrentValue(kind) {
+    if (kind === 'view') return backjobTab;
+    if (kind === 'status') return backjobStatus;
+    if (kind === 'sort') return backjobSort;
+    return backjobMechanic || 'all';
+}
+
+function backjobSelectOptions(kind) {
+    if (kind === 'view') {
+        return [
+            { value: 'claims', label: 'Claims' },
+            { value: 'mechanics', label: 'By mechanic' },
+        ];
+    }
+    if (kind === 'status') {
+        const { counts } = filteredBackjobPool();
+        return [
+            { value: 'all', label: `All Status (${counts.all})` },
+            { value: 'open', label: `Open (${counts.open})`, dot: 'open' },
+            { value: 'closed', label: `Closed (${counts.closed})`, dot: 'closed' },
+        ];
+    }
+    if (kind === 'sort') {
+        return [
+            { value: 'newest', label: 'Newest' },
+            { value: 'oldest', label: 'Oldest' },
+        ];
+    }
+    return [
+        { value: 'all', label: 'All mechanics' },
+        ...mechanicOptions().map(name => ({ value: name, label: mechanicLabel(name) })),
+    ];
+}
+
+function backjobMenuHtml(kind) {
+    const current = backjobCurrentValue(kind);
+    const aria = kind === 'view' ? 'View' : kind === 'status' ? 'Status' : kind === 'sort' ? 'Sort' : 'Assigned';
     return `
-        <div class="bj-filter-wrap">
-            <button type="button" class="bj-tool-btn${backjobMechanic || backjobFilterOpen ? ' is-on' : ''}"
-                    onclick="toggleBackjobFilter(event)">
-                ${icon('filter')} Filter
-            </button>
-            ${menu}
+        <div class="wrn-menu" role="listbox" aria-label="${esc(aria)}">
+            ${backjobSelectOptions(kind).map(opt => {
+                const on = opt.value === current;
+                const dot = opt.dot
+                    ? `<i class="wrn-dot${opt.dot === 'open' ? ' is-active' : ''}"></i>`
+                    : '';
+                return `<button type="button" role="option" class="${on ? 'is-on' : ''}"
+                            data-kind="${esc(kind)}" data-value="${esc(opt.value)}"
+                            aria-selected="${on ? 'true' : 'false'}"
+                            onclick="event.stopPropagation(); pickBackjobFilter(this.dataset.kind, this.dataset.value)">
+                            <span>${dot}${esc(opt.label)}</span>
+                            ${on ? icon('check') : ''}
+                        </button>`;
+            }).join('')}
         </div>`;
+}
+
+function backjobFiltersHtml() {
+    return `
+        <div class="wrn-filters bj-filters-bar">
+            <div class="list-search wrn-search">
+                ${icon('search')}
+                <input type="search" id="backjobSearchInput"
+                       placeholder="Search by plate, complaint, or mechanic"
+                       value="${esc(backjobSearch)}"
+                       oninput="searchBackjobsLive()">
+            </div>
+            ${backjobSelectHtml('view', 'View', 'bjViewBtn', backjobViewLabel())}
+            ${backjobSelectHtml('status', 'Status', 'bjStatusBtn', backjobStatusLabel())}
+            ${backjobSelectHtml('sort', 'Sort', 'bjSortBtn', backjobSortLabel())}
+            ${backjobSelectHtml('mechanic', 'Assigned', 'bjMechBtn', backjobMechanicFilterLabel())}
+            ${backjobLogClaimHtml()}
+        </div>`;
+}
+
+function backjobTableHtml(jobs, counts) {
+    return backjobTab === 'mechanics' ? mechanicPanelHtml(jobs) : claimsPanelHtml(jobs, counts);
 }
 
 function claimsPanelHtml(jobs, counts) {

@@ -85,6 +85,66 @@ button.bj-kpi:hover,
     font-size: 13px;
 }
 
+.bj-filters-bar.wrn-filters {
+    margin-bottom: 0;
+}
+
+.bj-filters-bar .wrn-field {
+    min-width: 160px;
+    flex: 1 1 160px;
+}
+
+.bj-filters-bar .wrn-menu {
+    max-height: 280px;
+    overflow-y: auto;
+}
+
+.bj-filters-bar .bj-log-claim {
+    flex: 0 0 auto;
+    height: 42px;
+    min-height: 42px;
+    margin-left: auto;
+    padding: 0 0.85rem 0 1rem;
+    border: 0;
+    border-radius: 999px;
+    background: #1b2430;
+    color: #fff;
+    font-size: 0.88rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+}
+
+.bj-filters-bar .bj-log-claim:hover,
+.bj-filters-bar .bj-log-claim:active {
+    background: #111827;
+    color: #fff;
+}
+
+.bj-filters-bar .bj-log-claim .icon:last-child {
+    width: 14px;
+    height: 14px;
+    opacity: 0.8;
+}
+
+@media (max-width: 900px) {
+    .bj-filters-bar .wrn-field {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .bj-filters-bar .wrn-field {
+        flex-basis: 100%;
+    }
+
+    .bj-filters-bar .bj-log-claim {
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
 .bj-toolbar {
     display: flex;
     flex-wrap: wrap;
@@ -261,7 +321,7 @@ button.bj-kpi:hover,
     min-height: 58px;
     padding: 0 20px;
     color: #fff;
-    background: #214d83;
+    background: var(--sidebar-bg);
     font-size: 14px;
     font-weight: 700;
 }
@@ -537,7 +597,7 @@ button.bj-kpi:hover,
 }
 
 .bj-panel th {
-    background: #214d83;
+    background: var(--sidebar-bg);
     color: #fff;
     font-weight: 700;
     text-align: left;

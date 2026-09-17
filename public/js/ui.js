@@ -307,16 +307,9 @@ window.toggleRowMenu = function (e, id) {
 
 document.addEventListener('click', (e) => {
     if (!e.target.closest?.('.row-menu-wrap')) closeRowMenus();
-    let backjobsMenus = false;
-    if (typeof backjobFilterOpen !== 'undefined' && backjobFilterOpen && !e.target.closest?.('.bj-filter-wrap')) {
-        backjobFilterOpen = false;
-        backjobsMenus = true;
+    if (typeof closeBackjobMenus === 'function' && !e.target.closest?.('.wrn-select-wrap')) {
+        closeBackjobMenus();
     }
-    if (typeof backjobSortOpen !== 'undefined' && backjobSortOpen && !e.target.closest?.('.bj-sort-wrap')) {
-        backjobSortOpen = false;
-        backjobsMenus = true;
-    }
-    if (backjobsMenus && typeof renderBackjobResults === 'function') renderBackjobResults();
     if (typeof closeWarrantyMenus === 'function' && !e.target.closest?.('.wrn-select-wrap')) {
         closeWarrantyMenus();
     }
@@ -325,26 +318,19 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     closeRowMenus();
-    let backjobsMenus = false;
-    if (typeof backjobFilterOpen !== 'undefined' && backjobFilterOpen) {
-        backjobFilterOpen = false;
-        backjobsMenus = true;
-    }
-    if (typeof backjobSortOpen !== 'undefined' && backjobSortOpen) {
-        backjobSortOpen = false;
-        backjobsMenus = true;
-    }
-    if (backjobsMenus && typeof renderBackjobResults === 'function') renderBackjobResults();
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     if (typeof closeWarrantyMenus === 'function') closeWarrantyMenus();
 });
 
 // A fixed menu cannot follow its row, so any scroll or resize dismisses it
 window.addEventListener('resize', () => {
     closeRowMenus();
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     if (typeof closeWarrantyMenus === 'function') closeWarrantyMenus();
 });
 document.addEventListener('scroll', () => {
     closeRowMenus();
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     if (typeof closeWarrantyMenus === 'function') closeWarrantyMenus();
 }, true);
 

@@ -45,13 +45,25 @@ function renderBackjobs(ctx) {
     loadBackjobs();
 }
 
+function refreshBackjobTable() {
+    const host = document.getElementById('bjTableHost');
+    if (!host) {
+        renderBackjobResults();
+        return;
+    }
+    const { jobs, counts } = filteredBackjobPool();
+    host.innerHTML = backjobTableHtml(jobs, counts);
+}
+
 window.searchBackjobsLive = function () {
     backjobSearch = document.getElementById('backjobSearchInput')?.value.trim() || '';
-    renderBackjobResults();
+    refreshBackjobTable();
 };
 
 window.clearBackjobSearch = function () {
     backjobSearch = '';
+    const input = document.getElementById('backjobSearchInput');
+    if (input) input.value = '';
     refreshBackjobHeader();
     renderBackjobResults();
 };
@@ -59,56 +71,70 @@ window.clearBackjobSearch = function () {
 window.filterBackjobMechanic = function (name) {
     backjobMechanic = String(name || '').trim();
     backjobTab = 'claims';
-    backjobFilterOpen = false;
-    backjobSortOpen = false;
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     renderBackjobResults();
 };
 
 window.clearBackjobMechanic = function () {
     backjobMechanic = '';
-    backjobFilterOpen = false;
-    backjobSortOpen = false;
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     renderBackjobResults();
 };
 
 window.setBackjobStatus = function (status) {
     backjobStatus = backjobStatus === status ? 'all' : status;
     backjobTab = 'claims';
-    backjobSortOpen = false;
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     renderBackjobResults();
 };
 
 window.setBackjobTab = function (tab) {
     backjobTab = tab;
-    backjobFilterOpen = false;
-    backjobSortOpen = false;
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     renderBackjobResults();
 };
 
 window.setBackjobSort = function (sort) {
     backjobSort = sort === 'oldest' ? 'oldest' : 'newest';
-    backjobSortOpen = false;
+    if (typeof closeBackjobMenus === 'function') closeBackjobMenus();
     renderBackjobResults();
 };
 
-window.toggleBackjobFilter = function (event) {
-    event?.stopPropagation();
-    backjobFilterOpen = !backjobFilterOpen;
-    backjobSortOpen = false;
-    renderBackjobResults();
+window.closeBackjobMenus = function () {
+    document.querySelectorAll('.bj-filters-bar .wrn-select-wrap.is-open').forEach((wrap) => {
+        wrap.classList.remove('is-open');
+        wrap.querySelector('.wrn-select')?.setAttribute('aria-expanded', 'false');
+        wrap.querySelector('.wrn-menu')?.remove();
+    });
 };
 
-window.toggleBackjobSort = function (event) {
-    event?.stopPropagation();
-    backjobSortOpen = !backjobSortOpen;
-    backjobFilterOpen = false;
+window.toggleBackjobMenu = function (e, kind) {
+    e.preventDefault();
+    e.stopPropagation();
+    const wrap = e.currentTarget.closest('.wrn-select-wrap');
+    if (!wrap) return;
+    const wasOpen = wrap.classList.contains('is-open');
+    if (typeof closeWarrantyMenus === 'function') closeWarrantyMenus();
+    closeBackjobMenus();
+    if (wasOpen) return;
+    wrap.classList.add('is-open');
+    e.currentTarget.setAttribute('aria-expanded', 'true');
+    wrap.insertAdjacentHTML('beforeend', backjobMenuHtml(kind));
+};
+
+window.pickBackjobFilter = function (kind, value) {
+    if (kind === 'view') backjobTab = value === 'mechanics' ? 'mechanics' : 'claims';
+    if (kind === 'status') backjobStatus = value || 'all';
+    if (kind === 'sort') backjobSort = value === 'oldest' ? 'oldest' : 'newest';
+    if (kind === 'mechanic') backjobMechanic = !value || value === 'all' ? '' : String(value);
+    closeBackjobMenus();
     renderBackjobResults();
 };
 
 window.toggleBackjobRow = function (jobId) {
     const id = String(jobId);
     backjobOpenId = backjobOpenId === id ? null : id;
-    renderBackjobResults();
+    refreshBackjobTable();
 };
 
 window.openBackjob = function (jobId) {
@@ -140,10 +166,13 @@ function renderBackjobResults() {
 
     if (backjobRows.length === 0) {
         content.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">${icon('rotate-ccw')}</div>
-                <h3>No back-jobs yet</h3>
-                <p>Warranty re-service claims will show up here after specs are logged.</p>
+            <div class="bj-page">
+                ${backjobFiltersHtml()}
+                <div class="empty-state">
+                    <div class="empty-icon">${icon('rotate-ccw')}</div>
+                    <h3>No back-jobs yet</h3>
+                    <p>Warranty re-service claims will show up here after specs are logged.</p>
+                </div>
             </div>`;
         return;
     }
@@ -154,21 +183,10 @@ function renderBackjobResults() {
     content.innerHTML = `
         <div class="bj-page">
             ${backjobKpiHtml(kpis)}
-            <div class="bj-toolbar">
-                <div class="bj-filters" role="tablist" aria-label="Back-jobs filters">
-                    <button type="button" class="bj-tab${backjobTab === 'claims' ? ' is-selected' : ''}"
-                            onclick="setBackjobTab('claims')">Claims <strong>${counts.all}</strong></button>
-                    <button type="button" class="bj-tab${backjobTab === 'mechanics' ? ' is-selected' : ''}"
-                            onclick="setBackjobTab('mechanics')">By mechanic</button>
-                    ${statusChip('open', 'Open', counts.open)}
-                    ${statusChip('closed', 'Closed', counts.closed)}
-                </div>
-                <div class="bj-toolbar-actions">
-                    ${sortControlHtml()}
-                    ${filterControlHtml()}
-                </div>
+            ${backjobFiltersHtml()}
+            <div id="bjTableHost">
+                ${backjobTableHtml(jobs, counts)}
             </div>
-            ${backjobTab === 'mechanics' ? mechanicPanelHtml(jobs) : claimsPanelHtml(jobs, counts)}
         </div>
     `;
 }

@@ -68,7 +68,7 @@ function buildKanbanCard(job, stage) {
         if (stage === 'Tuning') {
             btnHtml = `<div class="action-btns">${needsTech
                 ? assignFirst
-                : `<button class="btn-sm" style="background:var(--primary);" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>`}${billBtns}${delBtn}</div>`;
+                : `<button class="btn-sm" onclick="openSpecs('${job.id}')">Log Specs & Compute</button>`}${billBtns}${delBtn}</div>`;
         } else if (stage === 'QA') {
             // No cancel here: a billed unit has to go back to Tuning first, which
             // also returns its parts to stock. The API enforces the same rule.
