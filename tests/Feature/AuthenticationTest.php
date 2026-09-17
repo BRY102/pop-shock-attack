@@ -87,4 +87,19 @@ class AuthenticationTest extends TestCase
 
         $this->assertDatabaseMissing('app_users', ['username' => 'short_pass']);
     }
+
+    public function test_me_returns_the_signed_in_username(): void
+    {
+        $user = $this->makeUser(['username' => 'chamniel']);
+        $token = $this->postJson('/api/login', [
+            'username' => 'chamniel',
+            'password' => 'secret123',
+        ])->assertOk()->json('token');
+
+        $this->withToken($token)
+            ->getJson('/api/me')
+            ->assertOk()
+            ->assertJsonPath('user.username', 'chamniel')
+            ->assertJsonMissingPath('user.password');
+    }
 }

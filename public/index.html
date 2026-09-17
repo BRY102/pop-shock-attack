@@ -158,15 +158,13 @@
             </div>
             <ul class="nav-links" id="sidebarNav"></ul>
             <div class="sidebar-footer">
-                <button type="button" onclick="logout()" class="btn sidebar-logout" title="Log out">
-                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <polyline points="16 17 21 12 16 7" />
-                        <line x1="21" x2="9" y1="12" y2="12" />
-                    </svg>
-                    <span>Log Out</span>
-                </button>
+                <div class="sidebar-user" id="sidebarUser">
+                    <span class="profile-ava" id="sidebarAva" aria-hidden="true">?</span>
+                    <span class="sidebar-user-copy">
+                        <strong id="sidebarUserName">—</strong>
+                        <small id="sidebarUserRole">—</small>
+                    </span>
+                </div>
             </div>
         </aside>
 
@@ -231,6 +229,7 @@
                             aria-label="Account menu" aria-expanded="false" aria-haspopup="true"
                             aria-controls="profileMenu">
                             <span class="profile-ava" id="profileAva" aria-hidden="true">?</span>
+                            <span class="profile-name" id="profileName"></span>
                             <svg class="profile-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                 <path d="m6 9 6 6 6-6" />
@@ -252,6 +251,16 @@
                                     <polyline points="12 6 12 12 16 14"></polyline>
                                 </svg>
                                 Activity Log
+                            </button>
+                            <div class="profile-sep" role="separator"></div>
+                            <button type="button" class="profile-item is-danger" role="menuitem" onclick="closeProfileMenu(); logout()">
+                                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                    stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                    <polyline points="16 17 21 12 16 7"></polyline>
+                                    <line x1="21" x2="9" y1="12" y2="12"></line>
+                                </svg>
+                                Logout
                             </button>
                         </div>
                     </div>
@@ -1006,6 +1015,7 @@
     <script src="js/features/overview/overview.js"></script>
     <script src="js/features/workflow/kanban.js"></script>
     <script src="js/features/history/history.js"></script>
+    <script src="js/features/warranty/warranty.js"></script>
     <script src="js/features/inventory/inventory.js"></script>
     <script src="js/features/reports/reports.js"></script>
     <script src="js/features/backjobs/backjobs-state.js"></script>

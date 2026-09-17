@@ -22,6 +22,7 @@ class StoreActivityLogRequest extends FormRequest
                     'overview',
                     'kanban',
                     'history',
+                    'warranty',
                     'inventory',
                     'reports',
                     'backjobs',

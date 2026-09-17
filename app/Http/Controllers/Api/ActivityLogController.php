@@ -59,6 +59,7 @@ class ActivityLogController extends Controller
         $shop = [
             'kanban' => 'Visited the Workflow page',
             'history' => 'Visited the Service History page',
+            'warranty' => 'Visited the Warranty page',
             'inventory' => 'Visited the Inventory page',
             'backjobs' => 'Visited the Back-jobs page',
         ];

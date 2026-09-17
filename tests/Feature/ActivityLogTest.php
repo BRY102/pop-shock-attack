@@ -36,6 +36,18 @@ class ActivityLogTest extends TestCase
         ]);
     }
 
+    public function test_a_warranty_page_visit_is_recorded(): void
+    {
+        Sanctum::actingAs($this->makeUser('tech', 'staff'));
+
+        $this->postJson('/api/activity-logs', ['view' => 'warranty'])
+            ->assertCreated();
+
+        $this->assertDatabaseHas('activity_logs', [
+            'action' => 'Visited the Warranty page',
+        ]);
+    }
+
     public function test_a_page_visit_is_recorded_for_that_role(): void
     {
         Sanctum::actingAs($this->makeUser('owner', 'admin'));

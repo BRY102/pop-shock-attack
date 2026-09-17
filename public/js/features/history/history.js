@@ -105,7 +105,6 @@ function renderHistoryResults(jobs, q) {
         const backJobs = jobs.filter(j => j.is_warranty_claim).length;
         const totalBilled = jobs.reduce((sum, j) => sum + Number(j.specs?.totalBill || 0), 0);
         const latest = jobs[0];
-        const proof = warrantyProofCard(unitWarrantyState(jobs));
 
         summaryHtml = `
             <div class="unit-summary">
@@ -119,8 +118,7 @@ function renderHistoryResults(jobs, q) {
                     <div class="chip"><b>${backJobs}</b><span>Back-jobs</span></div>
                     <div class="chip"><b>${peso(totalBilled)}</b><span>Total billed</span></div>
                 </div>
-            </div>
-            ${proof}`;
+            </div>`;
     }
 
     let rows = '';
@@ -149,10 +147,6 @@ function renderHistoryResults(jobs, q) {
             ? `<strong style="color:#15803d;">${peso(job.specs.totalBill || 0)}</strong>`
             : '—';
 
-        const warrantyText = job.warranty_status || 'Pending';
-        const warrantyColor = warrantyText.includes('Active') ? '#15803d'
-            : (warrantyText.includes('Expired') ? '#b91c1c' : 'var(--text-muted)');
-
         // Staff have no Sales page — this is their reprint surface. Admin
         // keeps the table without a View bill / Print column.
         const staffBill = currentRole === 'staff'
@@ -165,7 +159,6 @@ function renderHistoryResults(jobs, q) {
             <td><strong>${esc(job.moto_model)}</strong><br><code style="color:#6b7280; font-size:0.8rem;">${esc(job.plate_number)}</code></td>
             <td>${stageBadge}${claim}</td>
             <td style="font-size:0.8rem; line-height:1.5;">${setup}</td>
-            <td style="font-size:0.8rem; color:${warrantyColor}; font-weight:600;">${esc(warrantyText)}</td>
             <td>${bill}</td>
             <td>${Number(job.rating) >= 1 ? `${starsDisplay(job.rating)} ${Number(job.rating)}/5` : '—'}</td>
             ${staffBill}
@@ -184,7 +177,7 @@ function renderHistoryResults(jobs, q) {
         <div class="table-container table-scroll"><table class="data-table">
             <thead><tr>
                 <th class="cell-keep">Date In</th><th class="cell-keep">Customer</th><th>Unit</th><th>Status</th>
-                <th>Tuning Setup</th><th>Warranty</th><th>Billed</th><th>Rate</th>
+                <th>Tuning Setup</th><th>Billed</th><th>Rate</th>
                 ${currentRole === 'staff' ? '<th></th>' : ''}
             </tr></thead>
             <tbody>${rows}</tbody>

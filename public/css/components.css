@@ -686,9 +686,9 @@
 .profile-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     height: 40px;
-    padding: 0 2px 0 0;
+    padding: 0 4px 0 0;
     border: 0;
     border-radius: 999px;
     background: transparent;
@@ -701,6 +701,7 @@
 }
 
 .profile-ava {
+    position: relative;
     display: grid;
     place-items: center;
     width: 36px;
@@ -712,6 +713,28 @@
     font-weight: 800;
     letter-spacing: 0.04em;
     line-height: 1;
+}
+
+.profile-ava.is-online::after {
+    content: "";
+    position: absolute;
+    right: -1px;
+    bottom: 0;
+    width: 10px;
+    height: 10px;
+    background: #22d39a;
+    border: 2px solid var(--bg-white);
+    border-radius: 50%;
+}
+
+.profile-name {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .profile-caret {
@@ -766,6 +789,24 @@
     height: 16px;
     flex-shrink: 0;
     color: var(--text-muted);
+}
+
+.profile-sep {
+    height: 1px;
+    margin: 4px 8px;
+    background: var(--border);
+}
+
+.profile-item.is-danger {
+    color: #c53929;
+}
+
+.profile-item.is-danger .icon {
+    color: #c53929;
+}
+
+.profile-item.is-danger:hover {
+    background: #fef2f2;
 }
 
 /* ------------------------------------------------- */

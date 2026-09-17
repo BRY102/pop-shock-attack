@@ -169,6 +169,14 @@
         border: 1px solid rgba(255, 255, 255, 0.22);
     }
 
+    #view-system .profile-ava.is-online::after {
+        border-color: #082445;
+    }
+
+    #view-system .profile-name {
+        color: #e7f1ff;
+    }
+
     #view-system .profile-caret {
         color: #d6e4f8;
     }

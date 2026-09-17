@@ -30,6 +30,7 @@ Route::middleware('throttle:5,1')->group(function () {
 */
 Route::middleware(['auth:sanctum', 'seen', 'activity'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
 
     Route::get('/activity-logs', [ActivityLogController::class, 'index']);
     Route::post('/activity-logs', [ActivityLogController::class, 'store']);

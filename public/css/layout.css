@@ -569,50 +569,56 @@
     transition: opacity 0.2s ease;
 }
 
-/* Logout button in sidebar */
+/* Signed-in user in the sidebar footer (replaces the old Log Out button) */
 .sidebar-footer {
     padding: 1rem 1.15rem 1.5rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.sidebar-footer .btn {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #9ca3af;
-    width: 100%;
-    min-height: var(--control-h);
-    padding: 0 1rem;
-    border-radius: var(--radius-sm);
-    font-size: 0.86rem;
-    transition: all 0.2s, width 0.35s ease;
-    display: inline-flex;
+.sidebar-user {
+    display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    gap: 12px;
+    min-width: 0;
 }
 
-.sidebar-footer .btn:hover {
-    background: rgba(217, 56, 30, 0.15);
-    border-color: rgba(217, 56, 30, 0.4);
-    color: #fff;
-    transform: none;
-    box-shadow: none;
-    filter: none;
-}
-
-.sidebar-logout .icon {
-    display: none;
-    width: 17px;
-    height: 17px;
+.sidebar-user .profile-ava {
+    width: 39px;
+    height: 39px;
     flex-shrink: 0;
+    background: #3b4454;
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.sidebar-logout span {
-    white-space: nowrap;
+.sidebar-user .profile-ava.is-online::after {
+    border-color: var(--sidebar-bg);
+}
+
+.sidebar-user-copy {
+    min-width: 0;
     overflow: hidden;
-    max-width: 120px;
-    opacity: 1;
-    transition: opacity 0.2s ease, max-width 0.35s ease;
+}
+
+.sidebar-user-copy strong,
+.sidebar-user-copy small {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-user-copy strong {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #f3f4f6;
+    line-height: 1.2;
+}
+
+.sidebar-user-copy small {
+    margin-top: 3px;
+    font-size: 0.75rem;
+    color: #9ca3af;
 }
 
 #view-system.sidebar-collapsed .sidebar {
@@ -647,7 +653,7 @@
 }
 
 #view-system.sidebar-collapsed .nav-item span,
-#view-system.sidebar-collapsed .sidebar-logout span {
+#view-system.sidebar-collapsed .sidebar-user-copy {
     opacity: 0;
     max-width: 0;
     width: 0;
@@ -678,16 +684,8 @@
     padding-right: 0.75rem;
 }
 
-#view-system.sidebar-collapsed .sidebar-footer .btn {
-    gap: 0;
+#view-system.sidebar-collapsed .sidebar-user {
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
-}
-
-#view-system.sidebar-collapsed .sidebar-logout .icon {
-    display: block;
-    margin: 0;
 }
 
 .sidebar-backdrop {

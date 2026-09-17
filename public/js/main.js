@@ -46,6 +46,18 @@ window.addEventListener('DOMContentLoaded', () => {
     // the first API call returns 401 and apiFetch() sends us back to login.
     if (savedUser && savedRole && authToken) {
         showLoginLoader();
-        Promise.resolve(loginSuccess(savedUser, savedRole)).finally(hideLoginLoader);
+        apiFetch('/api/me')
+            .then(async (response) => {
+                if (response.ok) {
+                    const data = await response.json();
+                    const username = data.user?.username || savedUser;
+                    const role = data.user?.role || savedRole;
+                    await loginSuccess(username, role);
+                    return;
+                }
+                await loginSuccess(savedUser, savedRole);
+            })
+            .catch(() => loginSuccess(savedUser, savedRole))
+            .finally(hideLoginLoader);
     }
 });

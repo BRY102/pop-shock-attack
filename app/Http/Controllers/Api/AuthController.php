@@ -77,4 +77,14 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Logged out successfully']);
     }
+
+    /**
+     * The signed-in account, so the header/sidebar can show the real username.
+     */
+    public function me(Request $request): JsonResponse
+    {
+        return response()->json([
+            'user' => new UserResource($request->user()),
+        ]);
+    }
 }

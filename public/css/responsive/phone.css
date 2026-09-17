@@ -688,6 +688,10 @@
         height: 44px;
     }
 
+    .profile-name {
+        display: none;
+    }
+
     .profile-ava {
         width: 36px;
         height: 36px;

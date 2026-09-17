@@ -196,10 +196,10 @@ window.handleUnifiedLogin = async function (e) {
         localStorage.setItem('mt_token', authToken);
 
         if (data.user.role === 'admin') {
-            await loginSuccess('Shop Owner', 'admin');
+            await loginSuccess(data.user.username, 'admin');
             greeting = 'Welcome back, Owner!';
         } else if (data.user.role === 'staff') {
-            await loginSuccess('Head Tech', 'staff');
+            await loginSuccess(data.user.username, 'staff');
             greeting = 'Workspace accessed.';
         } else {
             await loginSuccess(data.user.username, 'customer');
@@ -269,8 +269,22 @@ function clearWorkspaceState() {
     window.closeFeedbackDrawer?.();
     window.closeProfileMenu?.();
     const profileAva = document.getElementById('profileAva');
-    if (profileAva) profileAva.textContent = '?';
+    if (profileAva) {
+        profileAva.textContent = '?';
+        profileAva.classList.remove('is-online');
+    }
+    const profileName = document.getElementById('profileName');
+    if (profileName) profileName.textContent = '';
     document.getElementById('profileBtn')?.setAttribute('aria-label', 'Account menu');
+    const sidebarAva = document.getElementById('sidebarAva');
+    if (sidebarAva) {
+        sidebarAva.textContent = '?';
+        sidebarAva.classList.remove('is-online');
+    }
+    const sidebarName = document.getElementById('sidebarUserName');
+    if (sidebarName) sidebarName.textContent = '—';
+    const sidebarRole = document.getElementById('sidebarUserRole');
+    if (sidebarRole) sidebarRole.textContent = '—';
     document.getElementById('feedbackWrap')?.classList.add('hidden');
 }
 

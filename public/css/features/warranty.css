@@ -1,0 +1,315 @@
+/* ================================================= */
+/* WARRANTY RECORDS                                  */
+/* Same light cards as Inventory / History.          */
+/* Layout follows the warranty list: filters, then   */
+/* a records table with status pills.                */
+/* ================================================= */
+
+.wrn-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.85rem;
+    margin-bottom: 0.9rem;
+    padding: 1rem 1.1rem;
+    background: var(--bg-white);
+    border: 1px solid var(--ring-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 3;
+    overflow: visible;
+}
+
+.wrn-filters .wrn-search {
+    flex: 1 1 220px;
+    min-width: 0;
+}
+
+.wrn-filters .wrn-search input {
+    height: 42px;
+}
+
+.wrn-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 196px;
+    height: 42px;
+    padding: 0 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-white);
+    color: var(--text-primary);
+}
+
+.wrn-field-label {
+    position: absolute;
+    top: -8px;
+    left: 10px;
+    z-index: 1;
+    padding: 0 4px;
+    background: var(--bg-white);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+}
+
+.wrn-select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+}
+
+.wrn-select em {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-style: normal;
+    font-weight: 600;
+}
+
+.wrn-select .icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--text-muted);
+    transition: transform 0.15s ease;
+}
+
+.wrn-select-wrap.is-open {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-tint);
+}
+
+.wrn-select-wrap.is-open .wrn-select .icon {
+    transform: rotate(180deg);
+    color: var(--primary);
+}
+
+.wrn-menu {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 12;
+    min-width: 100%;
+    width: max-content;
+    max-width: 260px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--bg-white);
+    box-shadow: var(--shadow-md);
+}
+
+.wrn-menu button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 12px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+}
+
+.wrn-menu button span {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wrn-menu button .icon {
+    width: 16px;
+    height: 16px;
+    color: var(--primary);
+}
+
+.wrn-menu button:hover,
+.wrn-menu button.is-on {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.wrn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: var(--text-muted);
+}
+
+.wrn-dot.is-active {
+    background: var(--status-pos-fg);
+}
+
+.wrn-dot.is-expiring-soon {
+    background: var(--status-warn-fg);
+}
+
+.wrn-dot.is-expired {
+    background: var(--status-crit-fg);
+}
+
+.wrn-dates {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 230px;
+    height: 42px;
+    padding: 0 0.65rem;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-white);
+}
+
+.wrn-dates .filter-group {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.wrn-dates .date-filter {
+    min-width: 0;
+    width: auto;
+    flex: 1;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    padding-left: 0.2rem;
+    padding-right: 0.2rem;
+}
+
+.wrn-card .list-toolbar {
+    padding: 0.95rem 1.25rem;
+}
+
+.wrn-card-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.wrn-card-title .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--text-secondary);
+}
+
+.wrn-mark-cell {
+    width: 46px;
+    text-align: center;
+}
+
+.wrn-shield {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+}
+
+.wrn-shield .icon {
+    width: 15px;
+    height: 15px;
+}
+
+.wrn-shield.is-active {
+    color: var(--status-pos-fg);
+    background: var(--status-pos-bg);
+}
+
+.wrn-shield.is-expiring-soon {
+    color: var(--status-warn-fg);
+    background: var(--status-warn-bg);
+}
+
+.wrn-shield.is-expired {
+    color: var(--status-crit-fg);
+    background: var(--status-crit-bg);
+}
+
+.wrn-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: auto;
+    padding: 6px 10px;
+    border-radius: 9px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+}
+
+.wrn-status i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.wrn-status.is-active {
+    color: var(--status-pos-fg);
+    background: var(--status-pos-bg);
+}
+
+.wrn-status.is-expiring-soon {
+    color: var(--status-warn-fg);
+    background: var(--status-warn-bg);
+}
+
+.wrn-status.is-expired {
+    color: var(--status-crit-fg);
+    background: var(--status-crit-bg);
+}
+
+@media (max-width: 900px) {
+    .wrn-filters {
+        align-items: stretch;
+    }
+
+    .wrn-filters .wrn-search {
+        flex-basis: 100%;
+    }
+
+    .wrn-field,
+    .wrn-dates {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .wrn-field,
+    .wrn-dates {
+        flex-basis: 100%;
+    }
+}

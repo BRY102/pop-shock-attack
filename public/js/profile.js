@@ -16,16 +16,42 @@ function isProfileMenuOpen() {
     return Boolean(menu && !menu.classList.contains('hidden'));
 }
 
+function roleCaption(role) {
+    if (role === 'admin') return 'Administrator';
+    if (role === 'staff') return 'Staff';
+    if (role === 'customer') return 'Customer';
+    return 'Account';
+}
+
 function paintProfile() {
+    const initials = profileInitials(currentUser);
+    const name = displayName(currentUser) || '—';
+    const caption = roleCaption(currentRole);
+    const online = Boolean(currentUser);
+
     const ava = document.getElementById('profileAva');
     const btn = document.getElementById('profileBtn');
-    const initials = profileInitials(currentUser);
-    if (ava) ava.textContent = initials;
+    const nameEl = document.getElementById('profileName');
+    const sideAva = document.getElementById('sidebarAva');
+    const sideName = document.getElementById('sidebarUserName');
+    const sideRole = document.getElementById('sidebarUserRole');
+
+    if (ava) {
+        ava.textContent = initials;
+        ava.classList.toggle('is-online', online);
+    }
+    if (nameEl) nameEl.textContent = currentUser ? name : '';
     if (btn) {
         btn.setAttribute('aria-label', currentUser
-            ? `Account menu for ${currentUser}`
+            ? `Account menu for ${name}`
             : 'Account menu');
     }
+    if (sideAva) {
+        sideAva.textContent = initials;
+        sideAva.classList.toggle('is-online', online);
+    }
+    if (sideName) sideName.textContent = currentUser ? name : '—';
+    if (sideRole) sideRole.textContent = currentUser ? caption : '—';
 }
 
 function closeProfileMenu() {

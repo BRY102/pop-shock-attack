@@ -94,6 +94,7 @@ const NAV_MENUS = {
         { view: 'overview', label: 'Overview', icon: 'layout-grid' },
         { view: 'kanban', label: 'Workflow', icon: 'wrench' },
         { view: 'history', label: 'Service History', icon: 'calendar-clock' },
+        { view: 'warranty', label: 'Warranty', icon: 'shield-check' },
         { view: 'inventory', label: 'Inventory', icon: 'package' },
         { view: 'reports', label: 'Sales', icon: 'banknote' },
         { view: 'backjobs', label: 'Back-jobs', icon: 'rotate-ccw' },
@@ -102,6 +103,7 @@ const NAV_MENUS = {
     staff: [
         { view: 'kanban', label: 'Workflow', icon: 'wrench' },
         { view: 'history', label: 'Service History', icon: 'calendar-clock' },
+        { view: 'warranty', label: 'Warranty', icon: 'shield-check' },
         { view: 'backjobs', label: 'Back-jobs', icon: 'rotate-ccw' },
         { view: 'inventory', label: 'Inventory', icon: 'package' },
         { view: 'approvals', label: 'Pending Requests', icon: 'clipboard-list' },
@@ -139,6 +141,7 @@ const VIEW_DATA = {
     reports: ['jobs', 'released', 'counterSales'],
     kanban: ['jobs', 'released', 'mechanics'],
     history: [], // searches on demand
+    warranty: ['released'],
     backjobs: ['jobs', 'released'],
     inventory: ['inventory'],
     users: ['users', 'resets', 'mechanics'],
@@ -210,6 +213,7 @@ window.loadView = async function (viewType) {
         reports: typeof renderReports === 'function' ? renderReports : null,
         kanban: typeof renderKanban === 'function' ? renderKanban : null,
         history: typeof renderHistory === 'function' ? renderHistory : null,
+        warranty: typeof renderWarranty === 'function' ? renderWarranty : null,
         backjobs: typeof renderBackjobs === 'function' ? renderBackjobs : null,
         inventory: typeof renderInventory === 'function' ? renderInventory : null,
         users: typeof renderUsers === 'function' ? renderUsers : null,
