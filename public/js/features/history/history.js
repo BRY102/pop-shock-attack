@@ -147,12 +147,6 @@ function renderHistoryResults(jobs, q) {
             ? `<strong style="color:#15803d;">${peso(job.specs.totalBill || 0)}</strong>`
             : '—';
 
-        // Staff have no Sales page — this is their reprint surface. Admin
-        // keeps the table without a View bill / Print column.
-        const staffBill = currentRole === 'staff'
-            ? `<td class="cell-actions">${job.specs ? billedJobButtonsHtml(job) : '—'}</td>`
-            : '';
-
         rows += `<tr>
             <td class="cell-keep">${esc(job.date_in)}</td>
             <td class="cell-keep"><strong>${esc(displayName(job.customer))}</strong></td>
@@ -161,7 +155,6 @@ function renderHistoryResults(jobs, q) {
             <td style="font-size:0.8rem; line-height:1.5;">${setup}</td>
             <td>${bill}</td>
             <td>${Number(job.rating) >= 1 ? `${starsDisplay(job.rating)} ${Number(job.rating)}/5` : '—'}</td>
-            ${staffBill}
         </tr>`;
     });
 
@@ -178,7 +171,6 @@ function renderHistoryResults(jobs, q) {
             <thead><tr>
                 <th class="cell-keep">Date In</th><th class="cell-keep">Customer</th><th>Unit</th><th>Status</th>
                 <th>Tuning Setup</th><th>Billed</th><th>Rate</th>
-                ${currentRole === 'staff' ? '<th></th>' : ''}
             </tr></thead>
             <tbody>${rows}</tbody>
         </table></div>
