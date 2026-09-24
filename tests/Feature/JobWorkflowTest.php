@@ -468,4 +468,31 @@ class JobWorkflowTest extends TestCase
         $this->deleteJson("/api/jobs/{$inQa->id}")->assertUnprocessable();
         $this->assertDatabaseHas('service_jobs', ['id' => $inQa->id]);
     }
+
+    public function test_releasing_a_job_records_payment_details(): void
+    {
+        $this->actAsStaff();
+        $job = $this->makeJob('QA');
+
+        $response = $this->putJson("/api/jobs/{$job->id}/stage", [
+            'stage' => 'Release',
+            'payment_method' => 'GCash',
+            'amount_paid' => 2500,
+            'change_amount' => 0,
+            'payment_reference' => 'GCASH-987654321',
+            'payment_notes' => 'Paid via counter QR',
+        ])->assertOk();
+
+        $fresh = $job->fresh();
+        $this->assertSame('Release', $fresh->stage);
+        $this->assertSame('GCash', $fresh->payment_method);
+        $this->assertEquals(2500, $fresh->amount_paid);
+        $this->assertSame('GCASH-987654321', $fresh->payment_reference);
+        $this->assertSame('tech', $fresh->released_by);
+        $this->assertNotNull($fresh->paid_at);
+
+        $response->assertJsonPath('job.payment_method', 'GCash')
+            ->assertJsonPath('job.payment_reference', 'GCASH-987654321');
+    }
 }
+

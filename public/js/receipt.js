@@ -4,6 +4,33 @@
 // bill lines: qty, unit price, amount due, dates, warranty.
 // ============================================================
 
+function paymentSettlementHtml(job, bill) {
+    if (!job) return '';
+    const payment = job.specs?.payment || {};
+    const method = job.payment_method || payment.method || (job.is_warranty_claim ? 'Warranty Claim' : null);
+    if (!method && !job.date_released) return '';
+
+    const displayMethod = method || 'Cash';
+    const tendered = Number(job.amount_paid || payment.amountPaid || bill.due);
+    const change = Number(job.change_amount || payment.change || 0);
+    const refNo = job.payment_reference || payment.referenceNo || '';
+    const cashier = job.released_by || payment.releasedBy || '';
+
+    let html = `<div class="divider"></div><div class="meta">`;
+    html += `<div class="row"><span>Payment Method</span><span>${esc(displayMethod)}</span></div>`;
+    if (displayMethod === 'Cash' && tendered > 0) {
+        html += `<div class="row"><span>Cash Tendered</span><span>${peso(tendered)}</span></div>`;
+        html += `<div class="row"><span>Change (Sukli)</span><span>${peso(change)}</span></div>`;
+    } else if (refNo) {
+        html += `<div class="row"><span>Reference No.</span><span>${esc(refNo)}</span></div>`;
+    }
+    if (cashier) {
+        html += `<div class="row"><span>Settled By</span><span>${esc(cashier)}</span></div>`;
+    }
+    html += `</div>`;
+    return html;
+}
+
 function thermalReceiptDocument(job) {
     const bill = billView(job);
     const rows = bill.lines.map(line => `<tr>
@@ -128,10 +155,13 @@ function thermalReceiptDocument(job) {
             </tfoot>
         </table>
 
+        ${paymentSettlementHtml(job, bill)}
+
         <div class="footer">
             <p>${esc(warrantyBillNote(job))}</p>
             <p style="margin-top:10px;"><i>This acts as your official warranty claim stub. Please keep it safe.</i></p>
         </div>
+
     </div>
     <script>
         window.onload = function () { setTimeout(() => window.print(), 400); };

@@ -24,6 +24,13 @@ class ServiceJob extends Model
         'complaint',
         'mechanic_name',
         'is_warranty_claim',
+        'payment_method',
+        'amount_paid',
+        'change_amount',
+        'payment_reference',
+        'payment_notes',
+        'released_by',
+        'paid_at',
     ];
 
     protected $casts = [
@@ -31,10 +38,14 @@ class ServiceJob extends Model
         'is_warranty_claim' => 'boolean',
         'warranty_expires_at' => 'date',
         'released_at' => 'date',
+        'amount_paid' => 'float',
+        'change_amount' => 'float',
+        'paid_at' => 'datetime',
         'spring_rate' => 'float',
         'rating' => 'integer',
         'rated_at' => 'datetime',
     ];
+
 
     protected static function booted(): void
     {

@@ -93,6 +93,7 @@ const NAV_MENUS = {
     admin: [
         { view: 'overview', label: 'Overview', icon: 'layout-grid' },
         { view: 'kanban', label: 'Workflow', icon: 'wrench' },
+        { view: 'transactions', label: 'Transactions', icon: 'receipt' },
         { view: 'history', label: 'Service History', icon: 'calendar-clock' },
         { view: 'warranty', label: 'Warranty', icon: 'shield-check' },
         { view: 'inventory', label: 'Inventory', icon: 'package' },
@@ -102,6 +103,7 @@ const NAV_MENUS = {
     ],
     staff: [
         { view: 'kanban', label: 'Workflow', icon: 'wrench' },
+        { view: 'transactions', label: 'Transactions', icon: 'receipt' },
         { view: 'history', label: 'Service History', icon: 'calendar-clock' },
         { view: 'warranty', label: 'Warranty', icon: 'shield-check' },
         { view: 'backjobs', label: 'Back-jobs', icon: 'rotate-ccw' },
@@ -139,6 +141,7 @@ const VIEW_DATA = {
     overview: ['jobs', 'released', 'expenses', 'inventory', 'counterSales'],
     approvals: ['users', 'resets'],
     reports: ['jobs', 'released', 'counterSales'],
+    transactions: ['released', 'counterSales'],
     kanban: ['jobs', 'released', 'mechanics'],
     history: [], // searches on demand
     warranty: ['released'],
@@ -148,6 +151,7 @@ const VIEW_DATA = {
     customer: ['jobs'],
     'customer-prev': ['jobs'],
 };
+
 
 const FETCHERS = {
     jobs: fetchJobsFromDatabase,
@@ -215,6 +219,7 @@ window.loadView = async function (viewType) {
         overview: typeof renderOverview === 'function' ? renderOverview : null,
         approvals: typeof renderApprovals === 'function' ? renderApprovals : null,
         reports: typeof renderReports === 'function' ? renderReports : null,
+        transactions: typeof renderTransactions === 'function' ? renderTransactions : null,
         kanban: typeof renderKanban === 'function' ? renderKanban : null,
         history: typeof renderHistory === 'function' ? renderHistory : null,
         warranty: typeof renderWarranty === 'function' ? renderWarranty : null,
@@ -224,6 +229,7 @@ window.loadView = async function (viewType) {
         customer: typeof renderCustomerDashboard === 'function' ? renderCustomerDashboard : null,
         'customer-prev': typeof renderCustomerPrevious === 'function' ? renderCustomerPrevious : null,
     };
+
 
     const render = renderers[viewType];
     if (!render) return;

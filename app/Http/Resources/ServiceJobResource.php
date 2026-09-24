@@ -35,10 +35,18 @@ class ServiceJobResource extends JsonResource
             'is_warranty_claim' => $this->is_warranty_claim,
             'warranty_status' => $this->warranty_status,
             'warranty_expires_at' => $this->warranty_expires_at?->toDateString(),
+            'payment_method' => $this->payment_method,
+            'amount_paid' => $this->amount_paid,
+            'change_amount' => $this->change_amount,
+            'payment_reference' => $this->payment_reference,
+            'payment_notes' => $this->payment_notes,
+            'released_by' => $this->released_by,
+            'paid_at' => $this->paid_at?->toIso8601String(),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
     }
+
 
     private function formatTimeIn(mixed $value): ?string
     {

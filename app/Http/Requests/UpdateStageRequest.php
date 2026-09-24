@@ -19,8 +19,14 @@ class UpdateStageRequest extends FormRequest
     {
         return [
             'stage' => ['required', Rule::in(JobStage::values())],
+            'payment_method' => ['nullable', 'string', 'max:50'],
+            'amount_paid' => ['nullable', 'numeric', 'min:0'],
+            'change_amount' => ['nullable', 'numeric', 'min:0'],
+            'payment_reference' => ['nullable', 'string', 'max:100'],
+            'payment_notes' => ['nullable', 'string', 'max:255'],
         ];
     }
+
 
     /**
      * The stage gate is enforced here rather than only on the board, so the

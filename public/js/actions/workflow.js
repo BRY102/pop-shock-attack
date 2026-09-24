@@ -217,7 +217,7 @@ window.submitIntake = async function (e) {
     }
 };
 
-window.moveStage = async function (id, nextStage) {
+window.moveStage = async function (id, nextStage, extraPayload = {}) {
     const job = dbJobs.find(j => String(j.id) === String(id));
     const sendingBack = job && job.stage === 'QA' && nextStage === 'Tuning';
     if (job && !sendingBack && stageNeedsLeadTech(job.stage) && !jobHasLeadTech(job)) {
@@ -226,9 +226,10 @@ window.moveStage = async function (id, nextStage) {
     }
 
     try {
+        const body = Object.assign({ stage: nextStage }, extraPayload);
         const response = await apiFetch(`/api/jobs/${id}/stage`, {
             method: 'PUT',
-            body: JSON.stringify({ stage: nextStage }),
+            body: JSON.stringify(body),
         });
 
         if (response.ok) {
@@ -244,6 +245,175 @@ window.moveStage = async function (id, nextStage) {
         showNotification('Server connection error.', 'error');
     }
 };
+
+window.openReleaseCheckout = function (job) {
+    if (!job) return;
+    document.getElementById('co_job_id').value = String(job.id);
+    document.getElementById('co_plate').textContent = job.plate_number || 'No Plate';
+    document.getElementById('co_model').textContent = job.moto_model || 'Motorcycle';
+    document.getElementById('co_customer').textContent = displayName(job.customer);
+    document.getElementById('co_tech').textContent = `Lead Tech: ${job.mechanic_name || 'Unassigned'}`;
+
+    const bill = billView(job);
+    const isWarranty = !!job.is_warranty_claim || bill.covered;
+    const totalDue = isWarranty ? 0 : Number(bill.due || 0);
+
+    const banner = document.getElementById('co_warranty_banner');
+    const paymentSection = document.getElementById('co_payment_section');
+    const linesContainer = document.getElementById('co_bill_lines');
+    const subtotalEl = document.getElementById('co_bill_subtotal');
+    const totalDueEl = document.getElementById('co_total_due');
+    const submitBtn = document.getElementById('co_submit_btn');
+
+    if (banner) banner.classList.toggle('hidden', !isWarranty);
+    if (subtotalEl) subtotalEl.textContent = peso(bill.subtotal || 0);
+    if (totalDueEl) totalDueEl.textContent = isWarranty ? '₱0.00 (Covered)' : peso(totalDue);
+    if (submitBtn) submitBtn.textContent = isWarranty ? 'Confirm Release (Warranty FOC)' : 'Confirm Payment & Release';
+
+    if (linesContainer) {
+        linesContainer.innerHTML = (bill.lines || []).map(line => `
+            <div class="checkout-bill-line">
+                <span class="line-label">${esc(line.item)} (${esc(line.spec)}) &times; ${line.qty}</span>
+                <span class="line-amount">${line.included ? 'Included' : peso(line.amount)}</span>
+            </div>
+        `).join('');
+    }
+
+    if (isWarranty) {
+        if (paymentSection) paymentSection.classList.add('hidden');
+    } else {
+        if (paymentSection) paymentSection.classList.remove('hidden');
+        const cashRadio = document.querySelector('input[name="co_payment_method"][value="Cash"]');
+        if (cashRadio) cashRadio.checked = true;
+        toggleCheckoutPaymentFields();
+
+        const tenderedInput = document.getElementById('co_amount_tendered');
+        if (tenderedInput) {
+            tenderedInput.value = totalDue > 0 ? totalDue : '';
+            computeCheckoutChange();
+        }
+        const refInput = document.getElementById('co_reference_no');
+        if (refInput) refInput.value = '';
+        const notesInput = document.getElementById('co_notes');
+        if (notesInput) notesInput.value = '';
+    }
+
+    openModal('modal-release-checkout');
+};
+
+window.cancelReleaseCheckout = function () {
+    closeModal('modal-release-checkout');
+};
+
+window.toggleCheckoutPaymentFields = function () {
+    const selected = document.querySelector('input[name="co_payment_method"]:checked')?.value || 'Cash';
+    const cashFields = document.getElementById('co_cash_fields');
+    const refFields = document.getElementById('co_ref_fields');
+
+    if (cashFields) cashFields.classList.toggle('hidden', selected !== 'Cash');
+    if (refFields) refFields.classList.toggle('hidden', selected === 'Cash');
+
+    if (selected === 'Cash') {
+        computeCheckoutChange();
+    }
+};
+
+window.computeCheckoutChange = function () {
+    const jobId = document.getElementById('co_job_id')?.value;
+    const job = findJobById(jobId) || dbJobs.find(j => String(j.id) === String(jobId));
+    const bill = billView(job);
+    const isWarranty = !!job?.is_warranty_claim || bill.covered;
+    const totalDue = isWarranty ? 0 : Number(bill.due || 0);
+
+    const tenderedInput = document.getElementById('co_amount_tendered');
+    const changeInput = document.getElementById('co_change');
+    if (!changeInput) return;
+
+    const tenderedVal = parseFloat(tenderedInput?.value || '0');
+
+    if (isNaN(tenderedVal) || tenderedVal < totalDue) {
+        changeInput.value = 'Insufficient';
+        changeInput.style.color = 'var(--primary)';
+    } else {
+        const diff = tenderedVal - totalDue;
+        changeInput.value = peso(diff);
+        changeInput.style.color = '';
+    }
+};
+
+window.submitReleaseCheckout = async function (e) {
+    e.preventDefault();
+    const jobId = document.getElementById('co_job_id')?.value;
+    const job = findJobById(jobId) || dbJobs.find(j => String(j.id) === String(jobId));
+    if (!job) return;
+
+    const bill = billView(job);
+    const isWarranty = !!job.is_warranty_claim || bill.covered;
+    const totalDue = isWarranty ? 0 : Number(bill.due || 0);
+
+    let method = 'Warranty Claim';
+    let amountPaid = 0;
+    let changeAmount = 0;
+    let refNo = '';
+    let notes = '';
+
+    if (!isWarranty) {
+        method = document.querySelector('input[name="co_payment_method"]:checked')?.value || 'Cash';
+        notes = (document.getElementById('co_notes')?.value || '').trim();
+
+        if (method === 'Cash') {
+            const tendered = parseFloat(document.getElementById('co_amount_tendered')?.value || '0');
+            if (isNaN(tendered) || tendered < totalDue) {
+                showNotification(`Cash received must be at least ${peso(totalDue)}.`, 'error');
+                return;
+            }
+            amountPaid = tendered;
+            changeAmount = tendered - totalDue;
+        } else {
+            amountPaid = totalDue;
+            changeAmount = 0;
+            refNo = (document.getElementById('co_reference_no')?.value || '').trim();
+        }
+    }
+
+    const shouldPrint = !!document.getElementById('co_print_receipt')?.checked;
+
+    closeModal('modal-release-checkout');
+
+    try {
+        const payload = {
+            stage: 'Release',
+            payment_method: method,
+            amount_paid: amountPaid,
+            change_amount: changeAmount,
+            payment_reference: refNo,
+            payment_notes: notes,
+        };
+
+        const response = await apiFetch(`/api/jobs/${jobId}/stage`, {
+            method: 'PUT',
+            body: JSON.stringify(payload),
+        });
+
+        if (response.ok) {
+            showNotification('Payment settled and unit released!', 'success');
+            invalidate('jobs');
+            invalidate('released');
+            invalidate('counterSales');
+            await loadView('kanban');
+
+            if (shouldPrint) {
+                printReceipt(jobId);
+            }
+        } else {
+            showNotification(await serverMessage(response, 'Error releasing job.'), 'error');
+        }
+    } catch (err) {
+        console.error(err);
+        showNotification('Server connection error.', 'error');
+    }
+};
+
 
 window.assignMechanic = async function (id, mechanicName) {
     try {

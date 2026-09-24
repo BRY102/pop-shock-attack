@@ -417,8 +417,8 @@ function requestKanbanMove(jobId, toStage) {
         title = 'Send back to Tuning?';
         copy = `Send ${model} (${plate}) back to Tuning for rework?`;
     } else if (toStage === 'Release') {
-        title = 'Release this job?';
-        copy = `Release ${model} (${plate}) to the customer?`;
+        openReleaseCheckout(job);
+        return;
     }
 
     pendingKanbanMove = { jobId: String(job.id), toStage, needsSpecs };
@@ -428,6 +428,7 @@ function requestKanbanMove(jobId, toStage) {
     if (copyEl) copyEl.textContent = copy;
     openModal('modal-move-stage');
 }
+
 
 window.cancelKanbanMove = function () {
     pendingKanbanMove = null;
@@ -451,4 +452,8 @@ document.addEventListener('keydown', (e) => {
     if (!document.getElementById('modal-move-stage')?.classList.contains('hidden')) {
         cancelKanbanMove();
     }
+    if (!document.getElementById('modal-release-checkout')?.classList.contains('hidden')) {
+        cancelReleaseCheckout();
+    }
 });
+

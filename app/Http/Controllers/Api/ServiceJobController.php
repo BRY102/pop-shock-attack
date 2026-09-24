@@ -220,17 +220,50 @@ class ServiceJobController extends Controller
      */
     public function updateStage(UpdateStageRequest $request, ServiceJob $job): JsonResponse
     {
-        $job->stage = $request->validated()['stage'];
+        $validated = $request->validated();
+        $job->stage = $validated['stage'];
 
         // Stamp the bill date once. Later ratings must not rewrite it.
-        if ($job->stage === JobStage::Release->value && $job->released_at === null) {
-            $job->released_at = now()->toDateString();
-        }
+        if ($job->stage === JobStage::Release->value) {
+            if ($job->released_at === null) {
+                $job->released_at = now()->toDateString();
+            }
 
-        // Coverage runs from the first release only, so a unit that bounces back
-        // to Tuning and is released again does not earn a fresh warranty window.
-        if ($job->stage === JobStage::Release->value && $job->warranty_expires_at === null) {
-            $job->warranty_expires_at = now()->addMonths(config('shop.warranty_months'));
+            // Coverage runs from the first release only, so a unit that bounces back
+            // to Tuning and is released again does not earn a fresh warranty window.
+            if ($job->warranty_expires_at === null) {
+                $job->warranty_expires_at = now()->addMonths(config('shop.warranty_months'));
+            }
+
+            // Settlement & payment recording
+            $method = $validated['payment_method'] ?? ($job->is_warranty_claim ? 'Warranty Claim' : 'Cash');
+            $paid = isset($validated['amount_paid']) ? (float) $validated['amount_paid'] : (float) ($job->specs['totalBill'] ?? 0);
+            $change = isset($validated['change_amount']) ? (float) $validated['change_amount'] : 0.0;
+            $ref = $validated['payment_reference'] ?? null;
+            $notes = $validated['payment_notes'] ?? null;
+            $staffUser = $request->user()?->username ?? 'staff';
+
+            $job->payment_method = $method;
+            $job->amount_paid = $paid;
+            $job->change_amount = $change;
+            $job->payment_reference = $ref;
+            $job->payment_notes = $notes;
+            $job->released_by = $staffUser;
+            $job->paid_at = now();
+
+            if ($job->specs) {
+                $specs = $job->specs;
+                $specs['payment'] = [
+                    'method' => $method,
+                    'amountPaid' => $paid,
+                    'change' => $change,
+                    'referenceNo' => $ref,
+                    'notes' => $notes,
+                    'releasedBy' => $staffUser,
+                    'releasedAt' => now()->toDateTimeString(),
+                ];
+                $job->specs = $specs;
+            }
         }
 
         $job->save();
@@ -242,6 +275,7 @@ class ServiceJobController extends Controller
             'job' => new ServiceJobResource($job),
         ]);
     }
+
 
     /**
      * Log tuning specs, compute the bill server-side, advance the job to QA,
