@@ -132,7 +132,7 @@ class BillingAndNotificationsTest extends TestCase
         $job = $this->makeJob();
 
         $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
-            'isWarranty' => true,
+            'isWarranty' => false,
         ]))->assertOk();
 
         $fresh = $job->fresh();
@@ -140,28 +140,30 @@ class BillingAndNotificationsTest extends TestCase
         $this->assertTrue($fresh->is_warranty_claim);
     }
 
-    public function test_a_free_claim_is_refused_when_the_unit_has_no_earlier_service(): void
+    public function test_a_first_visit_is_billed_even_if_the_client_ticks_a_claim(): void
     {
         $job = $this->makeJob();
 
         $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
             'isWarranty' => true,
-        ]))->assertUnprocessable();
+        ]))->assertOk();
 
-        $this->assertNull($job->fresh()->specs);
-        $this->assertFalse($job->fresh()->is_warranty_claim);
+        $fresh = $job->fresh();
+        $this->assertEquals(2100, $fresh->specs['totalBill']);
+        $this->assertFalse($fresh->is_warranty_claim);
     }
 
-    public function test_a_free_claim_is_refused_once_the_earlier_coverage_has_lapsed(): void
+    public function test_a_lapsed_warranty_is_billed_as_new_work(): void
     {
         $this->makeCoveredHistory(now()->subDay()->toDateString());
         $job = $this->makeJob();
 
         $this->putJson("/api/jobs/{$job->id}/specs", $this->specsPayload([
             'isWarranty' => true,
-        ]))->assertUnprocessable();
+        ]))->assertOk();
 
-        $this->assertNull($job->fresh()->specs);
+        $this->assertEquals(2100, $job->fresh()->specs['totalBill']);
+        $this->assertFalse($job->fresh()->is_warranty_claim);
     }
 
     public function test_logging_specs_stores_priced_bill_lines(): void

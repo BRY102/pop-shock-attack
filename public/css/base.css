@@ -16,24 +16,24 @@
        reserved for badges, icon chips and figures — never for whole buttons,
        which is what made the old toolbar read as three competing colours.
        Everything structural is neutral grey. */
-    --primary:        #d9381e;
-    --primary-dark:   #b52b16;
-    --primary-light:  #f5ede9;
-    --primary-tint:   rgba(217, 56, 30, 0.10);
-    --accent:         #ff5733;
+    --primary: #d9381e;
+    --primary-dark: #b52b16;
+    --primary-light: #f5ede9;
+    --primary-tint: rgba(217, 56, 30, 0.10);
+    --accent: #ff5733;
 
-    --money-in:       #356745;
-    --money-in-tint:  #ecf1ec;
-    --money-out:      #8a5a20;
+    --money-in: #356745;
+    --money-in-tint: #ecf1ec;
+    --money-out: #8a5a20;
     --money-out-tint: #f5f0e6;
 
     /* ---- Status palette ----
        Ink on a 10% wash of itself — the Linear/Stripe label, not a candy mint
        chip. No separate hairline: a border around a tint is what makes a
        template badge look outlined twice. */
-    --status-pos-bg:  rgba(47, 93, 64, 0.10);
-    --status-pos-fg:  #2f5d40;
-    --status-pos-br:  transparent;
+    --status-pos-bg: rgba(47, 93, 64, 0.10);
+    --status-pos-fg: #2f5d40;
+    --status-pos-br: transparent;
 
     --status-warn-bg: rgba(122, 79, 28, 0.10);
     --status-warn-fg: #7a4f1c;
@@ -51,29 +51,29 @@
     --status-brand-fg: #a2331f;
     --status-brand-br: transparent;
 
-    --bg-app:         #f4f5f7;
-    --bg-white:       #ffffff;
-    --bg-panel:       #fafafa;
-    --bg-subtle:      #f9fafb;
-    --sidebar-bg:     #111214;
-    --sidebar-hover:  rgba(255,255,255,0.06);
+    --bg-app: #f4f5f7;
+    --bg-white: #ffffff;
+    --bg-panel: #fafafa;
+    --bg-subtle: #f9fafb;
+    --sidebar-bg: #111214;
+    --sidebar-hover: rgba(255, 255, 255, 0.06);
     --sidebar-active: rgba(217, 56, 30, 0.15);
 
-    --text-primary:   #1a1c20;
+    --text-primary: #1a1c20;
     --text-secondary: #6b7280;
-    --text-muted:     #9ca3af;
+    --text-muted: #9ca3af;
 
-    --border:         #e5e7eb;
-    --border-soft:    #eef0f3;
-    --border-focus:   #d9381e;
+    --border: #e5e7eb;
+    --border-soft: #eef0f3;
+    --border-focus: #d9381e;
 
     /* Cards use --shadow-card: a hairline ring plus real elevation, instead of
        a flat 1px border that flattens everything onto the same plane. */
-    --shadow-card:    0 1px 2px rgba(16,24,40,0.05), 0 4px 12px rgba(16,24,40,0.05);
-    --shadow-sm:      0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md:      0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-    --shadow-lg:      0 20px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
-    --ring-card:      rgba(16,24,40,0.07);
+    --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.05), 0 4px 12px rgba(16, 24, 40, 0.05);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.06);
+    --ring-card: rgba(16, 24, 40, 0.07);
 
     /* ---- Radii ----
        Two steps carry the whole UI: 6px for anything you can click or read a
@@ -81,39 +81,44 @@
        surfaces they sit on (cards, tables, modals). Badges deliberately share
        the control radius instead of being full pills, so a status chip and a
        button read as parts of the same system. */
-    --radius-sm:  6px;
-    --radius-md:  10px;
-    --radius-lg:  14px;
-    --radius-xl:  20px;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
     --radius-pill: 999px;
 
     /* ---- Type scale ----
        Four sizes carry the whole back office: page title, card figure, body,
        and the uppercase micro-label used for section headers and column
        headers. Caps text always pairs with --ls-caps so it never looks cramped. */
-    --fs-page-title:  1.5rem;
-    --fs-figure:      1.55rem;
-    --fs-body:        0.9rem;
-    --fs-small:       0.82rem;
-    --fs-caps:        0.7rem;
-    --ls-caps:        1.1px;
-    --ls-title:       -0.4px;
+    --fs-page-title: 1.5rem;
+    --fs-figure: 1.55rem;
+    --fs-body: 0.9rem;
+    --fs-small: 0.82rem;
+    --fs-caps: 0.7rem;
+    --ls-caps: 1.1px;
+    --ls-title: -0.4px;
 
     /* ---- Control height ----
        Every toolbar control (buttons, date inputs, search) shares this, so a
        row of mixed controls lines up on both edges. */
-    --control-h:      40px;
+    --control-h: 40px;
 }
 
 /* ------------------------------------------------- */
 /* RESET & BASE                                      */
 /* ------------------------------------------------- */
-*, *::before, *::after {
-    margin: 0; padding: 0;
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
 }
 
-html { font-size: 16px; }
+html {
+    font-size: 16px;
+}
 
 body {
     font-family: 'DM Sans', system-ui, sans-serif;
@@ -136,12 +141,24 @@ body {
     animation: fadeIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.active-view { display: flex; }
-.hidden { display: none !important; }
+.active-view {
+    display: flex;
+}
+
+.hidden {
+    display: none !important;
+}
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(6px) scale(0.99); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+        opacity: 0;
+        transform: translateY(6px) scale(0.99);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 /* Inline SVG icons inside buttons/badges — sized by the text around them */
@@ -190,10 +207,12 @@ body {
     outline: none;
     border-color: var(--primary);
     background: var(--bg-white);
-    box-shadow: 0 0 0 3px rgba(217,56,30,0.10);
+    box-shadow: 0 0 0 3px rgba(217, 56, 30, 0.10);
 }
 
-.input-group input::placeholder { color: var(--text-muted); }
+.input-group input::placeholder {
+    color: var(--text-muted);
+}
 
 /* ------------------------------------------------- */
 /* BUTTONS                                           */
@@ -312,16 +331,15 @@ body {
     cursor: not-allowed;
 }
 
-/* Expense actions are data entry, not destructive — a deep ochre, so red stays
-   reserved for the brand (primary) and true delete/cancel actions. Same flat
-   fill and same radius as every other button. */
+/* Expense action button now uses the system primary colour so it matches
+   the Add Expense footer button and the rest of the brand palette. */
 .btn-expense {
-    background: #a3661a;
+    background: var(--primary);
     color: #fff;
 }
 
 .btn-expense:hover {
-    background: #8c5715;
+    background: var(--primary-dark, #b82d16);
 }
 
 /* Small neutral control for table rows. Edit is not a headline action, so it

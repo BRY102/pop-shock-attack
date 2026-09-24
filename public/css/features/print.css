@@ -8,7 +8,7 @@
 @media print {
     body { background: #fff; overflow: auto; }
     .sidebar, .top-header, .btn, .action-btns, .toast-container,
-    .btn-sm, .modal { display: none !important; }
+    .btn-sm, .modal, .kanban-intake-fab { display: none !important; }
     .main-content { width: 100%; background: #fff; }
     .content-body { padding: 1rem; height: auto; overflow: visible; }
     .table-container { box-shadow: none; border: 1px solid #ccc; }

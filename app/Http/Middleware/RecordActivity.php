@@ -85,6 +85,7 @@ class RecordActivity
             $request->isMethod('POST') && $request->is('api/jobs') => 'Registered a new intake ('.$plate.')',
             $request->isMethod('PUT') && $request->is('api/jobs/*/stage') => 'Moved job '.$plate.' to '.$this->label((string) $request->input('stage'), 'the next stage'),
             $request->isMethod('PUT') && $request->is('api/jobs/*/specs') => 'Logged tuning specs for '.$plate,
+            $request->isMethod('PUT') && $request->is('api/jobs/*/details') => 'Corrected details on '.$plate,
             $request->isMethod('PUT') && $request->is('api/jobs/*/mechanic') => $request->input('mechanic')
                 ? 'Assigned '.$mechanic.' to '.$plate
                 : 'Unassigned the mechanic on '.$plate,

@@ -202,7 +202,11 @@ window.loadView = async function (viewType) {
     if (viewType !== 'users') window.stopUsersPresencePoll?.();
     document.getElementById('view-system')?.classList.remove('header-compact');
     document.getElementById('view-system')?.classList.toggle('page-backjobs', viewType === 'backjobs');
-    if (viewType !== 'kanban') window.pendingKanbanFocus = null;
+    document.getElementById('view-system')?.classList.toggle('page-kanban', viewType === 'kanban');
+    if (viewType !== 'kanban') {
+        window.stopKanbanLive?.();
+        window.pendingKanbanFocus = null;
+    }
     if (viewType !== 'inventory') window.pendingInventoryFocus = null;
     if (viewType !== 'customer') window.pendingCustomerJobId = null;
     if (viewType !== 'users' && viewType !== 'approvals') window.pendingResetUsername = null;
@@ -273,7 +277,7 @@ function recordPageVisit(viewType) {
     apiFetch('/api/activity-logs', {
         method: 'POST',
         body: JSON.stringify({ view: viewType }),
-    }).catch(() => {});
+    }).catch(() => { });
 }
 
 document.addEventListener('keydown', (e) => {

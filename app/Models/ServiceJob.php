@@ -51,9 +51,8 @@ class ServiceJob extends Model
     }
 
     /**
-     * The earlier visit whose warranty still covers this unit, if any. A free
-     * re-service claim is only legitimate when this returns a job, so the
-     * decision never rests on the staff checkbox alone.
+     * The earlier visit whose warranty still covers this unit, if any.
+     * A free re-service is applied automatically from this, not a checkbox.
      */
     public function coveringWarranty(): ?self
     {

@@ -68,6 +68,7 @@ Route::middleware(['auth:sanctum', 'seen', 'activity'])->group(function () {
         Route::post('/jobs', [ServiceJobController::class, 'store']);
         Route::put('/jobs/{job}/stage', [ServiceJobController::class, 'updateStage']);
         Route::put('/jobs/{job}/specs', [ServiceJobController::class, 'updateSpecs']);
+        Route::put('/jobs/{job}/details', [ServiceJobController::class, 'updateDetails']);
         Route::put('/jobs/{job}/mechanic', [ServiceJobController::class, 'assignMechanic']);
 
         Route::get('/mechanics', [MechanicController::class, 'index']);

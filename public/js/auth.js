@@ -359,7 +359,7 @@ function resetSession() {
     currentUser = null;
     currentRole = null;
 
-    document.getElementById('view-system').classList.remove('active-view', 'page-backjobs');
+    document.getElementById('view-system').classList.remove('active-view', 'page-backjobs', 'page-kanban');
     const hero = document.getElementById('pageHero');
     if (hero) {
         hero.innerHTML = '';

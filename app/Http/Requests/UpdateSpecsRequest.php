@@ -26,7 +26,6 @@ class UpdateSpecsRequest extends FormRequest
             'oilSeal' => 'required|string|max:255',
             'dustSeal' => 'required|string|max:255',
             'springs' => 'required|string|max:255',
-            'isWarranty' => 'required|boolean',
             // The suspension setup measured for this unit. Constrained to the
             // shop's vocabulary so a returning unit's history stays comparable.
             'oilViscosity' => ['required', 'string', Rule::in(config('shop.oil_viscosities'))],
@@ -42,9 +41,8 @@ class UpdateSpecsRequest extends FormRequest
     }
 
     /**
-     * Two rules the board relies on but cannot enforce by itself: specs belong
-     * to the Tuning stage, and a free re-service needs real warranty coverage
-     * on an earlier visit rather than just a ticked checkbox.
+     * Specs belong to the Tuning stage, and a lead tech has to be on
+     * the card before the unit can be billed.
      */
     public function after(): array
     {
@@ -67,13 +65,6 @@ class UpdateSpecsRequest extends FormRequest
                     $validator->errors()->add(
                         'mechanic',
                         'Assign a lead tech before logging specs.'
-                    );
-                }
-
-                if ($this->boolean('isWarranty') && ! $job->coveringWarranty()) {
-                    $validator->errors()->add(
-                        'isWarranty',
-                        'This unit has no earlier released service still under warranty, so it cannot be billed as a free re-service claim.'
                     );
                 }
             },

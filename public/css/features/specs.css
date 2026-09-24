@@ -1,0 +1,438 @@
+/* Log Tuning Specs & Billing — compact two-column sheet.
+   Layout follows the provided mockup; colours follow the system theme. */
+
+#modal-specs .specs-sheet {
+    width: min(980px, calc(100vw - 2rem));
+    max-width: calc(100vw - 2rem);
+    max-height: calc(100vh - 28px);
+    padding: 0 0 14px;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+
+#modal-specs .specs-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 20px 12px;
+}
+
+#modal-specs .specs-title-ico {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+#modal-specs .specs-title-ico .icon {
+    width: 22px;
+    height: 22px;
+}
+
+#modal-specs .specs-head h2 {
+    margin: 0 0 2px;
+    font-size: 1.28rem;
+    font-weight: 700;
+    letter-spacing: var(--ls-title);
+    line-height: 1.15;
+    color: var(--text-primary);
+}
+
+#modal-specs .specs-head p {
+    margin: 0;
+    max-width: 36rem;
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    line-height: 1.4;
+}
+
+#modal-specs .specs-head .modal-close {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    color: var(--text-secondary);
+    background: var(--bg-subtle);
+}
+
+#modal-specs .specs-head .modal-close .icon {
+    width: 16px;
+    height: 16px;
+}
+
+#modal-specs .specs-form {
+    padding: 0 20px;
+}
+
+#modal-specs .specs-warranty:empty {
+    display: none;
+}
+
+#modal-specs .specs-warranty {
+    display: flex;
+    align-items: center;
+    min-height: 72px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(100deg, #fffafa, #fff5f4);
+}
+
+#modal-specs .specs-warranty-copy {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex: 1;
+    min-width: 0;
+}
+
+#modal-specs .specs-warranty-ico {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: var(--radius-md);
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+#modal-specs .specs-warranty-ico .icon {
+    width: 22px;
+    height: 22px;
+}
+
+#modal-specs .specs-warranty .warranty-proof {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
+}
+
+#modal-specs .specs-warranty .warranty-proof-kicker {
+    color: var(--text-secondary);
+    font-size: var(--fs-caps);
+    letter-spacing: var(--ls-caps);
+    margin-bottom: 1px;
+}
+
+#modal-specs .specs-warranty .warranty-proof strong {
+    font-size: 1.05rem;
+    color: var(--text-primary);
+    margin-bottom: 0;
+}
+
+#modal-specs .specs-warranty .warranty-proof.is-active strong {
+    color: var(--status-pos-fg);
+}
+
+#modal-specs .specs-warranty .warranty-proof.is-expired strong {
+    color: var(--status-crit-fg);
+}
+
+#modal-specs .specs-warranty .warranty-proof p {
+    margin-top: 1px;
+    color: var(--text-secondary);
+    font-size: var(--fs-small);
+    line-height: 1.3;
+}
+
+#modal-specs .specs-warranty-split {
+    width: 1px;
+    height: 48px;
+    margin: 0 16px 0 8px;
+    background: var(--border);
+    flex: 0 0 auto;
+}
+
+#modal-specs .specs-claim-note {
+    width: min(280px, 100%);
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--status-warn-bg);
+}
+
+#modal-specs .specs-claim-note strong,
+#modal-specs .specs-claim-note small {
+    display: block;
+}
+
+#modal-specs .specs-claim-note strong {
+    font-size: 0.84rem;
+    color: var(--status-warn-fg);
+}
+
+#modal-specs .specs-claim-note small {
+    margin-top: 2px;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+}
+
+#modal-specs .specs-grid {
+    display: grid;
+    grid-template-columns: 1.02fr 0.98fr;
+    gap: 12px;
+    align-items: stretch;
+}
+
+#modal-specs .specs-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 13px 14px;
+    background: var(--bg-white);
+}
+
+#modal-specs .specs-card-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    color: var(--primary);
+}
+
+#modal-specs .specs-card-head .icon {
+    width: 18px;
+    height: 18px;
+    stroke-width: 2.4;
+}
+
+#modal-specs .specs-card-head h3,
+#modal-specs .specs-bill-head h3 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    color: var(--text-primary);
+}
+
+#modal-specs .specs-rule {
+    height: 1px;
+    margin: 12px 0 10px;
+    background: var(--border);
+}
+
+#modal-specs .specs-billing {
+    padding: 0 13px 12px;
+}
+
+#modal-specs .specs-bill-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 40px;
+    margin: 0 -13px 12px;
+    padding: 0 12px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    background: linear-gradient(100deg, #fffafa, #fff5f4);
+}
+
+#modal-specs .specs-mini-ico {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+#modal-specs .specs-mini-ico .icon {
+    width: 16px;
+    height: 16px;
+}
+
+#modal-specs .specs-field {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 8px;
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+#modal-specs .specs-field input,
+#modal-specs .specs-field select {
+    width: 100%;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    outline: none;
+    color: var(--text-primary);
+    background: var(--bg-white);
+    font-family: inherit;
+    font-size: var(--fs-small);
+    font-weight: 500;
+}
+
+#modal-specs .specs-select {
+    position: relative;
+    display: block;
+}
+
+#modal-specs .specs-select select {
+    appearance: none;
+    padding-right: 32px;
+}
+
+#modal-specs .specs-select::after {
+    content: "";
+    position: absolute;
+    right: 11px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    pointer-events: none;
+    transform: translateY(-60%) rotate(45deg);
+    border-right: 1.8px solid var(--text-muted);
+    border-bottom: 1.8px solid var(--text-muted);
+}
+
+#modal-specs .specs-field input:focus,
+#modal-specs .specs-field select:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--primary-tint);
+}
+
+#modal-specs .specs-triple {
+    display: grid;
+    grid-template-columns: 1.2fr 0.7fr 0.9fr;
+    gap: 8px;
+}
+
+#modal-specs .specs-compute {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 38px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: var(--radius-sm);
+    color: #fff;
+    background: var(--primary);
+    font-size: 0.84rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+#modal-specs .specs-compute:hover {
+    background: var(--primary-dark);
+}
+
+#modal-specs .specs-compute .icon {
+    width: 16px;
+    height: 16px;
+}
+
+#modal-specs .specs-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    margin: 10px 0 0;
+    padding: 5px 11px;
+    border-radius: var(--radius-pill);
+    color: var(--text-secondary);
+    background: var(--bg-subtle);
+    font-size: 0.7rem;
+}
+
+#modal-specs .specs-note .icon {
+    width: 15px;
+    height: 15px;
+    color: var(--text-muted);
+}
+
+@media (min-width: 801px) and (max-height: 760px) {
+    #modal-specs .specs-sheet {
+        max-height: calc(100vh - 16px);
+    }
+
+    #modal-specs .specs-head {
+        padding: 12px 18px 8px;
+        gap: 12px;
+    }
+
+    #modal-specs .specs-title-ico,
+    #modal-specs .specs-warranty-ico {
+        width: 36px;
+        height: 36px;
+    }
+
+    #modal-specs .specs-head h2 {
+        font-size: 1.1rem;
+    }
+
+    #modal-specs .specs-head p {
+        font-size: 0.74rem;
+    }
+
+    #modal-specs .specs-form {
+        padding: 0 18px;
+    }
+
+    #modal-specs .specs-warranty {
+        min-height: 62px;
+        padding: 8px 12px;
+        margin-bottom: 8px;
+    }
+
+    #modal-specs .specs-field {
+        margin-bottom: 6px;
+    }
+
+    #modal-specs .specs-field input,
+    #modal-specs .specs-field select {
+        height: 32px;
+        font-size: 0.78rem;
+    }
+
+    #modal-specs .specs-compute {
+        height: 34px;
+        font-size: 0.78rem;
+    }
+}
+
+@media (max-width: 800px) {
+    #modal-specs .specs-sheet {
+        overflow-y: auto;
+        max-height: calc(100dvh - 20px);
+    }
+
+    #modal-specs .specs-grid {
+        grid-template-columns: 1fr;
+    }
+
+    #modal-specs .specs-warranty {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+        min-height: 0;
+    }
+
+    #modal-specs .specs-warranty-split {
+        display: none;
+    }
+
+    #modal-specs .specs-claim-note {
+        width: 100%;
+    }
+}
+
+@media (max-width: 430px) {
+    #modal-specs .specs-head h2 {
+        font-size: 1.05rem;
+    }
+
+    #modal-specs .specs-triple {
+        grid-template-columns: 1fr 0.65fr 0.85fr;
+        gap: 6px;
+    }
+}

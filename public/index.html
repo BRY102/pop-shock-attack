@@ -20,23 +20,71 @@
 <body>
     <div id="view-login" class="view-section active-view">
         <div class="login-overlay">
+
+            <!-- ===== LEFT PANEL ===== -->
             <div class="login-panel-left">
-                <div class="login-logos">
-                    <img src="img/logo-ae.png" alt="AE Logo" class="logo-ae" />
-                    <img src="img/logo-psa.png" alt="Pops Shock Attack" class="logo-psa" />
+                <!-- Logos at top-left -->
+                <div class="login-left-top">
+                    <div class="login-logos">
+                        <img src="img/logo-ae.png" alt="AE Logo" class="logo-ae" />
+                        <img src="img/logo-psa.png" alt="Pops Shock Attack" class="logo-psa" />
+                    </div>
                 </div>
+
+                <!-- Hero text center -->
                 <div class="login-tagline">
-                    <h2>Track your bike from drop-off to release</h2>
-                    <p>See job status, history, and warranty in one place.</p>
-                    <div class="login-feature-pills">
-                        <span>Status</span>
-                        <span>History</span>
-                        <span>Warranty</span>
-                        <span>Billing</span>
+                    <span class="login-hero-tag">Workshop Management System</span>
+                    <h2>KEEP YOUR RIDE<br><span>ON THE ROAD</span></h2>
+                    <p>Complete suspension service tracking — from intake to release.</p>
+                </div>
+
+                <!-- 3 feature items at bottom -->
+                <div class="login-features">
+                    <div class="login-feature-item">
+                        <div class="login-feature-ico">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                            </svg>
+                        </div>
+                        <div class="login-feature-copy">
+                            <strong>Better Organization</strong>
+                            <p>Keep your operations well organized.</p>
+                        </div>
+                    </div>
+                    <div class="login-feature-item">
+                        <div class="login-feature-ico">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <circle cx="12" cy="12" r="3" />
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" />
+                            </svg>
+                        </div>
+                        <div class="login-feature-copy">
+                            <strong>Higher Productivity</strong>
+                            <p>Manage jobs and staff with ease.</p>
+                        </div>
+                    </div>
+                    <div class="login-feature-item">
+                        <div class="login-feature-ico">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                                <polyline points="16 7 22 7 22 13" />
+                            </svg>
+                        </div>
+                        <div class="login-feature-copy">
+                            <strong>Greater Efficiency</strong>
+                            <p>Track performance and grow your business.</p>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            <!-- ===== RIGHT PANEL ===== -->
             <div class="login-card-centered">
+
+                <!-- Brand: inline logo + wordmark -->
                 <div class="brand-header">
                     <div class="logo-icon">
                         <!-- Font Awesome Free 6 "motorcycle" — CC BY 4.0, fontawesome.com -->
@@ -46,10 +94,14 @@
                         </svg>
                     </div>
                     <h1>MotoTrack</h1>
-                    <p>Pops Shock Attack</p>
                 </div>
 
+                <!-- Login form -->
                 <form id="mainLoginForm" class="login-form" onsubmit="handleUnifiedLogin(event)">
+                    <div class="login-welcome">
+                        <h2>Welcome Back!</h2>
+                        <p>Sign in to your account to continue managing your workshop.</p>
+                    </div>
                     <div class="input-group">
                         <label for="loginUser">Username</label>
                         <div class="login-field">
@@ -63,7 +115,6 @@
                             <input type="text" id="loginUser" placeholder="Username" required autocomplete="username">
                         </div>
                     </div>
-
                     <div class="input-group">
                         <div class="login-label-row">
                             <label for="loginPass">Password</label>
@@ -104,20 +155,23 @@
                         </div>
                     </div>
                     <div id="loginError" class="error-msg hidden">Invalid username or password.</div>
-                    <button type="submit" class="btn btn-primary btn-login">Login</button>
-
+                    <button type="submit" class="btn btn-primary btn-login">Sign In</button>
                     <p class="auth-link login-register">
-                        New to MotoTrack? <a href="#" onclick="toggleAuthMode('register'); return false;">Register
-                            here.</a>
+                        New to MotoTrack? <a href="#" onclick="toggleAuthMode('register'); return false;">Create an
+                            account</a>
                     </p>
                 </form>
 
+                <!-- Register form -->
                 <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
+                    <div class="login-welcome">
+                        <h2>Create Account</h2>
+                        <p>Register to track your bike's service history.</p>
+                    </div>
                     <div class="input-group">
                         <label>Choose Username</label>
                         <input type="text" id="regUser" placeholder="Username" required>
                     </div>
-
                     <div class="input-group">
                         <label>Create Password</label>
                         <input type="password" id="regPass" placeholder="Minimum 8 characters" required minlength="8">
@@ -127,23 +181,27 @@
                         <input type="password" id="regPassConfirm" placeholder="Retype password" required minlength="8">
                     </div>
                     <button type="submit" class="btn btn-primary btn-login">Create Account</button>
-
-                    <p class="auth-link">Already have an account? <a href="#" onclick="toggleAuthMode('login')">Log
+                    <p class="auth-link">Already have an account? <a href="#" onclick="toggleAuthMode('login')">Sign
                             in</a></p>
                 </form>
 
+                <!-- Forgot password form -->
                 <form id="forgotForm" class="hidden" onsubmit="handleForgot(event)">
-                    <p style="font-size:0.9rem; color:#555; margin-bottom:15px; text-align:center;">Enter your username.
-                        If the account exists, shop staff can set a new password at the counter.</p>
+                    <div class="login-welcome">
+                        <h2>Reset Password</h2>
+                        <p>Enter your username. Shop staff will set a new password at the counter.</p>
+                    </div>
                     <div class="input-group">
                         <label>Username</label>
                         <input type="text" id="forgotUser" placeholder="Enter your username" required minlength="3">
                     </div>
                     <button type="submit" class="btn btn-primary btn-login">Request Reset</button>
-                    <p class="auth-link"><a href="#" onclick="toggleAuthMode('login')">Back to Login</a></p>
+                    <p class="auth-link"><a href="#" onclick="toggleAuthMode('login')">← Back to Sign In</a></p>
                 </form>
 
+                <p class="login-copyright">© 2025 Pops Shock Attack. All rights reserved.</p>
             </div>
+
         </div>
     </div>
 
@@ -253,7 +311,8 @@
                                 Activity Log
                             </button>
                             <div class="profile-sep" role="separator"></div>
-                            <button type="button" class="profile-item is-danger" role="menuitem" onclick="closeProfileMenu(); logout()">
+                            <button type="button" class="profile-item is-danger" role="menuitem"
+                                onclick="closeProfileMenu(); logout()">
                                 <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                                     stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -285,11 +344,10 @@
         <div class="modal-content intake-sheet">
             <div class="modal-header intake-head">
                 <div>
-                    <h2>Register New Intake</h2>
-                    <p class="intake-sub">Fill in the details below to create a new intake record.</p>
+                    <h2 id="intakeTitle">Register New Intake</h2>
+                    <p class="intake-sub" id="intakeSub">Fill in the details below to create a new intake record.</p>
                 </div>
-                <button type="button" class="modal-close" onclick="closeModal('modal-intake')"
-                    aria-label="Close">
+                <button type="button" class="modal-close" onclick="closeModal('modal-intake')" aria-label="Close">
                     <span class="intake-control-ico" data-icon="x"></span>
                 </button>
             </div>
@@ -340,7 +398,7 @@
                         </div>
                     </div>
                 </aside>
-                <form class="intake-form" onsubmit="submitIntake(event)">
+                <form class="intake-form" onsubmit="submitIntakeForm(event)">
                     <div class="intake-section-title">Customer &amp; Vehicle Information <i></i></div>
 
                     <label class="intake-field">
@@ -356,7 +414,8 @@
                         <div class="intake-field">
                             <span class="intake-label">Motorcycle Brand <b>*</b></span>
                             <div class="intake-dropdown">
-                                <select id="in_brand" class="intake-brand-native" required tabindex="-1" aria-hidden="true"></select>
+                                <select id="in_brand" class="intake-brand-native" required tabindex="-1"
+                                    aria-hidden="true"></select>
                                 <button type="button" class="intake-control intake-select" id="in_brand_btn"
                                     aria-haspopup="listbox" aria-expanded="false" aria-controls="in_brand_menu"
                                     onclick="toggleIntakeBrandMenu(event)">
@@ -421,7 +480,7 @@
                         <button type="button" class="btn btn-muted" onclick="closeModal('modal-intake')">Cancel</button>
                         <button type="submit" class="btn btn-primary">
                             <span class="intake-control-ico" data-icon="clipboard-list"></span>
-                            Register Intake
+                            <span id="intakeSubmitLabel">Register Intake</span>
                         </button>
                     </div>
                 </form>
@@ -430,131 +489,157 @@
     </div>
 
     <div class="modal hidden" id="modal-specs">
-        <div class="modal-content modal-wide">
-            <div class="modal-header">
-                <h2>Log Tuning Specs & Billing</h2>
-                <button class="modal-close" onclick="closeModal('modal-specs')">&times;</button>
+        <div class="modal-content specs-sheet">
+            <div class="specs-head">
+                <span class="specs-title-ico" data-icon="cog"></span>
+                <div>
+                    <h2>Log Tuning Specs &amp; Billing</h2>
+                    <p>Enter the motorcycle details, tuning specifications, and billing information for this service.
+                    </p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeModal('modal-specs')" aria-label="Close">
+                    <span data-icon="x"></span>
+                </button>
             </div>
-            <form onsubmit="submitSpecs(event)">
+            <form class="specs-form" onsubmit="submitSpecs(event)">
                 <input type="hidden" id="spec_job_id">
 
-                <div id="spec_warranty_proof" class="warranty-proof-slot"></div>
-                <div
-                    style="background: #fff3cd; padding: 10px; border-left: 4px solid #ffc107; margin-bottom: 15px; border-radius: 4px;">
-                    <label
-                        style="font-weight: bold; color: #856404; cursor: pointer; display: flex; align-items: center; gap: 10px;">
-                        <input type="checkbox" id="spec_is_warranty" style="width: 20px; height: 20px;">
-                        This is a Re-Service Warranty Claim (Free of Charge)
-                    </label>
-                </div>
-                <div class="input-group">
-                    <label>Motorcycle Class (Base Front Shock Price)</label>
-                    <select id="spec_engine" required></select>
-                </div>
-                <div
-                    style="background: #f1f5f9; padding: 12px; border-left: 4px solid #2a78d6; margin-bottom: 1.5rem; border-radius: 4px;">
-                    <div style="font-weight: 700; color: #1f2937; margin-bottom: 0.85rem; font-size: 0.95rem;">
-                        Suspension Setup (Technical Log)
-                    </div>
-                    <div class="input-group">
-                        <label>Suspension Type</label>
-                        <select id="spec_susp_type" required></select>
-                    </div>
-                    <div class="input-group">
-                        <label>Suspension Brand</label>
-                        <select id="spec_susp_brand" required onchange="toggleOtherSuspensionBrand()"></select>
-                    </div>
-                    <div class="input-group hidden" id="otherSuspBrandGroup">
-                        <label>Other Suspension Brand</label>
-                        <input type="text" id="spec_susp_brand_other" placeholder="Suspension brand">
-                    </div>
-                    <div class="input-group">
-                        <label>Fork Oil Viscosity</label>
-                        <select id="spec_oil_viscosity" required></select>
-                    </div>
+                <div id="spec_warranty_proof" class="specs-warranty"></div>
+
+                <div class="specs-grid">
+                    <section class="specs-card">
+                        <div class="specs-card-head">
+                            <span data-icon="bike"></span>
+                            <h3>Motorcycle Class</h3>
+                        </div>
+                        <label class="specs-field">
+                            <span>Base Front Shock Price</span>
+                            <span class="specs-select">
+                                <select id="spec_engine" required></select>
+                            </span>
+                        </label>
+                        <div class="specs-rule"></div>
+                        <div class="specs-card-head">
+                            <span data-icon="sliders"></span>
+                            <h3>Suspension Setup (Technical Log)</h3>
+                        </div>
+                        <label class="specs-field">
+                            <span>Suspension Type</span>
+                            <span class="specs-select">
+                                <select id="spec_susp_type" required></select>
+                            </span>
+                        </label>
+                        <label class="specs-field">
+                            <span>Suspension Brand</span>
+                            <span class="specs-select">
+                                <select id="spec_susp_brand" required onchange="toggleOtherSuspensionBrand()"></select>
+                            </span>
+                        </label>
+                        <label class="specs-field hidden" id="otherSuspBrandGroup">
+                            <span>Other Suspension Brand</span>
+                            <input type="text" id="spec_susp_brand_other" placeholder="Suspension brand">
+                        </label>
+                        <label class="specs-field">
+                            <span>Fork Oil Viscosity</span>
+                            <span class="specs-select">
+                                <select id="spec_oil_viscosity" required></select>
+                            </span>
+                        </label>
+                    </section>
+
+                    <section class="specs-card specs-billing">
+                        <div class="specs-bill-head">
+                            <span class="specs-mini-ico" data-icon="receipt"></span>
+                            <h3>Billing Information</h3>
+                        </div>
+                        <label class="specs-field">
+                            <span>Oil Type Used</span>
+                            <span class="specs-select">
+                                <select id="spec_oil" required>
+                                    <option value="Daily Oil">Daily Oil</option>
+                                    <option value="Touring Oil">Touring Oil</option>
+                                    <option value="Racing Oil">Racing Oil</option>
+                                </select>
+                            </span>
+                        </label>
+                        <div class="specs-triple">
+                            <label class="specs-field">
+                                <span>Oil Seal Size</span>
+                                <span class="specs-select">
+                                    <select id="spec_oil_seal">
+                                        <option value="None">None</option>
+                                        <option value="Oil Seal 12x31x10.5">Oil Seal 12x31x10.5</option>
+                                        <option value="Oil Seal 15x35x10">Oil Seal 15x35x10</option>
+                                        <option value="Oil Seal 41x54x11">Oil Seal 41x54x11</option>
+                                    </select>
+                                </span>
+                            </label>
+                            <label class="specs-field">
+                                <span>Qty</span>
+                                <input type="number" id="spec_oil_seal_qty" value="0" min="0" max="2">
+                            </label>
+                            <label class="specs-field">
+                                <span>Side</span>
+                                <span class="specs-select">
+                                    <select id="spec_oil_seal_side">
+                                        <option value="N/A">N/A</option>
+                                        <option value="Left">Left</option>
+                                        <option value="Right">Right</option>
+                                        <option value="Both">Both</option>
+                                    </select>
+                                </span>
+                            </label>
+                        </div>
+                        <div class="specs-triple">
+                            <label class="specs-field">
+                                <span>Dust Seal Size</span>
+                                <span class="specs-select">
+                                    <select id="spec_dust_seal">
+                                        <option value="None">None</option>
+                                        <option value="Dust Seal 41x54x11">Dust Seal 41x54x11</option>
+                                        <option value="Dust Seal 43x54x11">Dust Seal 43x54x11</option>
+                                    </select>
+                                </span>
+                            </label>
+                            <label class="specs-field">
+                                <span>Qty</span>
+                                <input type="number" id="spec_dust_seal_qty" value="0" min="0" max="2">
+                            </label>
+                            <label class="specs-field">
+                                <span>Side</span>
+                                <span class="specs-select">
+                                    <select id="spec_dust_seal_side">
+                                        <option value="N/A">N/A</option>
+                                        <option value="Left">Left</option>
+                                        <option value="Right">Right</option>
+                                        <option value="Both">Both</option>
+                                    </select>
+                                </span>
+                            </label>
+                        </div>
+                        <label class="specs-field">
+                            <span>Lowering Springs</span>
+                            <span class="specs-select">
+                                <select id="spec_springs">
+                                    <option value="None">None (Stock Springs)</option>
+                                    <option value="Lowering Spring 1.0 inch">Lowering Spring 1.0 inch</option>
+                                    <option value="Lowering Spring 1.5 inch">Lowering Spring 1.5 inch</option>
+                                    <option value="Lowering Spring 2.0 inch">Lowering Spring 2.0 inch</option>
+                                </select>
+                            </span>
+                        </label>
+                        <button type="submit" class="specs-compute">
+                            <span data-icon="clipboard-list"></span>
+                            Compute Bill &amp; Advance to QA
+                            <span data-icon="chevron-right"></span>
+                        </button>
+                    </section>
                 </div>
 
-                <div class="input-group">
-                    <label>Oil Type Used</label>
-                    <select id="spec_oil" required>
-                        <option value="Daily Oil">Daily Oil</option>
-                        <option value="Touring Oil">Touring Oil</option>
-                        <option value="Racing Oil">Racing Oil</option>
-                    </select>
-                </div>
-                <div class="form-row">
-                    <div style="flex: 2;">
-                        <label
-                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Oil
-                            Seal Size</label>
-                        <select id="spec_oil_seal"
-                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                            <option value="None">None</option>
-                            <option value="Oil Seal 12x31x10.5">Oil Seal 12x31x10.5</option>
-                            <option value="Oil Seal 15x35x10">Oil Seal 15x35x10</option>
-                            <option value="Oil Seal 41x54x11">Oil Seal 41x54x11</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1;">
-                        <label
-                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Qty</label>
-                        <input type="number" id="spec_oil_seal_qty" value="0" min="0" max="2"
-                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label
-                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Side</label>
-                        <select id="spec_oil_seal_side"
-                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                            <option value="N/A">N/A</option>
-                            <option value="Left">Left</option>
-                            <option value="Right">Right</option>
-                            <option value="Both">Both</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div style="flex: 2;">
-                        <label
-                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Dust
-                            Seal Size</label>
-                        <select id="spec_dust_seal"
-                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                            <option value="None">None</option>
-                            <option value="Dust Seal 41x54x11">Dust Seal 41x54x11</option>
-                            <option value="Dust Seal 43x54x11">Dust Seal 43x54x11</option>
-                        </select>
-                    </div>
-                    <div style="flex: 1;">
-                        <label
-                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Qty</label>
-                        <input type="number" id="spec_dust_seal_qty" value="0" min="0" max="2"
-                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                    </div>
-                    <div style="flex: 1;">
-                        <label
-                            style="font-size: 0.9rem; font-weight: 600; color: #444; margin-bottom: 0.5rem; display: block;">Side</label>
-                        <select id="spec_dust_seal_side"
-                            style="width: 100%; padding: 0.8rem; border: 1.5px solid var(--border); border-radius: 8px;">
-                            <option value="N/A">N/A</option>
-                            <option value="Left">Left</option>
-                            <option value="Right">Right</option>
-                            <option value="Both">Both</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="input-group">
-                    <label>Lowering Springs</label>
-                    <select id="spec_springs">
-                        <option value="None">None (Stock Springs)</option>
-                        <option value="Lowering Spring 1.0 inch">Lowering Spring 1.0 inch</option>
-                        <option value="Lowering Spring 1.5 inch">Lowering Spring 1.5 inch</option>
-                        <option value="Lowering Spring 2.0 inch">Lowering Spring 2.0 inch</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width:100%; margin-bottom: 1rem;">Compute Bill &
-                    Advance to QA</button>
+                <p class="specs-note">
+                    <span data-icon="info"></span>
+                    All information will be saved and will be used for service tracking and billing.
+                </p>
             </form>
         </div>
     </div>
@@ -586,7 +671,8 @@
                         </span>
                         <span class="user-edit-shell">
                             <span class="user-edit-ico" data-icon="package"></span>
-                            <input type="text" id="m_item_name" required autocomplete="off" placeholder="e.g. Touring Oil">
+                            <input type="text" id="m_item_name" required autocomplete="off"
+                                placeholder="e.g. Touring Oil">
                         </span>
                     </label>
 
@@ -597,7 +683,8 @@
                         </span>
                         <span class="user-edit-shell">
                             <span class="user-edit-ico" data-icon="file-text"></span>
-                            <input type="text" id="m_item_desc" required autocomplete="off" placeholder="Short description">
+                            <input type="text" id="m_item_desc" required autocomplete="off"
+                                placeholder="Short description">
                         </span>
                     </label>
 
@@ -642,7 +729,8 @@
                 </div>
 
                 <div class="user-edit-actions">
-                    <button type="button" class="user-edit-cancel" onclick="closeModal('modal-edit-item')">Cancel</button>
+                    <button type="button" class="user-edit-cancel"
+                        onclick="closeModal('modal-edit-item')">Cancel</button>
                     <button type="submit" class="user-edit-save">
                         <span data-icon="save"></span>
                         <span id="itemEditSaveLabel">Save Item</span>
@@ -751,7 +839,8 @@
                 </div>
 
                 <div class="user-edit-actions">
-                    <button type="button" class="user-edit-cancel" onclick="closeModal('modal-manage-user')">Cancel</button>
+                    <button type="button" class="user-edit-cancel"
+                        onclick="closeModal('modal-manage-user')">Cancel</button>
                     <button type="submit" class="user-edit-save">
                         <span data-icon="save"></span>
                         <span id="userEditSaveLabel">Save Changes</span>
@@ -850,7 +939,7 @@
                     <label class="exp-label" for="exp_desc"><span class="exp-label-icon" data-icon="file-text"></span>
                         Notes &amp; Detailed Description</label>
                     <textarea id="exp_desc" rows="4" maxlength="255" required
-                        placeholder="Provide a detailed reason for the expense, line items, or specific invoice details. E.g., 'May electricity bill for Shop #3'."></textarea>
+                        placeholder="Describe the expense — include vendor name, invoice number, or itemized details (max 255 characters)."></textarea>
                 </div>
                 <div class="exp-actions">
                     <button type="button" class="btn btn-muted"
@@ -928,6 +1017,21 @@
         </div>
     </div>
 
+    <div class="modal hidden" id="modal-change-mechanic">
+        <div class="modal-content modal-narrow">
+            <div class="modal-header">
+                <h2>Change mechanic</h2>
+                <button type="button" class="modal-close" onclick="closeModal('modal-change-mechanic')">&times;</button>
+            </div>
+            <p class="modal-lead" id="changeMechCopy">Pick the lead tech for this unit.</p>
+            <div class="mech-pick-list" id="changeMechList"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-muted"
+                    onclick="closeModal('modal-change-mechanic')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal hidden" id="modal-logout">
         <div class="modal-content modal-confirm">
             <h3>Confirm Logout</h3>
@@ -935,6 +1039,17 @@
             <div class="modal-actions">
                 <button type="button" class="btn btn-muted" onclick="closeModal('modal-logout')">Cancel</button>
                 <button type="button" class="btn btn-danger" onclick="executeLogout()">Log out</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal hidden" id="modal-move-stage">
+        <div class="modal-content modal-confirm">
+            <h3 id="moveStageTitle">Move this job?</h3>
+            <p id="moveStageCopy">Move this unit to the next stage?</p>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-muted" onclick="cancelKanbanMove()">No</button>
+                <button type="button" class="btn btn-primary" onclick="confirmKanbanMove()">Yes</button>
             </div>
         </div>
     </div>
@@ -1014,6 +1129,8 @@
     <script src="js/features/overview/overview-charts.js"></script>
     <script src="js/features/overview/overview.js"></script>
     <script src="js/features/workflow/kanban.js"></script>
+    <script src="js/features/workflow/kanban-live.js"></script>
+
     <script src="js/features/history/history.js"></script>
     <script src="js/features/warranty/warranty.js"></script>
     <script src="js/features/inventory/inventory.js"></script>

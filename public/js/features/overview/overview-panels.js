@@ -442,17 +442,19 @@ function waveSpark({ primary, secondary, tone, label }) {
     </div>`;
 }
 
-function dashMetric({ icon: name, value, label, trend, plain, iconClass, tone, spark }) {
+function dashMetric({ icon: name, value, label, trend, plain, iconClass, tone, spark, action, footer }) {
     const chip = `stat-icon${iconClass ? ` ${iconClass}` : ''}${tone ? ` tone-${tone}` : ''}`;
     return `
-        <div class="dash-metric${plain ? ' is-plain' : ''}">
+        <div class="dash-metric${plain ? ' is-plain' : ''}${action ? ' has-action' : ''}${footer ? ' has-footer' : ''}">
             <div class="${chip}">${icon(name)}</div>
-            <div>
+            <div class="dash-metric-copy">
                 <h3>${value}</h3>
                 <p>${label}</p>
+                ${action || ''}
             </div>
             ${trend || ''}
             ${spark || ''}
+            ${footer ? `<div class="dash-metric-footer">${footer}</div>` : ''}
         </div>`;
 }
 

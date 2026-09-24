@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\AssignMechanicRequest;
 use App\Http\Requests\StoreJobRatingRequest;
 use App\Http\Requests\StoreJobRequest;
+use App\Http\Requests\UpdateJobDetailsRequest;
 use App\Http\Requests\UpdateSpecsRequest;
 use App\Http\Requests\UpdateStageRequest;
 use App\Http\Resources\ServiceJobResource;
@@ -250,12 +251,16 @@ class ServiceJobController extends Controller
     {
         $validated = $request->validated();
 
+        // Free of charge when an earlier visit on this plate is still under
+        // warranty. Staff no longer tick a claim box — coverage decides.
+        $isWarrantyClaim = $job->coveringWarranty() !== null;
+
         // The bill is always computed here, never taken from the client,
         // so a tampered request cannot underpay a job. The priced lines
         // travel with the job so the receipt can show them later.
         $bill = $this->billing->breakdown(
             enginePrice: (int) $validated['enginePrice'],
-            isWarrantyClaim: (bool) $validated['isWarranty'],
+            isWarrantyClaim: $isWarrantyClaim,
             oil: $validated['rawOil'] ?? $validated['oil'] ?? null,
             oilSealSize: $validated['rawOsSize'] ?? null,
             oilSealQty: (int) ($validated['rawOsQty'] ?? 0),
@@ -277,7 +282,7 @@ class ServiceJobController extends Controller
         $ranLow = [];
 
         // Job update and stock movements succeed or fail together.
-        DB::transaction(function () use ($job, $validated, $totalBill, $bill, $consumables, &$ranLow) {
+        DB::transaction(function () use ($job, $validated, $totalBill, $bill, $consumables, $isWarrantyClaim, &$ranLow) {
             // Re-logging after a QA bounce: the parts from the previous attempt
             // were never fitted, so they go back before the new ones come out.
             $this->inventory->restore($this->inventory->fromSpecs($job->specs));
@@ -307,7 +312,7 @@ class ServiceJobController extends Controller
             $job->suspension_type = $validated['suspensionType'];
             $job->spring_rate = null;
 
-            $job->is_warranty_claim = (bool) $validated['isWarranty'];
+            $job->is_warranty_claim = $isWarrantyClaim;
             $job->stage = JobStage::QA->value;
             $job->save();
         });
@@ -321,6 +326,40 @@ class ServiceJobController extends Controller
         return response()->json([
             'message' => 'Specs logged and inventory deducted!',
             'job' => new ServiceJobResource($job),
+        ]);
+    }
+
+    /**
+     * Correct intake details while the unit is still at Disassembly —
+     * wrong username, plate, model, or complaint from the front desk.
+     */
+    public function updateDetails(UpdateJobDetailsRequest $request, ServiceJob $job): JsonResponse
+    {
+        if ($job->stage !== JobStage::Disassembly->value) {
+            return response()->json([
+                'message' => 'Customer details can only be corrected while the unit is at Disassembly.',
+            ], 422);
+        }
+
+        $validated = $request->validated();
+
+        $customerAccount = AppUser::where('username', $validated['customer'])
+            ->where('role', UserRole::Customer->value)
+            ->first();
+
+        $job->update([
+            'customer' => $validated['customer'],
+            'app_user_id' => $customerAccount?->id,
+            'moto_model' => $validated['moto'],
+            'plate_number' => $validated['plate'],
+            'date_in' => $validated['dateIn'],
+            'time_in' => $validated['timeIn'],
+            'complaint' => $validated['complaint'],
+        ]);
+
+        return response()->json([
+            'message' => 'Job details updated.',
+            'job' => new ServiceJobResource($job->fresh()),
         ]);
     }
 

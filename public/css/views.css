@@ -5,6 +5,7 @@
 /* ================================================= */
 
 @import url('features/workflow.css');
+@import url('features/specs.css');
 @import url('features/customer.css');
 @import url('features/overview.css');
 @import url('features/shared.css');

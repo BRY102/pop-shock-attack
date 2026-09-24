@@ -20,56 +20,192 @@
     color: var(--text-secondary);
 }
 
-.ov-fin-head {
+.ov-welcome {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.75rem 1rem;
-    margin: 0 0 0.85rem;
+    gap: 1rem;
+    min-height: 68px;
+    margin: 0 0 1.35rem;
+    background: #fff;
+    border: 1px solid var(--ring-card);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-card);
+    padding: 0.9rem 1.35rem 0.9rem 1.1rem;
 }
 
-.ov-fin-head .dash-heading {
+/* Bike icon — shown in a tinted icon badge */
+.ov-welcome-bike {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: rgba(217, 56, 30, 0.09);
+    color: var(--primary);
+}
+
+.ov-welcome-bike .icon {
+    width: 22px;
+    height: 22px;
+    stroke-width: 2;
+}
+
+.ov-welcome-copy {
+    min-width: 0;
+}
+
+.ov-welcome-copy h2 {
+    margin: 0 0 0.18rem;
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: var(--ls-title);
+    color: var(--text-primary);
+    line-height: 1.25;
+}
+
+.ov-welcome-copy p {
     margin: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
 }
 
-.btn-add-exp {
+/* Meta section — pushed to the right, chip style per item */
+.ov-welcome-meta {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex: none;
+}
+
+/* Each info chip (date, weather) */
+.ov-welcome-date,
+.ov-welcome-weather {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    background: var(--bg-app, #f3f4f6);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.45rem 0.85rem;
+}
+
+/* Remove old standalone border-left separator — chips handle separation now */
+.ov-welcome-weather {
+    padding-left: 0.85rem;
+    border-left: 1px solid var(--border);
+}
+
+.ov-welcome-ico {
+    display: grid;
+    place-items: center;
+    color: var(--text-secondary);
+}
+
+.ov-welcome-ico .icon {
+    width: 17px;
+    height: 17px;
+}
+
+.ov-welcome-ico.is-weather {
+    color: #d97706;
+}
+
+.ov-welcome-date strong,
+.ov-welcome-weather strong {
+    display: block;
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+
+.ov-welcome-date small,
+.ov-welcome-weather small {
+    display: block;
+    margin-top: 0.12rem;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+
+.dash-heading+.dash-hero {
+    margin-bottom: 1.5rem;
+}
+
+.dash-metric-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+}
+
+/* ---- Expense card footer action strip ---- */
+.dash-metric-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    display: flex;
+    border-top: 1px solid rgba(0, 0, 0, 0.09);
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+    overflow: hidden;
+    z-index: 2;
+}
+
+.dash-metric-footer button {
+    flex: 1;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    height: 40px;
-    padding: 0 0.7rem 0 0.95rem;
+    justify-content: center;
+    gap: 0.38rem;
+    height: 100%;
     border: 0;
-    border-radius: 999px;
-    background: #1b2430;
-    color: #fff;
-    font: inherit;
-    font-size: 0.88rem;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.76rem;
     font-weight: 700;
     letter-spacing: 0.01em;
     cursor: pointer;
     white-space: nowrap;
-    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+    transition: background 0.15s, color 0.15s;
+}
+
+.dash-metric-footer button .icon {
+    width: 13px;
+    height: 13px;
+    stroke-width: 2.5;
+}
+
+.btn-add-exp {
+    background: var(--primary) !important;
+    color: #fff !important;
 }
 
 .btn-add-exp:hover {
-    background: #111827;
+    background: var(--primary-dark, #b82d16) !important;
 }
 
-.btn-add-exp .icon {
-    width: 15px;
-    height: 15px;
-    stroke-width: 2.4;
+.btn-exp-review {
+    background: #fff8f5;
+    color: #c2410c;
+    border-left: 1px solid rgba(0, 0, 0, 0.09);
 }
 
-.btn-add-exp .icon:last-child {
-    width: 14px;
-    height: 14px;
-    opacity: 0.8;
+.btn-exp-review:hover {
+    background: #fff1eb;
 }
 
-.ov-fin-head + .dash-hero,
-.dash-heading + .dash-hero {
-    margin-bottom: 1.5rem;
+.dash-hero .dash-metric.has-action {
+    min-height: 168px;
+}
+
+.dash-hero .dash-metric.has-footer {
+    min-height: 178px;
 }
 
 .dash-hero {
@@ -90,7 +226,7 @@
     margin-bottom: 0.75rem;
 }
 
-.dash-ops > section {
+.dash-ops>section {
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -125,6 +261,10 @@
     padding: 20px 18px 48px;
 }
 
+.dash-hero .dash-metric.has-action {
+    min-height: 168px;
+}
+
 .dash-hero .dash-metric.is-plain {
     align-items: center;
     min-height: 0;
@@ -140,6 +280,11 @@
     height: 40px;
     pointer-events: none;
     background: repeating-linear-gradient(to bottom, transparent 0 9px, #e7ebef 10px);
+}
+
+/* Push spark above the 40px footer strip */
+.dash-hero .dash-metric.has-footer .dash-spark-plot {
+    bottom: 53px;
 }
 
 .dash-hero .spark {
@@ -169,11 +314,21 @@
     stroke: #8b98a4;
 }
 
-.dash-hero .spark.green .red-line { stroke: #20ae68; }
-.dash-hero .spark.green .area { fill: #20ae6818; }
+.dash-hero .spark.green .red-line {
+    stroke: #20ae68;
+}
 
-.dash-hero .spark.orange .red-line { stroke: #ffad18; }
-.dash-hero .spark.orange .area { fill: #ffad1818; }
+.dash-hero .spark.green .area {
+    fill: #20ae6818;
+}
+
+.dash-hero .spark.orange .red-line {
+    stroke: #ffad18;
+}
+
+.dash-hero .spark.orange .area {
+    fill: #ffad1818;
+}
 
 /* No trend pill in the corner, so the reserved space comes back */
 .dash-metric.is-plain {
@@ -597,7 +752,7 @@
     min-height: 0;
 }
 
-.ov-brand-trend .ov-d-trend > div {
+.ov-brand-trend .ov-d-trend>div {
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -811,7 +966,7 @@
     min-width: 0;
 }
 
-.ov-d-trend > * {
+.ov-d-trend>* {
     min-width: 0;
 }
 
@@ -965,11 +1120,11 @@
     overflow: hidden;
 }
 
-.ov-d-inventory > h2 {
+.ov-d-inventory>h2 {
     margin-bottom: 0;
 }
 
-.ov-d-inventory > .ov-d-note {
+.ov-d-inventory>.ov-d-note {
     margin: 4px 0 12px;
 }
 
@@ -984,7 +1139,7 @@
     margin: 0 0 14px;
 }
 
-.pu-kpis > div {
+.pu-kpis>div {
     background: #f7f8fa;
     border-radius: 8px;
     padding: 10px 12px;
@@ -1331,7 +1486,7 @@
     min-width: 0;
 }
 
-.insight-card > h3,
+.insight-card>h3,
 .insight-card .insight-head h3 {
     margin: 0 0 1.15rem;
     color: #111827;
@@ -1361,7 +1516,7 @@
     margin-top: 1.5rem;
 }
 
-.split-row > .brand-card {
+.split-row>.brand-card {
     margin-top: 0;
 }
 
@@ -1375,7 +1530,7 @@
     height: 180px;
 }
 
-.split-row > .insight-card {
+.split-row>.insight-card {
     flex: 1 1 280px;
 }
 
@@ -1390,7 +1545,7 @@
     align-items: stretch;
 }
 
-.split-row.brand-profit-pair > .insight-card {
+.split-row.brand-profit-pair>.insight-card {
     min-height: 0;
 }
 
@@ -1406,7 +1561,7 @@
     min-height: 0;
 }
 
-.mech-panel > h3 {
+.mech-panel>h3 {
     margin-bottom: 0.75rem;
     font-size: 1.05rem;
 }
@@ -1565,17 +1720,17 @@
     overflow: hidden;
 }
 
-.mech-bar > span {
+.mech-bar>span {
     display: block;
     height: 100%;
     border-radius: 99px;
 }
 
-.mech-bar > span.is-alert {
+.mech-bar>span.is-alert {
     background: #ef4444;
 }
 
-.mech-bar > span.is-ok {
+.mech-bar>span.is-ok {
     background: #86efac;
 }
 

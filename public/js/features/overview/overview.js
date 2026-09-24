@@ -166,9 +166,144 @@ window.openInventoryAudit = function () {
 // The header button doubles as a menu: the money entries the owner records
 // daily up top, the once-a-month reviews and printouts below them.
 function addExpenseButton() {
-    return `<button type="button" class="btn-add-exp" onclick="openExpenseModal()">
-        ${icon('plus')} Add Expense ${icon('chevron-right')}
-    </button>`;
+    return `
+        <button type="button" class="btn-add-exp" onclick="openExpenseModal()">
+            ${icon('plus')} Add Expense
+        </button>
+        <button type="button" class="btn-exp-review" onclick="openFinancialReview()">
+            ${icon('file-text')} View Report
+        </button>`;
+}
+
+const SAN_PEDRO = { lat: 14.3644, lon: 121.0543, label: 'San Pedro, Laguna' };
+const WEATHER_CACHE_KEY = 'mt_weather_san_pedro';
+const WEATHER_TTL_MS = 20 * 60 * 1000;
+
+function manilaNowParts(date = new Date()) {
+    const tz = 'Asia/Manila';
+    const part = (type, opts) => (
+        new Intl.DateTimeFormat('en-US', { timeZone: tz, ...opts })
+            .formatToParts(date)
+            .find(p => p.type === type)?.value
+    );
+    return {
+        hour: Number(part('hour', { hour: 'numeric', hourCycle: 'h23' })),
+        weekday: new Intl.DateTimeFormat('en-US', { timeZone: tz, weekday: 'long' }).format(date),
+        dateLine: new Intl.DateTimeFormat('en-US', {
+            timeZone: tz, month: 'short', day: 'numeric', year: 'numeric',
+        }).format(date),
+    };
+}
+
+function overviewHello() {
+    const hour = manilaNowParts().hour;
+    if (hour >= 5 && hour < 12) return 'Good Morning';
+    if (hour >= 12 && hour < 18) return 'Good Afternoon';
+    return 'Good Evening';
+}
+
+function weatherIconName(code, isDay) {
+    const n = Number(code);
+    if (n === 0) return isDay ? 'sun' : 'moon';
+    if (n <= 2) return isDay ? 'cloud-sun' : 'cloud';
+    if (n === 3 || n === 45 || n === 48) return 'cloud';
+    if (n >= 95) return 'cloud-lightning';
+    if (n >= 51) return 'cloud-rain';
+    return 'cloud';
+}
+
+function readWeatherCache() {
+    try {
+        const raw = sessionStorage.getItem(WEATHER_CACHE_KEY);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!data || Date.now() - Number(data.at) > WEATHER_TTL_MS) return null;
+        if (typeof data.temp !== 'number') return null;
+        return data;
+    } catch (e) {
+        return null;
+    }
+}
+
+function writeWeatherCache(data) {
+    try {
+        sessionStorage.setItem(WEATHER_CACHE_KEY, JSON.stringify(data));
+    } catch (e) { /* ignore quota */ }
+}
+
+function paintOverviewWeather(slot, data) {
+    if (!slot || !data) return;
+    const ico = weatherIconName(data.code, data.isDay);
+    slot.innerHTML = `
+        <span class="ov-welcome-ico is-weather">${icon(ico)}</span>
+        <div>
+            <strong>${Math.round(data.temp)}°C</strong>
+            <small>${esc(SAN_PEDRO.label)}</small>
+        </div>`;
+}
+
+async function loadSanPedroWeather() {
+    const cached = readWeatherCache();
+    if (cached) return cached;
+
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${SAN_PEDRO.lat}&longitude=${SAN_PEDRO.lon}&current=temperature_2m,weather_code,is_day&timezone=Asia%2FManila`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('weather');
+    const json = await response.json();
+    const current = json.current || {};
+    const data = {
+        at: Date.now(),
+        temp: Number(current.temperature_2m),
+        code: Number(current.weather_code),
+        isDay: Number(current.is_day) === 1,
+    };
+    if (Number.isNaN(data.temp)) throw new Error('weather');
+    writeWeatherCache(data);
+    return data;
+}
+
+function fillOverviewWeather() {
+    const slot = document.getElementById('ovWeather');
+    if (!slot) return;
+
+    const cached = readWeatherCache();
+    if (cached) paintOverviewWeather(slot, cached);
+
+    loadSanPedroWeather()
+        .then((data) => {
+            if (document.getElementById('ovWeather') !== slot) return;
+            paintOverviewWeather(slot, data);
+        })
+        .catch(() => { });
+}
+
+function overviewWelcomeHtml() {
+    const when = manilaNowParts();
+    const name = displayName(currentUser) || 'Admin';
+    return `
+        <div class="ov-welcome">
+            <span class="ov-welcome-bike">${icon('bike')}</span>
+            <div class="ov-welcome-copy">
+                <h2>${esc(overviewHello())}, ${esc(name)}!</h2>
+                <p>Here's what's happening with your shop today.</p>
+            </div>
+            <div class="ov-welcome-meta">
+                <div class="ov-welcome-date">
+                    <span class="ov-welcome-ico">${icon('calendar')}</span>
+                    <div>
+                        <strong>${esc(when.dateLine)}</strong>
+                        <small>${esc(when.weekday)}</small>
+                    </div>
+                </div>
+                <div class="ov-welcome-weather" id="ovWeather">
+                    <span class="ov-welcome-ico is-weather">${icon('sun')}</span>
+                    <div>
+                        <strong>—</strong>
+                        <small>${esc(SAN_PEDRO.label)}</small>
+                    </div>
+                </div>
+            </div>
+        </div>`;
 }
 
 function renderOverview(ctx) {
@@ -186,50 +321,49 @@ function renderOverview(ctx) {
     const sparkProfitWeeks = sparkWeeks.map((sale, i) => sale - sparkExpWeeks[i]);
 
     ctx.content.innerHTML = `
-        <div class="ov-fin-head">
-            <p class="dash-heading">Financial Performance</p>
-            ${addExpenseButton()}
-        </div>
+        ${overviewWelcomeHtml()}
+        <p class="dash-heading">Financial Performance</p>
         <div class="dash-hero">
             ${dashMetric({
-                icon: 'philippine-peso',
-                tone: 'green',
-                value: peso(stats.totalSales),
-                label: 'Total Revenue',
-                trend: trendPill(monthChange(stats.monthlySales, stats.prevMonthlySales)),
-                spark: waveSpark({
-                    primary: sparkWeeks,
-                    secondary: sparkExpWeeks,
-                    tone: 'green',
-                    label: 'Last 12 weeks: sales vs expenses',
-                }),
-            })}
+        icon: 'philippine-peso',
+        tone: 'green',
+        value: peso(stats.totalSales),
+        label: 'Total Revenue',
+        trend: trendPill(monthChange(stats.monthlySales, stats.prevMonthlySales)),
+        spark: waveSpark({
+            primary: sparkWeeks,
+            secondary: sparkExpWeeks,
+            tone: 'green',
+            label: 'Last 12 weeks: sales vs expenses',
+        }),
+    })}
             ${dashMetric({
-                icon: 'trending-up',
-                tone: 'orange',
-                value: peso(netProfit),
-                label: 'Net Profit',
-                trend: trendPill(monthChange(monthProfit, prevMonthProfit)),
-                spark: waveSpark({
-                    primary: sparkProfitWeeks,
-                    secondary: sparkExpWeeks,
-                    tone: 'orange',
-                    label: 'Last 12 weeks: profit vs expenses',
-                }),
-            })}
+        icon: 'trending-up',
+        tone: 'orange',
+        value: peso(netProfit),
+        label: 'Net Profit',
+        trend: trendPill(monthChange(monthProfit, prevMonthProfit)),
+        spark: waveSpark({
+            primary: sparkProfitWeeks,
+            secondary: sparkExpWeeks,
+            tone: 'orange',
+            label: 'Last 12 weeks: profit vs expenses',
+        }),
+    })}
             ${dashMetric({
-                icon: 'receipt',
-                tone: 'red',
-                value: peso(stats.totalExpenses),
-                label: 'Total Expenses',
-                trend: trendPill(monthChange(stats.monthlyExpenses, stats.prevMonthlyExpenses), true),
-                spark: waveSpark({
-                    primary: sparkExpWeeks,
-                    secondary: sparkWeeks,
-                    tone: 'red',
-                    label: 'Last 12 weeks: expenses vs sales',
-                }),
-            })}
+        icon: 'receipt',
+        tone: 'red',
+        value: peso(stats.totalExpenses),
+        label: 'Total Expenses',
+        trend: trendPill(monthChange(stats.monthlyExpenses, stats.prevMonthlyExpenses), true),
+        spark: waveSpark({
+            primary: sparkExpWeeks,
+            secondary: sparkWeeks,
+            tone: 'red',
+            label: 'Last 12 weeks: expenses vs sales',
+        }),
+        footer: addExpenseButton(),
+    })}
         </div>
 
         <div class="dash-ops">
@@ -315,6 +449,7 @@ function renderOverview(ctx) {
     `;
 
     lastOverviewStats = stats;
+    fillOverviewWeather();
 
     // Wait one tick so the canvases exist in the DOM before Chart.js draws on them
     setTimeout(() => {

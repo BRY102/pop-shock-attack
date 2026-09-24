@@ -190,6 +190,24 @@
         display: none !important;
     }
 
+    #view-system .page-toolbar .toolbar-search {
+        flex: 1 1 100%;
+        width: 100%;
+        max-width: none;
+        height: 55px;
+        min-height: 55px;
+        background: #fff;
+        border-radius: 13px;
+        box-shadow: 0 8px 20px #0824451c;
+    }
+
+    #view-system .page-toolbar .toolbar-search .icon {
+        left: 18px;
+        width: 20px;
+        height: 20px;
+        color: #54709c;
+    }
+
     #view-system .page-toolbar .search-bar,
     #view-system .bj-search {
         flex: 1 1 100%;
@@ -202,6 +220,14 @@
         background: #fff;
         color: #23436e;
         box-shadow: 0 8px 20px #0824451c;
+    }
+
+    #view-system .page-toolbar .toolbar-search .search-bar {
+        background: transparent;
+        padding-left: 48px;
+        box-shadow: none;
+        height: 55px;
+        min-height: 55px;
     }
 
     #view-system .bj-search {
@@ -321,6 +347,7 @@
         padding-top: 12px;
     }
 
+    #view-system .page-toolbar .toolbar-search,
     #view-system .page-toolbar .search-bar,
     #view-system .page-toolbar .bj-search {
         max-width: none;
@@ -403,6 +430,17 @@
     .kanban-board {
         padding-right: 1.25rem;
         scroll-padding-inline: 0.5rem;
+    }
+
+    #view-system.page-kanban .kanban-intake-fab,
+    #view-system.sidebar-collapsed .kanban-intake-fab {
+        left: 1rem;
+        bottom: max(1.15rem, env(safe-area-inset-bottom));
+        height: 76px;
+        min-height: 76px;
+        min-width: 200px;
+        font-size: 1.18rem;
+        z-index: 40;
     }
 
     .search-bar {

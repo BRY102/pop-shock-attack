@@ -1,66 +1,90 @@
 /* ================================================= */
-/* BACK-JOBS                                        */
-/* Split from views.css. Rules unchanged.          */
+/* BACK-JOBS                                         */
+/* Restyled to match the system design language.     */
+/* Layout/positions unchanged — only visual updates. */
 /* ================================================= */
-/* Back-jobs page only — MOTOHUB-style claims board */
+
+/* ---- Page shell ---- */
 .bj-page {
     display: flex;
     flex-direction: column;
     gap: 24px;
 }
 
+/* ---- KPI cards ---- */
 .bj-kpis {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
+    gap: 20px;
 }
 
 .bj-kpi {
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 145px;
-    padding: 15px 18px;
-    border: 0;
-    border-radius: 12px;
+    min-height: 140px;
+    padding: 18px 20px;
+    border: 1px solid var(--ring-card);
+    border-radius: var(--radius-lg);
     background: #fff;
-    box-shadow: 0 8px 17px #214c7912;
+    box-shadow: var(--shadow-card);
     font: inherit;
-    color: #08182f;
+    color: var(--text-primary);
     text-align: left;
     width: 100%;
 }
 
 button.bj-kpi {
     cursor: pointer;
+    transition: box-shadow 0.15s, border-color 0.15s;
 }
 
 button.bj-kpi:hover,
 .bj-kpi.is-on {
-    outline: 2px solid #df2633;
+    border-color: var(--primary);
+    outline: 2px solid var(--primary);
     outline-offset: 0;
+    box-shadow: var(--shadow-md);
 }
 
+/* ---- KPI icon badge ---- */
 .bj-stat-icon {
     display: grid;
     place-items: center;
-    width: 68px;
-    height: 68px;
-    margin-right: 23px;
+    width: 64px;
+    height: 64px;
+    margin-right: 20px;
     border-radius: 50%;
     flex-shrink: 0;
 }
 
 .bj-stat-icon .icon {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
 }
 
-.bj-kpi.red .bj-stat-icon { color: #e52435; background: #ffdadd; }
-.bj-kpi.green .bj-stat-icon { color: #10a760; background: #d9f7e7; }
-.bj-kpi.amber .bj-stat-icon { color: #d97706; background: #ffedd5; }
-.bj-kpi.blue .bj-stat-icon { color: #1675e5; background: #d8e8ff; }
+/* Colour variants — red uses the brand primary */
+.bj-kpi.red .bj-stat-icon {
+    color: var(--primary);
+    background: var(--primary-light);
+}
 
+.bj-kpi.green .bj-stat-icon {
+    color: #10a760;
+    background: #d9f7e7;
+}
+
+.bj-kpi.amber .bj-stat-icon {
+    color: #d97706;
+    background: #ffedd5;
+}
+
+.bj-kpi.blue .bj-stat-icon {
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+/* ---- KPI copy ---- */
 .bj-stat-copy {
     min-width: 0;
     display: flex;
@@ -69,22 +93,24 @@ button.bj-kpi:hover,
 }
 
 .bj-stat-copy strong {
-    font-size: 32px;
-    font-weight: 600;
+    font-size: 30px;
+    font-weight: 700;
     line-height: 1;
+    color: var(--text-primary);
 }
 
 .bj-stat-copy span {
-    color: #08182f;
-    font-size: 15px;
+    color: var(--text-primary);
+    font-size: 14px;
     font-weight: 600;
 }
 
 .bj-stat-copy small {
-    color: #55729b;
-    font-size: 13px;
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
+/* ---- Filters bar ---- */
 .bj-filters-bar.wrn-filters {
     margin-bottom: 0;
 }
@@ -99,32 +125,37 @@ button.bj-kpi:hover,
     overflow-y: auto;
 }
 
+/* Log Claim button — primary brand colour */
 .bj-filters-bar .bj-log-claim {
     flex: 0 0 auto;
-    height: 42px;
-    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 40px;
+    min-height: 40px;
     margin-left: auto;
-    padding: 0 0.85rem 0 1rem;
+    padding: 0 1rem 0 1rem;
     border: 0;
-    border-radius: 999px;
-    background: #1b2430;
+    border-radius: var(--radius-pill);
+    background: var(--primary);
     color: #fff;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
     font-weight: 700;
     white-space: nowrap;
-    box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.15s;
 }
 
 .bj-filters-bar .bj-log-claim:hover,
 .bj-filters-bar .bj-log-claim:active {
-    background: #111827;
-    color: #fff;
+    background: var(--primary-dark);
 }
 
 .bj-filters-bar .bj-log-claim .icon:last-child {
     width: 14px;
     height: 14px;
-    opacity: 0.8;
+    opacity: 0.85;
 }
 
 @media (max-width: 900px) {
@@ -142,15 +173,17 @@ button.bj-kpi:hover,
     .bj-filters-bar .bj-log-claim {
         width: 100%;
         margin-left: 0;
+        justify-content: center;
     }
 }
 
+/* ---- Toolbar ---- */
 .bj-toolbar {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
-    gap: 15px;
+    gap: 12px;
 }
 
 .bj-filters,
@@ -158,80 +191,84 @@ button.bj-kpi:hover,
 .bj-toolbar-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 12px;
 }
 
+/* ---- Tab / Sort / Tool buttons ---- */
 .bj-tab,
 .bj-sort,
 .bj-tool-btn {
     display: flex;
     align-items: center;
-    gap: 12px;
-    height: 52px;
-    padding: 0 20px;
-    border: 1px solid #d8e4f2;
-    border-radius: 11px;
-    color: #234d7c;
+    gap: 10px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
     background: #fff;
-    box-shadow: 0 3px 9px #1b46720c;
+    box-shadow: var(--shadow-sm);
     font: inherit;
-    font-size: 15px;
+    font-size: 0.88rem;
     cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
 .bj-tab.is-selected {
-    border-color: #df2633;
+    border-color: var(--primary);
     color: #fff;
-    background: #d9222d;
+    background: var(--primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .bj-tab strong {
     display: grid;
     place-items: center;
-    min-width: 29px;
-    height: 29px;
+    min-width: 26px;
+    height: 26px;
     border-radius: 50%;
-    color: #1478df;
-    background: #f0f6fe;
-    font-size: 13px;
+    color: var(--primary);
+    background: var(--primary-light);
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .bj-tab.is-selected strong {
-    color: #df2633;
+    color: var(--primary);
     background: #fff;
 }
 
 .bj-sort {
-    min-width: 191px;
+    min-width: 180px;
     justify-content: space-between;
 }
 
 .bj-sort-wrap {
     position: relative;
-    min-width: 191px;
+    min-width: 180px;
 }
 
 .bj-sort span {
-    color: #6680a1;
-    font-size: 13px;
+    color: var(--text-muted);
+    font-size: 12px;
 }
 
 .bj-sort strong {
     font-weight: 700;
-    color: #234d7c;
+    color: var(--text-primary);
 }
 
 .bj-sort .icon {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     margin-left: 2px;
-    color: #6680a1;
+    color: var(--text-muted);
     transition: transform 0.15s ease;
 }
 
 .bj-sort.is-open {
-    border-color: #c5d6ea;
-    box-shadow: 0 3px 9px #1b467214;
+    border-color: var(--primary);
+    box-shadow: var(--shadow-sm);
 }
 
 .bj-sort.is-open .icon:last-child {
@@ -239,8 +276,9 @@ button.bj-kpi:hover,
 }
 
 .bj-tool-btn.is-on {
-    border-color: #df2633;
-    color: #df2633;
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
 }
 
 .bj-filter-wrap,
@@ -248,22 +286,23 @@ button.bj-kpi:hover,
     position: relative;
 }
 
+/* ---- Dropdown menus ---- */
 .bj-filter-menu,
 .bj-sort-menu {
     position: absolute;
-    top: calc(100% + 8px);
+    top: calc(100% + 6px);
     right: 0;
     z-index: 8;
     min-width: 100%;
-    padding: 8px;
-    border: 1px solid #d8e4f2;
-    border-radius: 11px;
+    padding: 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     background: #fff;
-    box-shadow: 0 8px 20px #214c7918;
+    box-shadow: var(--shadow-md);
 }
 
 .bj-filter-menu {
-    min-width: 220px;
+    min-width: 200px;
 }
 
 .bj-sort-menu {
@@ -275,38 +314,42 @@ button.bj-kpi:hover,
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
     width: 100%;
-    padding: 10px 12px;
+    padding: 9px 12px;
     border: 0;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: transparent;
-    color: #234d7c;
+    color: var(--text-primary);
     font: inherit;
+    font-size: 0.85rem;
     font-weight: 600;
     text-align: left;
     cursor: pointer;
+    transition: background 0.12s, color 0.12s;
 }
 
 .bj-filter-menu button:hover,
 .bj-filter-menu button.is-on,
 .bj-sort-menu button:hover,
 .bj-sort-menu button.is-on {
-    background: #f1f8ff;
-    color: #1269db;
+    background: var(--primary-light);
+    color: var(--primary);
 }
 
 .bj-sort-menu button .icon {
-    width: 16px;
-    height: 16px;
-    color: #1269db;
+    width: 14px;
+    height: 14px;
+    color: var(--primary);
 }
 
+/* ---- Claims table ---- */
 .bj-claims-table {
     overflow-x: auto;
-    border-radius: 12px;
-    box-shadow: 0 5px 16px #2a547d12;
-    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid var(--ring-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    background: #fff;
 }
 
 .bj-table-head,
@@ -318,33 +361,41 @@ button.bj-kpi:hover,
 }
 
 .bj-table-head {
-    min-height: 58px;
+    min-height: 52px;
     padding: 0 20px;
     color: #fff;
     background: var(--sidebar-bg);
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 700;
+    letter-spacing: 0.02em;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
+/* ---- Claim rows ---- */
 .bj-claim {
-    border-bottom: 1px solid #e2ebf5;
-    background: rgba(255, 255, 255, 0.88);
+    border-bottom: 1px solid var(--border-soft);
+    background: #fff;
+    transition: background 0.12s;
 }
 
 .bj-claim:last-child {
     border-bottom: 0;
 }
 
+.bj-claim:hover {
+    background: #fafafa;
+}
+
 .bj-row-grid {
-    min-height: 63px;
+    min-height: 60px;
     padding: 0 18px;
-    color: #52709a;
-    font-size: 14px;
+    color: var(--text-secondary, #52709a);
+    font-size: 13.5px;
 }
 
 .bj-claim.is-expanded {
-    border-left: 4px solid #2f91fa;
-    background: #f1f8ff;
+    border-left: 4px solid var(--primary);
+    background: var(--primary-light);
 }
 
 .bj-claim.is-expanded .bj-row-grid {
@@ -364,11 +415,13 @@ button.bj-kpi:hover,
     padding: 0 18px 14px;
 }
 
+/* ---- Mobile card views (hidden by default) ---- */
 .bj-card-sum,
 .bj-card-detail {
     display: none;
 }
 
+/* ---- Search ---- */
 .bj-search {
     display: flex;
     align-items: center;
@@ -388,6 +441,7 @@ button.bj-kpi:hover,
     display: none;
 }
 
+/* ---- Checkbox / chevron cells ---- */
 .bj-check-cell {
     display: flex;
     align-items: center;
@@ -396,9 +450,15 @@ button.bj-kpi:hover,
 .bj-chevron {
     padding: 4px;
     border: 0;
-    color: #24609a;
+    color: var(--primary);
     background: transparent;
     cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: background 0.12s;
+}
+
+.bj-chevron:hover {
+    background: var(--primary-light);
 }
 
 .bj-chevron .icon {
@@ -411,11 +471,12 @@ button.bj-kpi:hover,
     transform: rotate(90deg);
 }
 
+/* ---- Unit / person cells ---- */
 .bj-unit-cell,
 .bj-person-cell {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
     min-width: 0;
     border: 0;
     background: transparent;
@@ -432,53 +493,58 @@ button.bj-kpi:hover,
 .bj-unit-cell b,
 .bj-unit-cell small {
     display: block;
-    color: #203e66;
+    color: var(--text-primary);
 }
 
 .bj-unit-cell small {
-    margin-top: 4px;
-    color: #59779e;
+    margin-top: 3px;
+    color: var(--text-muted);
     font-size: 12px;
     font-weight: 400;
 }
 
+/* ---- Bike icon circle ---- */
 .bj-bike-thumb {
     display: grid;
     place-items: center;
-    width: 43px;
-    height: 43px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
-    color: #182a3b;
-    background: #fff;
-    box-shadow: 0 2px 7px #34517120;
+    color: var(--primary);
+    background: var(--primary-light);
+    box-shadow: var(--shadow-sm);
     flex-shrink: 0;
+    border: 1px solid var(--ring-card);
 }
 
 .bj-bike-thumb .icon {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
 }
 
+/* ---- Mechanic / customer avatars ---- */
 .bj-avatar {
     display: grid;
     place-items: center;
-    width: 27px;
-    height: 27px;
+    width: 26px;
+    height: 26px;
     border-radius: 50%;
-    color: #2d5a86;
-    background: #dceaf9;
-    font-size: 11px;
+    color: var(--primary);
+    background: var(--primary-light);
+    font-size: 10px;
     font-weight: 700;
     flex-shrink: 0;
+    border: 1px solid rgba(217, 56, 30, 0.15);
 }
 
-.bj-person-cell > span:last-child {
+.bj-person-cell>span:last-child {
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
+/* ---- Parts cell ---- */
 .bj-parts-cell {
     align-self: center;
     line-height: 21px;
@@ -491,22 +557,23 @@ button.bj-kpi:hover,
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #203e66;
+    color: var(--text-primary);
 }
 
 .bj-parts {
     margin: 0;
-    padding-left: 24px;
+    padding-left: 22px;
 }
 
 .bj-parts li::marker {
-    color: #1477df;
+    color: var(--primary);
 }
 
+/* ---- Rating ---- */
 .bj-rating {
     display: inline-flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
     white-space: nowrap;
 }
 
@@ -514,63 +581,82 @@ button.bj-kpi:hover,
     color: #ffb600;
 }
 
+/* ---- Status badges ---- */
 .bj-status {
     display: inline-flex;
     justify-self: start;
-    padding: 6px 13px;
-    border-radius: 20px;
-    font-size: 12px;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    font-size: 11.5px;
     font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
 .bj-status.is-closed {
-    color: #15965b;
-    background: #c9f1dd;
+    color: #15803d;
+    background: #dcfce7;
 }
 
 .bj-status.is-open {
-    color: #b45309;
-    background: #ffedd5;
+    color: var(--primary);
+    background: var(--primary-light);
 }
 
+/* ---- Date ---- */
 .bj-date {
     white-space: nowrap;
+    font-size: 13px;
 }
 
+/* ---- Row actions ---- */
 .bj-row-actions {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 11px;
+    gap: 8px;
 }
 
+/* ---- History / Print buttons in row ---- */
 .bj-history,
 .bj-print {
-    padding: 11px 14px;
+    padding: 8px 14px;
     border: 0;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     font-size: 12px;
     font-weight: 700;
     white-space: nowrap;
     cursor: pointer;
+    transition: background 0.12s;
 }
 
 .bj-history {
     color: #fff;
-    background: #ce202e;
+    background: var(--primary);
+}
+
+.bj-history:hover {
+    background: var(--primary-dark);
 }
 
 .bj-print {
-    color: #234d7c;
+    color: var(--text-primary);
     background: #fff;
-    border: 1px solid #d8e4f2;
+    border: 1px solid var(--border);
 }
 
+.bj-print:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+/* ---- Muted text ---- */
 .bj-muted {
     margin: 0;
-    color: #6680a1;
+    color: var(--text-muted, #6b7280);
 }
 
+/* ---- Inline link button ---- */
 .btn-inline {
     border: 0;
     background: none;
@@ -582,18 +668,20 @@ button.bj-kpi:hover,
     text-decoration: underline;
 }
 
+/* ---- Panel (mechanic matrix) ---- */
 .bj-panel {
     overflow: hidden;
-    border-radius: 12px;
+    border: 1px solid var(--ring-card);
+    border-radius: var(--radius-lg);
     background: #fff;
-    box-shadow: 0 5px 16px #2a547d12;
+    box-shadow: var(--shadow-card);
     min-width: 0;
 }
 
 .bj-panel table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 14px;
+    font-size: 13.5px;
 }
 
 .bj-panel th {
@@ -601,14 +689,16 @@ button.bj-kpi:hover,
     color: #fff;
     font-weight: 700;
     text-align: left;
-    padding: 16px 14px;
+    padding: 14px 16px;
+    font-size: 13px;
+    letter-spacing: 0.02em;
 }
 
 .bj-panel td {
-    border-bottom: 1px solid #e2ebf5;
-    padding: 14px;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 14px 16px;
     vertical-align: middle;
-    color: #52709a;
+    color: var(--text-secondary, #52709a);
 }
 
 .bj-matrix td:nth-child(3),
@@ -621,44 +711,66 @@ button.bj-kpi:hover,
 .bj-panel td small {
     display: block;
     font-size: 12px;
-    color: #59779e;
+    color: var(--text-muted);
     margin-top: 4px;
 }
 
+/* "View claims" button inside mechanic table */
 .bj-panel td button {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
     margin: 6px auto 0;
-    background: #ce202e;
+    background: var(--primary);
     border: 0;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     color: #fff;
     font-size: 12px;
     font-weight: 700;
-    padding: 8px 12px;
+    padding: 7px 14px;
     font-family: inherit;
     cursor: pointer;
     white-space: nowrap;
+    transition: background 0.12s;
 }
 
+.bj-panel td button:hover {
+    background: var(--primary-dark);
+}
+
+/* ---- Quality badges ---- */
 .bj-quality {
     display: block;
     width: max-content;
-    border-radius: 20px;
-    padding: 6px 13px;
+    border-radius: var(--radius-pill);
+    padding: 5px 12px;
     font-size: 12px;
     font-weight: 700;
     margin: 0 auto;
 }
 
-.bj-quality.orange { background: #ffedd5; color: #b45309; }
-.bj-quality.yellow { background: #fef3c7; color: #92400e; }
-.bj-quality.green { background: #c9f1dd; color: #15965b; }
+.bj-quality.orange {
+    background: #ffedd5;
+    color: #b45309;
+}
 
+.bj-quality.yellow {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.bj-quality.green {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+/* ---- Table scroll wrapper ---- */
 .bj-table-scroll {
     overflow-x: auto;
 }
 
+/* ---- Responsive ---- */
 @media (max-width: 1200px) {
+
     .bj-table-head,
     .bj-row-grid {
         grid-template-columns: 48px minmax(130px, 0.9fr) minmax(110px, 0.8fr) minmax(150px, 1.3fr) minmax(110px, 0.7fr) minmax(110px, 0.8fr) 86px 100px 44px;
@@ -669,10 +781,11 @@ button.bj-kpi:hover,
     }
 
     .bj-stat-copy strong {
-        font-size: 26px;
+        font-size: 24px;
     }
 }
 
+/* ---- Focus highlight (shared with kanban/history views) ---- */
 .kanban-card.is-focus,
 .approval-card.is-focus {
     outline: 2px solid var(--primary);
@@ -680,10 +793,11 @@ button.bj-kpi:hover,
 }
 
 .data-table tr.is-focus td {
-    background: #fff7f5;
+    background: var(--primary-light);
     box-shadow: inset 3px 0 0 var(--primary);
 }
 
+/* ---- Warranty proof pill ---- */
 .warranty-proof {
     border-radius: var(--radius-md);
     padding: 0.85rem 1rem;
@@ -738,6 +852,7 @@ button.bj-kpi:hover,
     margin-bottom: 0;
 }
 
+/* ---- Summary chips ---- */
 .summary-chips {
     display: flex;
     flex-wrap: wrap;
