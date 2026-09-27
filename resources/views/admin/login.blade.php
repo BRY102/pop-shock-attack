@@ -240,14 +240,14 @@
                 </div>
 
                 <div class="admin-input-group">
-                    <label for="adminPass">Master Password</label>
+                    <label for="adminPass">Password</label>
                     <div class="admin-field-shell">
                         <svg class="admin-field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect width="18" height="11" x="3" y="11" rx="2" ry="2" />
                             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
-                        <input type="password" id="adminPass" placeholder="Master password" required
+                        <input type="password" id="adminPass" placeholder="Password" required
                             autocomplete="current-password">
                         <button type="button" class="login-pass-toggle" id="adminPassToggle"
                             onclick="toggleAdminPassword()" aria-label="Show password">
