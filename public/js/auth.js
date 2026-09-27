@@ -376,4 +376,12 @@ function resetSession() {
 
     closeModal('modal-logout');
     closeSidebar();
+
+    document.title = 'MotoTrack | Pop Shock Attack';
+    if (window.history && window.history.pushState) {
+        if (window.location.pathname.toLowerCase() !== '/login') {
+            window.history.pushState({ view: 'login' }, '', '/login');
+        }
+    }
 }
+

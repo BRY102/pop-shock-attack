@@ -84,7 +84,7 @@ async function handleAdminLogin(e) {
 
         // Redirect to system dashboard
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = '/overview';
         }, 600);
 
     } catch (err) {

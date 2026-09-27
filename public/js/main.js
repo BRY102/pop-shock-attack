@@ -59,5 +59,9 @@ window.addEventListener('DOMContentLoaded', () => {
             })
             .catch(() => loginSuccess(savedUser, savedRole))
             .finally(hideLoginLoader);
+    } else {
+        if (window.history && window.history.replaceState && window.location.pathname === '/') {
+            window.history.replaceState({ view: 'login' }, '', '/login');
+        }
     }
 });

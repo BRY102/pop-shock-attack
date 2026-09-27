@@ -28,4 +28,38 @@ class WebRouteTest extends TestCase
         $response = $this->get('/index.html');
         $response->assertRedirect('/');
     }
+
+    public function test_spa_view_routes_render_main_app_view(): void
+    {
+        $views = [
+            'login',
+            'overview',
+            'Overview', // case-insensitive check
+            'kanban',
+            'transactions',
+            'history',
+            'warranty',
+            'inventory',
+            'reports',
+            'backjobs',
+            'users',
+            'approvals',
+            'customer',
+            'customer-prev',
+        ];
+
+        foreach ($views as $view) {
+            $response = $this->get('/' . $view);
+            $response->assertStatus(200);
+            $response->assertSee('MotoTrack');
+            $response->assertSee('id="view-system"', false);
+        }
+    }
+
+    public function test_unknown_spa_route_returns_404(): void
+    {
+        $response = $this->get('/invalid-page-does-not-exist');
+        $response->assertStatus(404);
+    }
 }
+

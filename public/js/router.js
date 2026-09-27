@@ -124,14 +124,19 @@ async function buildSidebar() {
     const menu = NAV_MENUS[currentRole];
     if (!menu) return;
 
-    nav.innerHTML = menu.map((entry, i) => `
-        <li class="nav-item${i === 0 ? ' active' : ''}" data-view="${entry.view}"
+    // Detect if user navigated directly or refreshed on a specific view
+    const currentPath = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+    const matchedEntry = menu.find(entry => entry.view.toLowerCase() === currentPath);
+    const targetView = matchedEntry ? matchedEntry.view : menu[0].view;
+
+    nav.innerHTML = menu.map(entry => `
+        <li class="nav-item${entry.view === targetView ? ' active' : ''}" data-view="${entry.view}"
             title="${esc(entry.label)}"
             onclick="loadView('${entry.view}')">
             ${icon(entry.icon)}<span>${esc(entry.label)}</span>
         </li>`).join('');
 
-    await loadView(menu[0].view);
+    await loadView(targetView, 'replace');
 }
 
 // The caches each view actually depends on. Navigation only waits for
@@ -198,7 +203,7 @@ function syncPageHero() {
 
 let loadSequence = 0;
 
-window.loadView = async function (viewType) {
+window.loadView = async function (viewType, historyMode = 'push') {
     document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.toggle('active', el.dataset.view === viewType);
     });
@@ -230,9 +235,28 @@ window.loadView = async function (viewType) {
         'customer-prev': typeof renderCustomerPrevious === 'function' ? renderCustomerPrevious : null,
     };
 
-
     const render = renderers[viewType];
     if (!render) return;
+
+    // Synchronize browser address bar and history state
+    if (window.history && window.history.pushState) {
+        const targetPath = '/' + viewType;
+        if (historyMode === 'replace') {
+            window.history.replaceState({ view: viewType }, '', targetPath);
+        } else if (historyMode === 'push' || historyMode === true) {
+            if (window.location.pathname.toLowerCase() !== targetPath.toLowerCase()) {
+                window.history.pushState({ view: viewType }, '', targetPath);
+            } else if (!window.history.state || window.history.state.view !== viewType) {
+                window.history.replaceState({ view: viewType }, '', targetPath);
+            }
+        }
+    }
+
+    // Dynamic browser tab title
+    const activeEntry = (NAV_MENUS[currentRole] || []).find(e => e.view === viewType);
+    if (activeEntry) {
+        document.title = `${activeEntry.label} — MotoTrack`;
+    }
 
     recordPageVisit(viewType);
 
@@ -299,3 +323,22 @@ window.addEventListener('resize', () => {
         parkPageActions();
     }
 });
+
+// Native browser Back/Forward navigation support (History API)
+window.addEventListener('popstate', (e) => {
+    const rawPath = window.location.pathname.replace(/^\/+|\/+$/g, '').toLowerCase();
+    const targetView = (e.state && e.state.view) ? e.state.view : rawPath;
+
+    if (!currentUser || !currentRole) {
+        return;
+    }
+
+    const menu = NAV_MENUS[currentRole] || [];
+    const matched = menu.find(entry => entry.view.toLowerCase() === targetView);
+    if (matched) {
+        window.loadView(matched.view, false);
+    } else if (targetView === 'login' || !targetView) {
+        window.loadView(menu[0]?.view || 'overview', 'replace');
+    }
+});
+
