@@ -8,7 +8,11 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Dedicated Administrator Portal
+// Dedicated Administrator Portal (/login/admin, /admin, /admin/login)
+Route::get('/login/admin', function () {
+    return view('admin.login');
+});
+
 Route::get('/admin', function () {
     return view('admin.login');
 });
@@ -16,6 +20,11 @@ Route::get('/admin', function () {
 Route::get('/admin/login', function () {
     return view('admin.login');
 });
+
+Route::get('/{login}/{admin}', function () {
+    return view('admin.login');
+})->where('login', '(?i:login)')->where('admin', '(?i:admin)');
+
 
 // Redirect legacy /index.html directly to root
 Route::get('/index.html', function () {
@@ -33,4 +42,3 @@ $spaViews = 'login|overview|kanban|transactions|history|warranty|inventory|repor
 Route::get('/{view}', function () {
     return view('index');
 })->where('view', '(?i:' . $spaViews . ')');
-

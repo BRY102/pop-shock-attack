@@ -341,4 +341,3 @@ window.addEventListener('popstate', (e) => {
         window.loadView(menu[0]?.view || 'overview', 'replace');
     }
 });
-

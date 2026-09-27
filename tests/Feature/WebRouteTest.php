@@ -17,11 +17,14 @@ class WebRouteTest extends TestCase
 
     public function test_admin_route_renders_dedicated_admin_portal(): void
     {
-        $response = $this->get('/admin');
-        $response->assertStatus(200);
-        $response->assertSee('Administrator Portal');
-        $response->assertSee('Authenticate as Administrator');
+        foreach (['/admin', '/admin/login', '/login/admin', '/Login/Admin'] as $uri) {
+            $response = $this->get($uri);
+            $response->assertStatus(200);
+            $response->assertSee('Administrator Portal');
+            $response->assertSee('Authenticate as Administrator');
+        }
     }
+
 
     public function test_legacy_index_html_redirects_to_root(): void
     {
@@ -62,4 +65,3 @@ class WebRouteTest extends TestCase
         $response->assertStatus(404);
     }
 }
-
