@@ -265,7 +265,7 @@ var kanbanDrag = null;
 var pendingKanbanMove = null;
 
 function kanbanInteractiveTarget(el) {
-    return !!el.closest?.('button, select, option, input, textarea, a, label, .kanban-tech, .action-btns, .row-menu-wrap');
+    return !!el.closest?.('button, select, option, input, textarea, a, label, .kanban-tech:not(.is-set), .action-btns, .row-menu-wrap');
 }
 
 function bindKanbanDrag() {
@@ -273,6 +273,13 @@ function bindKanbanDrag() {
     const board = document.querySelector('.kanban-board');
     if (!board) return;
     board.addEventListener('pointerdown', onKanbanPointerDown);
+    board.addEventListener('contextmenu', onKanbanContextMenu);
+}
+
+function onKanbanContextMenu(e) {
+    if (e.target.closest('.kanban-card.is-draggable') && !kanbanInteractiveTarget(e.target)) {
+        e.preventDefault();
+    }
 }
 
 function onKanbanPointerDown(e) {
@@ -280,6 +287,9 @@ function onKanbanPointerDown(e) {
     if (kanbanInteractiveTarget(e.target)) return;
     const card = e.target.closest('.kanban-card.is-draggable');
     if (!card) return;
+
+    // Prevent default to disable native text selection and mobile callouts on drag gestures
+    e.preventDefault();
 
     kanbanDrag = {
         jobId: card.dataset.jobId,

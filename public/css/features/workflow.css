@@ -185,9 +185,39 @@
     border-radius: 2px;
 }
 
+.kanban-card {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+.kanban-card * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-drag: none;
+}
+
 .kanban-card.is-draggable {
     cursor: grab;
     touch-action: none;
+}
+
+.kanban-card.is-draggable * {
+    cursor: grab;
+}
+
+.kanban-card.is-draggable button,
+.kanban-card.is-draggable select,
+.kanban-card.is-draggable input,
+.kanban-card.is-draggable textarea,
+.kanban-card.is-draggable a,
+.kanban-card.is-draggable label {
+    cursor: pointer;
 }
 
 .kanban-card.is-dragging {
@@ -208,8 +238,9 @@ body.is-kanban-dragging {
     user-select: none;
 }
 
-body.is-kanban-dragging .kanban-card.is-draggable {
-    cursor: grabbing;
+body.is-kanban-dragging .kanban-card.is-draggable,
+body.is-kanban-dragging .kanban-card.is-draggable * {
+    cursor: grabbing !important;
 }
 
 .stage-column.is-drop-ok {
