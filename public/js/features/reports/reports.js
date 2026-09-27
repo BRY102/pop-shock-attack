@@ -13,15 +13,18 @@ function renderReports(ctx) {
     ctx.title.innerText = 'Sales';
     ctx.desc.innerText = 'Released jobs and totals.';
     ctx.actions.innerHTML = `
-        <div class="filter-group">
-            <input type="date" id="filterStart" class="date-filter" aria-label="From date">
-            <span class="filter-sep"></span>
-            <input type="date" id="filterEnd" class="date-filter" aria-label="To date">
+        <div class="sales-filter-wrap">
+            <div class="filter-group">
+                <input type="date" id="filterStart" class="date-filter" aria-label="From date">
+                <span class="filter-sep"></span>
+                <input type="date" id="filterEnd" class="date-filter" aria-label="To date">
+            </div>
+            <button class="btn btn-primary" onclick="filterReports()">${icon('search')} Filter Data ${icon('chevron-right')}</button>
         </div>
-        <button class="btn btn-primary" onclick="filterReports()">${icon('search')} Filter Data ${icon('chevron-right')}</button>
         <button class="btn btn-ghost" onclick="exportReportCsv()">${icon('download')} Export CSV ${icon('chevron-right')}</button>
         <button class="btn btn-ghost" onclick="printSalesBillingReport()">${icon('printer')} Print Bills ${icon('chevron-right')}</button>
     `;
+
 
     reportPeriod = { start: '', end: '' };
     renderReportTable(dbReleased.filter(j => j.specs));
