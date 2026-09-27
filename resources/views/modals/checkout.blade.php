@@ -16,7 +16,7 @@
                     <p class="checkout-unit-customer">Customer: <strong id="co_customer">Juan Rider</strong></p>
                 </div>
                 <div class="checkout-unit-tech">
-                    <span class="checkout-tech-badge" id="co_tech">Lead Tech: Rico</span>
+                    <span class="checkout-tech-badge" id="co_tech">Lead Mech: Rico</span>
                 </div>
             </div>
 

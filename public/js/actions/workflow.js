@@ -221,7 +221,7 @@ window.moveStage = async function (id, nextStage, extraPayload = {}) {
     const job = dbJobs.find(j => String(j.id) === String(id));
     const sendingBack = job && job.stage === 'QA' && nextStage === 'Tuning';
     if (job && !sendingBack && stageNeedsLeadTech(job.stage) && !jobHasLeadTech(job)) {
-        showNotification('Assign a lead tech before moving this unit.', 'error');
+        showNotification('Assign a lead mech before moving this unit.', 'error');
         return;
     }
 
@@ -252,7 +252,7 @@ window.openReleaseCheckout = function (job) {
     document.getElementById('co_plate').textContent = job.plate_number || 'No Plate';
     document.getElementById('co_model').textContent = job.moto_model || 'Motorcycle';
     document.getElementById('co_customer').textContent = displayName(job.customer);
-    document.getElementById('co_tech').textContent = `Lead Tech: ${job.mechanic_name || 'Unassigned'}`;
+    document.getElementById('co_tech').textContent = `Lead Mech: ${job.mechanic_name || 'Unassigned'}`;
 
     const bill = billView(job);
     const isWarranty = !!job.is_warranty_claim || bill.covered;
@@ -545,11 +545,11 @@ window.openChangeMechanic = function (id) {
     const copy = document.getElementById('changeMechCopy');
     const names = dbMechanics.map(m => m.name);
     copy.textContent = job.mechanic_name
-        ? `Currently ${job.mechanic_name}. Pick the lead tech for this unit.`
-        : 'Pick the lead tech for this unit.';
+        ? `Currently ${job.mechanic_name}. Pick the lead mech for this unit.`
+        : 'Pick the lead mech for this unit.';
 
     if (names.length === 0) {
-        list.innerHTML = '<p class="mech-pick-empty">Ask an admin to add technicians first.</p>';
+        list.innerHTML = '<p class="mech-pick-empty">Ask an admin to add mechanics first.</p>';
     } else {
         list.innerHTML = names.map(name => {
             const current = name === job.mechanic_name;

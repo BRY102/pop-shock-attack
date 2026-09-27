@@ -57,7 +57,7 @@ class UpdateStageRequest extends FormRequest
                 ) {
                     $validator->errors()->add(
                         'mechanic',
-                        'Assign a lead tech before moving this unit.'
+                        'Assign a lead mech before moving this unit.'
                     );
                 }
             },

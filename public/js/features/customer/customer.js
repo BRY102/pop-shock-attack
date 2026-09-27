@@ -173,8 +173,8 @@ function custJobCard(job, plateJobs) {
     const notes = technicianNotes(job);
     const tech = (job.mechanic_name || '').trim();
     const techHtml = tech
-        ? `<div class="cust-tech"><span class="cust-tech-ava">${esc(initialsOf(tech))}</span><span>Lead Tech: <strong>${esc(displayName(tech))}</strong></span></div>`
-        : `<div class="cust-tech is-empty">Lead tech not assigned yet</div>`;
+        ? `<div class="cust-tech"><span class="cust-tech-ava">${esc(initialsOf(tech))}</span><span>Lead Mech: <strong>${esc(displayName(tech))}</strong></span></div>`
+        : `<div class="cust-tech is-empty">Lead mech not assigned yet</div>`;
     const claim = job.is_warranty_claim
         ? `<span class="badge-warranty" style="position:static; display:inline-block;">RE-SERVICE</span>`
         : '';

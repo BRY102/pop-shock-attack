@@ -41,7 +41,7 @@ class UpdateSpecsRequest extends FormRequest
     }
 
     /**
-     * Specs belong to the Tuning stage, and a lead tech has to be on
+     * Specs belong to the Tuning stage, and a lead mech has to be on
      * the card before the unit can be billed.
      */
     public function after(): array
@@ -64,7 +64,7 @@ class UpdateSpecsRequest extends FormRequest
                 if (blank($job->mechanic_name)) {
                     $validator->errors()->add(
                         'mechanic',
-                        'Assign a lead tech before logging specs.'
+                        'Assign a lead mech before logging specs.'
                     );
                 }
             },

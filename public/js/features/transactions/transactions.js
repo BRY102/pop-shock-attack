@@ -112,7 +112,7 @@ function renderTransactions(ctx) {
                             <th>Receipt / ID</th>
                             <th>Date & Time</th>
                             <th>Customer & Unit</th>
-                            <th>Lead Tech</th>
+                            <th>Lead Mech</th>
                             <th>Payment Channel</th>
                             <th class="num-start">Tendered / Change</th>
                             <th class="num-start">Net Amount</th>

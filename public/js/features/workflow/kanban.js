@@ -22,20 +22,20 @@ function kanbanTechPicker(job) {
         names.unshift(job.mechanic_name);
     }
 
-    let options = `<option value="">Select lead tech</option>`;
+    let options = `<option value="">Select lead mech</option>`;
     names.forEach((name) => {
         options += `<option value="${esc(name)}" ${job.mechanic_name === name ? 'selected' : ''}>${esc(name)}</option>`;
     });
 
     const missing = !jobHasLeadTech(job);
     const emptyNote = names.length === 0
-        ? 'Ask an admin to add technicians first.'
-        : 'Assign a lead tech before moving.';
+        ? 'Ask an admin to add mechanics first.'
+        : 'Assign a lead mech before moving.';
 
     return `
         <div class="kanban-tech${missing ? ' is-required' : ''}">
-            <label>Lead Tech <em>*</em></label>
-            <select aria-label="Lead tech" onchange="assignMechanic('${esc(String(job.id))}', this.value)">
+            <label>Lead Mech <em>*</em></label>
+            <select aria-label="Lead mech" onchange="assignMechanic('${esc(String(job.id))}', this.value)">
                 ${options}
             </select>
             ${missing ? `<small>${emptyNote}</small>` : ''}
@@ -108,10 +108,10 @@ function buildKanbanCard(job, stage) {
     if (currentRole === 'staff' && stage === 'Disassembly') {
         mechanicHtml = kanbanTechPicker(job);
     } else if (job.mechanic_name) {
-        mechanicHtml = `<div class="kanban-tech is-set"><p><strong>Lead Tech:</strong> ${esc(job.mechanic_name)}</p></div>`;
+        mechanicHtml = `<div class="kanban-tech is-set"><p><strong>Lead Mech:</strong> ${esc(job.mechanic_name)}</p></div>`;
     } else if (currentRole === 'staff' && stage === 'Tuning') {
         mechanicHtml = `<div class="kanban-tech is-required">
-            <p><strong>Lead Tech</strong> not assigned</p>
+            <p><strong>Lead Mech</strong> not assigned</p>
             <small>Change mechanic from the card menu.</small>
         </div>`;
     }
@@ -409,7 +409,7 @@ function requestKanbanMove(jobId, toStage) {
     const sendingBack = fromStage === 'QA' && toStage === 'Tuning';
     const needsSpecs = fromStage === 'Tuning' && toStage === 'QA' && !jobHasLoggedSpecs(job);
     if (!sendingBack && stageNeedsLeadTech(fromStage) && !jobHasLeadTech(job)) {
-        showNotification('Assign a lead tech before moving this unit.', 'error');
+        showNotification('Assign a lead mech before moving this unit.', 'error');
         return;
     }
 
