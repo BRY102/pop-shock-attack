@@ -116,7 +116,7 @@ function renderTransactions(ctx) {
                             <th>Payment Channel</th>
                             <th class="num-start">Tendered / Change</th>
                             <th class="num-start">Net Amount</th>
-                            <th style="text-align: right;">Actions</th>
+                            <th class="row-menu-cell" style="text-align: right;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="txnTableBody">
@@ -237,9 +237,19 @@ function renderTxnRowsHtml(transactions) {
         let actionBtns = '';
         if (tx.type === 'service' && tx.rawJob) {
             actionBtns = `
-                <div style="display:flex; justify-content:flex-end; gap:6px;">
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="openBillDetail('${esc(tx.id)}')">View</button>
-                    <button type="button" class="btn btn-ghost btn-sm" onclick="printReceipt('${esc(tx.id)}')">${icon('printer')}</button>
+                <div class="row-menu-wrap">
+                    <button type="button" class="row-menu-btn" onclick="toggleRowMenu(event, 'txn-${esc(tx.id)}')"
+                            aria-haspopup="true" aria-expanded="false" aria-label="Actions for ${esc(tx.receiptNo)}">
+                        ${icon('ellipsis')}
+                    </button>
+                    <div class="row-menu hidden" id="rowMenu-txn-${esc(tx.id)}" role="menu">
+                        <button type="button" role="menuitem" onclick="closeRowMenus(); openBillDetail('${esc(tx.id)}')">
+                            ${icon('file-text')} View Bill
+                        </button>
+                        <button type="button" role="menuitem" onclick="closeRowMenus(); printReceipt('${esc(tx.id)}')">
+                            ${icon('printer')} Print Receipt
+                        </button>
+                    </div>
                 </div>
             `;
         } else {
@@ -280,7 +290,7 @@ function renderTxnRowsHtml(transactions) {
                 <td class="num-start">
                     ${amountDisplay}
                 </td>
-                <td style="text-align: right;">
+                <td class="row-menu-cell">
                     ${actionBtns}
                 </td>
             </tr>
