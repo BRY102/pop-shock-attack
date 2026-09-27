@@ -142,7 +142,7 @@
                 </p>
                 <div style="margin-top: 1rem; text-align: center; font-size: 0.82rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.75rem;">
                     <a href="/admin" style="color: var(--accent, #e53e3e); text-decoration: none; font-weight: 600;">
-                        🛡️ Shop Owner / Admin Portal &rarr;
+                        Admin Portal
                     </a>
                 </div>
             </form>
