@@ -140,11 +140,6 @@
                     New to MotoTrack? <a href="#" onclick="toggleAuthMode('register'); return false;">Create an
                         account</a>
                 </p>
-                <div style="margin-top: 1rem; text-align: center; font-size: 0.82rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 0.75rem;">
-                    <a href="/admin" style="color: var(--accent, #e53e3e); text-decoration: none; font-weight: 600;">
-                        Admin Portal
-                    </a>
-                </div>
             </form>
 
             <!-- Register form -->
