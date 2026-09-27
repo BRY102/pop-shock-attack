@@ -452,13 +452,13 @@
     color: var(--text-secondary);
 }
 
-.checkout-method-option input:checked + .checkout-method-pill {
+.checkout-method-option input:checked+.checkout-method-pill {
     background: rgba(217, 56, 30, 0.06);
     border-color: var(--primary);
     box-shadow: 0 0 0 2px rgba(217, 56, 30, 0.2);
 }
 
-.checkout-method-option input:checked + .checkout-method-pill strong {
+.checkout-method-option input:checked+.checkout-method-pill strong {
     color: var(--primary);
 }
 

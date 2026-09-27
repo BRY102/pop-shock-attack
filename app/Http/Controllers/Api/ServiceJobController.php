@@ -65,8 +65,8 @@ class ServiceJobController extends Controller
 
         $jobs = ServiceJob::query()
             ->where('stage', JobStage::Release)
-            ->when($validated['start'] ?? null, fn ($query, $start) => $query->whereDate('date_in', '>=', $start))
-            ->when($validated['end'] ?? null, fn ($query, $end) => $query->whereDate('date_in', '<=', $end))
+            ->when($validated['start'] ?? null, fn($query, $start) => $query->whereDate('date_in', '>=', $start))
+            ->when($validated['end'] ?? null, fn($query, $end) => $query->whereDate('date_in', '<=', $end))
             ->orderByDesc('date_in')
             ->orderByDesc('id')
             ->get();
@@ -100,7 +100,7 @@ class ServiceJobController extends Controller
             'q' => 'required|string|min:2|max:100',
         ]);
 
-        $term = '%'.$validated['q'].'%';
+        $term = '%' . $validated['q'] . '%';
 
         $jobs = $this->historyQuery()
             ->where(function ($query) use ($term) {

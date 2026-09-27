@@ -1063,7 +1063,7 @@
             </div>
             <form id="releaseCheckoutForm" onsubmit="submitReleaseCheckout(event)">
                 <input type="hidden" id="co_job_id">
-                
+
                 <!-- Unit & Customer Summary Card -->
                 <div class="checkout-summary-card">
                     <div class="checkout-unit-main">
@@ -1105,21 +1105,24 @@
                     <label class="checkout-section-label">Payment Method</label>
                     <div class="checkout-methods-grid">
                         <label class="checkout-method-option">
-                            <input type="radio" name="co_payment_method" value="Cash" checked onchange="toggleCheckoutPaymentFields()">
+                            <input type="radio" name="co_payment_method" value="Cash" checked
+                                onchange="toggleCheckoutPaymentFields()">
                             <span class="checkout-method-pill">
                                 <span class="method-icon">💵</span>
                                 <strong>Cash</strong>
                             </span>
                         </label>
                         <label class="checkout-method-option">
-                            <input type="radio" name="co_payment_method" value="GCash" onchange="toggleCheckoutPaymentFields()">
+                            <input type="radio" name="co_payment_method" value="GCash"
+                                onchange="toggleCheckoutPaymentFields()">
                             <span class="checkout-method-pill">
                                 <span class="method-icon">📱</span>
                                 <strong>GCash</strong>
                             </span>
                         </label>
                         <label class="checkout-method-option">
-                            <input type="radio" name="co_payment_method" value="Bank Transfer" onchange="toggleCheckoutPaymentFields()">
+                            <input type="radio" name="co_payment_method" value="Bank Transfer"
+                                onchange="toggleCheckoutPaymentFields()">
                             <span class="checkout-method-pill">
                                 <span class="method-icon">🏦</span>
                                 <strong>Bank</strong>
@@ -1132,7 +1135,8 @@
                         <div class="input-row">
                             <div class="input-group">
                                 <label for="co_amount_tendered">Cash Received (₱)</label>
-                                <input type="number" id="co_amount_tendered" step="any" min="0" placeholder="0.00" oninput="computeCheckoutChange()">
+                                <input type="number" id="co_amount_tendered" step="any" min="0" placeholder="0.00"
+                                    oninput="computeCheckoutChange()">
                             </div>
                             <div class="input-group">
                                 <label for="co_change">Sukli / Change</label>

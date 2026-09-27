@@ -42,12 +42,20 @@ class JobWorkflowTest extends TestCase
     private function seedConsumables(int $oilStock = 10, int $sealStock = 5): void
     {
         InventoryItem::create([
-            'item_no' => '000001', 'name' => 'Daily Oil', 'description' => 'Standard oil',
-            'stock' => $oilStock, 'threshold' => 3, 'price' => 150,
+            'item_no' => '000001',
+            'name' => 'Daily Oil',
+            'description' => 'Standard oil',
+            'stock' => $oilStock,
+            'threshold' => 3,
+            'price' => 150,
         ]);
         InventoryItem::create([
-            'item_no' => '000002', 'name' => 'Oil Seal 41x54x11', 'description' => 'Front fork seal',
-            'stock' => $sealStock, 'threshold' => 2, 'price' => 500,
+            'item_no' => '000002',
+            'name' => 'Oil Seal 41x54x11',
+            'description' => 'Front fork seal',
+            'stock' => $sealStock,
+            'threshold' => 2,
+            'price' => 500,
         ]);
     }
 
@@ -495,4 +503,3 @@ class JobWorkflowTest extends TestCase
             ->assertJsonPath('job.payment_reference', 'GCASH-987654321');
     }
 }
-

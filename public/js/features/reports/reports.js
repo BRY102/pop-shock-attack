@@ -73,7 +73,7 @@ function renderReportTable(jobsArray) {
         <th>Motorcycle</th>
         <th>Type</th>
         <th class="num-start">Amount due</th>
-        <th></th>
+        <th class="row-menu-cell"><span class="sr-only">Actions</span></th>
     </tr></thead><tbody>`;
 
     if (jobsArray.length === 0) {
@@ -100,9 +100,21 @@ function renderReportTable(jobsArray) {
             </td>
             <td>${typeBadge}</td>
             <td class="num-start num-strong">${peso(bill.due)}</td>
-            <td class="cell-actions">
-                <button type="button" class="btn btn-ghost btn-sm" onclick="openBillDetail('${esc(String(job.id))}')">View bill</button>
-                <button type="button" class="btn btn-ghost btn-sm" onclick="printReceipt('${esc(String(job.id))}')">${icon('printer')} Print</button>
+            <td class="row-menu-cell">
+                <div class="row-menu-wrap">
+                    <button type="button" class="row-menu-btn" onclick="toggleRowMenu(event, 'sales-${job.id}')"
+                            aria-haspopup="true" aria-expanded="false" aria-label="Actions for ${esc(bill.receiptNo)}">
+                        ${icon('ellipsis')}
+                    </button>
+                    <div class="row-menu hidden" id="rowMenu-sales-${job.id}" role="menu">
+                        <button type="button" role="menuitem" onclick="closeRowMenus(); openBillDetail('${esc(String(job.id))}')">
+                            ${icon('file-text')} View bill
+                        </button>
+                        <button type="button" role="menuitem" onclick="closeRowMenus(); printReceipt('${esc(String(job.id))}')">
+                            ${icon('printer')} Print
+                        </button>
+                    </div>
+                </div>
             </td>
         </tr>`;
     });
@@ -114,6 +126,7 @@ function renderReportTable(jobsArray) {
             <td></td>
         </tr>`;
     }
+
 
     rowsHtml += `</tbody></table></div>`;
 

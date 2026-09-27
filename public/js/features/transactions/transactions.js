@@ -312,3 +312,4 @@ window.filterTransactionsLedger = function () {
         emptyRow?.remove();
     }
 };
+
