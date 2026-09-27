@@ -109,15 +109,12 @@ window.checkCpPasswordStrength = function (val) {
         return;
     }
 
-    let score = 0;
-    if (val.length >= 8) score++;
-    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
-    if (/\d/.test(val)) score++;
-    if (/[^A-Za-z0-9]/.test(val) || val.length >= 12) score++;
-    if (score === 0) score = 1;
+    let score = 1;
+    if (val.length >= 8 && (/\d/.test(val) || /[A-Z]/.test(val))) score = 2;
+    if (val.length >= 8 && /\d/.test(val) && (/[A-Z]/.test(val) || /[^A-Za-z0-9]/.test(val))) score = 3;
 
-    const colors = ['#ef4444', '#f97316', '#eab308', '#10b981'];
-    const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+    const colors = ['#ef4444', '#f59e0b', '#10b981'];
+    const texts = ['Weak', 'Medium', 'Strong'];
     const activeColor = colors[score - 1];
 
     bars.forEach((b, idx) => {

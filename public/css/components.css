@@ -349,14 +349,14 @@
 }
 
 /* Keep the two blocks visually separate without an extra wrapper */
-.quick-menu-label + .quick-action,
-.quick-menu .quick-action + .quick-menu-label,
-.quick-menu .quick-row + .quick-menu-label {
+.quick-menu-label+.quick-action,
+.quick-menu .quick-action+.quick-menu-label,
+.quick-menu .quick-row+.quick-menu-label {
     margin-top: 0;
 }
 
-.quick-menu .quick-action + .quick-menu-label,
-.quick-menu .quick-row + .quick-menu-label {
+.quick-menu .quick-action+.quick-menu-label,
+.quick-menu .quick-row+.quick-menu-label {
     margin-top: 0.5rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--border);
@@ -491,7 +491,7 @@
     background: #fff;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
     z-index: 500;
 }
 
@@ -562,7 +562,9 @@
     cursor: pointer;
 }
 
-.notif-item:last-child { border-bottom: none; }
+.notif-item:last-child {
+    border-bottom: none;
+}
 
 .notif-item:hover {
     background: #fafafa;
@@ -913,8 +915,8 @@
     pointer-events: auto;
 }
 
-#view-login.active-view ~ .feedback-backdrop,
-#view-login.active-view ~ .feedback-drawer {
+#view-login.active-view~.feedback-backdrop,
+#view-login.active-view~.feedback-drawer {
     visibility: hidden;
     pointer-events: none;
 }
@@ -1553,9 +1555,17 @@
     color: var(--text-primary);
 }
 
-.data-table tbody tr { transition: background 0.15s; }
-.data-table tbody tr:hover { background: var(--bg-subtle); }
-.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr {
+    transition: background 0.15s;
+}
+
+.data-table tbody tr:hover {
+    background: var(--bg-subtle);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
 
 /* Figures right-align and share one glyph width, so a column of amounts can
    be compared by eye without reading every digit. */
@@ -1635,10 +1645,11 @@
 /* ------------------------------------------------- */
 .modal {
     position: fixed;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(10,12,16,0.65);
+    background: rgba(10, 12, 16, 0.65);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -1654,7 +1665,7 @@
     max-width: calc(100vw - 2rem);
     border-radius: var(--radius-lg);
     padding: 2rem 2.25rem;
-    box-shadow: 0 30px 60px rgba(0,0,0,0.20), 0 4px 16px rgba(0,0,0,0.08);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.20), 0 4px 16px rgba(0, 0, 0, 0.08);
     max-height: 90vh;
     overflow-y: auto;
     animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
@@ -1758,7 +1769,7 @@
     cursor: pointer;
 }
 
-.password-modal .field-label > span {
+.password-modal .field-label>span {
     display: block;
     font-size: 13px;
     font-weight: 700;
@@ -1839,7 +1850,7 @@
 }
 
 .password-modal .strength span.strength-bar {
-    width: 74px;
+    width: 96px;
     height: 9px;
     border-radius: 5px;
     background: #e4e8ee;
@@ -1887,15 +1898,19 @@
     .password-modal {
         padding: 23px 20px 24px;
     }
+
     .password-modal .modal-header {
         margin-bottom: 28px;
     }
+
     .password-modal .modal-title p {
         font-size: 12px;
     }
+
     .password-modal .modal-title h2 {
         font-size: 19px;
     }
+
     .password-modal .strength span.strength-bar {
         width: 26%;
     }
@@ -2030,8 +2045,15 @@
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translateY(16px) scale(0.98); }
-    to   { opacity: 1; transform: translateY(0) scale(1); }
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .modal-header {
@@ -2217,9 +2239,20 @@
     border-radius: 50%;
 }
 
-#modal-intake .intake-dot-one { left: 14px; top: 40px; }
-#modal-intake .intake-dot-two { right: 25px; top: 42px; }
-#modal-intake .intake-dot-three { left: 15px; bottom: 30px; }
+#modal-intake .intake-dot-one {
+    left: 14px;
+    top: 40px;
+}
+
+#modal-intake .intake-dot-two {
+    right: 25px;
+    top: 42px;
+}
+
+#modal-intake .intake-dot-three {
+    left: 15px;
+    bottom: 30px;
+}
 
 #modal-intake .intake-lead {
     display: flex;
@@ -2243,7 +2276,7 @@
     line-height: 1.3;
 }
 
-#modal-intake .intake-info > p {
+#modal-intake .intake-info>p {
     color: #657183;
     font-size: 12.5px;
     line-height: 1.4;
@@ -2261,7 +2294,7 @@
     gap: 13px;
 }
 
-#modal-intake .intake-benefit > .intake-control-ico {
+#modal-intake .intake-benefit>.intake-control-ico {
     border: 1px solid #f4d8d7;
     color: #d92722;
     background: #fffafa;
@@ -2341,7 +2374,7 @@
     font-weight: 800;
 }
 
-#modal-intake .intake-field > small {
+#modal-intake .intake-field>small {
     display: block;
     color: #687382;
     font-size: 11px;
@@ -2616,7 +2649,7 @@
         display: none;
     }
 
-    #modal-intake .intake-info > p {
+    #modal-intake .intake-info>p {
         margin: 6px 0 10px;
     }
 
@@ -3123,7 +3156,7 @@ div[style*="fff3cd"] {
     font-weight: 500;
     font-size: 0.875rem;
     font-family: 'DM Sans', sans-serif;
-    box-shadow: 0 8px 24px rgba(16,24,40,0.18), 0 2px 6px rgba(16,24,40,0.10);
+    box-shadow: 0 8px 24px rgba(16, 24, 40, 0.18), 0 2px 6px rgba(16, 24, 40, 0.10);
     animation: slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
     min-width: 280px;
     max-width: 360px;
@@ -3135,9 +3168,17 @@ div[style*="fff3cd"] {
     border-left: 3px solid var(--text-muted);
 }
 
-.toast.error   { border-left-color: #e2604b; }
-.toast.success { border-left-color: #5c9c74; }
-.toast.warning { border-left-color: #c99a4e; }
+.toast.error {
+    border-left-color: #e2604b;
+}
+
+.toast.success {
+    border-left-color: #5c9c74;
+}
+
+.toast.warning {
+    border-left-color: #c99a4e;
+}
 
 .toast-close {
     background: none;
@@ -3151,13 +3192,25 @@ div[style*="fff3cd"] {
     line-height: 1;
 }
 
-.toast-close:hover { opacity: 1; }
+.toast-close:hover {
+    opacity: 1;
+}
 
 @keyframes slideInRight {
-    from { transform: translateX(110%); opacity: 0; }
-    to   { transform: translateX(0);    opacity: 1; }
+    from {
+        transform: translateX(110%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 @keyframes fadeOut {
-    to { opacity: 0; transform: translateY(8px); }
+    to {
+        opacity: 0;
+        transform: translateY(8px);
+    }
 }
