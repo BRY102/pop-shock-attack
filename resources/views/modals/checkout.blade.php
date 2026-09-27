@@ -106,7 +106,7 @@
                                 oninput="computeCheckoutChange()">
                         </div>
                         <div class="input-group">
-                            <label for="co_change">Sukli / Change</label>
+                            <label for="co_change">Change</label>
                             <input type="text" id="co_change" readonly value="₱0.00" class="is-readonly-change">
                         </div>
                     </div>
@@ -115,20 +115,20 @@
                 <!-- Digital / Bank Reference Group -->
                 <div id="co_ref_fields" class="checkout-payment-fields hidden">
                     <div class="input-group">
-                        <label for="co_reference_no">Reference Number / Transaction ID</label>
-                        <input type="text" id="co_reference_no" placeholder="e.g. 102938475621">
+                        <label for="co_reference_no">Ref No.</label>
+                        <input type="text" id="co_reference_no" placeholder="Ref No.">
                     </div>
                 </div>
 
                 <div class="input-group" style="margin-top: 0.5rem;">
                     <label for="co_notes">Payment Note / Remarks (Optional)</label>
-                    <input type="text" id="co_notes" placeholder="e.g. Paid in full at counter">
+                    <input type="text" id="co_notes" placeholder="Paid in full at counter">
                 </div>
             </div>
 
             <div class="checkout-receipt-check">
                 <label>
-                    <input type="checkbox" id="co_print_receipt" checked>
+                    <input type="checkbox" id="co_print_receipt">
                     <span>Print thermal receipt after release</span>
                 </label>
             </div>

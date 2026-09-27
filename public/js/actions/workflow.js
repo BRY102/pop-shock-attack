@@ -298,6 +298,9 @@ window.openReleaseCheckout = function (job) {
         if (notesInput) notesInput.value = '';
     }
 
+    const printCheckbox = document.getElementById('co_print_receipt');
+    if (printCheckbox) printCheckbox.checked = false;
+
     openModal('modal-release-checkout');
 };
 

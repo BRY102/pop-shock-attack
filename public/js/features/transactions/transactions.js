@@ -8,6 +8,20 @@
 var txnActiveMethodFilter = 'all';
 var txnActiveDateFilter = 'all';
 
+function getTxnMethodIcon(method, isWarranty = false) {
+    if (isWarranty || method === 'Warranty Claim') {
+        return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="txn-method-ico-svg" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>`;
+    }
+    if (method === 'GCash') {
+        return `<img src="/img/gcash-icon.svg" alt="GCash" class="txn-method-ico-img" aria-hidden="true">`;
+    }
+    if (method === 'Bank Transfer' || method === 'Bank') {
+        return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="txn-method-ico-svg" aria-hidden="true"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><path d="m3 10 9-7 9 7"/><line x1="6" y1="10" x2="6" y2="21"/><line x1="10" y1="10" x2="10" y2="21"/><line x1="14" y1="10" x2="14" y2="21"/><line x1="18" y1="10" x2="18" y2="21"/></svg>`;
+    }
+    // Default: Cash
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="txn-method-ico-svg" aria-hidden="true"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>`;
+}
+
 function renderTransactions(ctx) {
     ctx.title.innerText = 'Transactions';
     ctx.desc.innerText = 'Real-time record of all counter settlements and released services.';
@@ -82,10 +96,10 @@ function renderTransactions(ctx) {
             </div>
             <div class="txn-filter-pills">
                 <button type="button" class="txn-pill-btn is-active" data-filter="all" onclick="setTxnMethodFilter('all', this)">All</button>
-                <button type="button" class="txn-pill-btn" data-filter="Cash" onclick="setTxnMethodFilter('Cash', this)">💵 Cash</button>
-                <button type="button" class="txn-pill-btn" data-filter="GCash" onclick="setTxnMethodFilter('GCash', this)">📱 GCash</button>
-                <button type="button" class="txn-pill-btn" data-filter="Bank Transfer" onclick="setTxnMethodFilter('Bank Transfer', this)">🏦 Bank</button>
-                <button type="button" class="txn-pill-btn" data-filter="Warranty Claim" onclick="setTxnMethodFilter('Warranty Claim', this)">🛡️ Warranty</button>
+                <button type="button" class="txn-pill-btn" data-filter="Cash" onclick="setTxnMethodFilter('Cash', this)">${getTxnMethodIcon('Cash')} <span>Cash</span></button>
+                <button type="button" class="txn-pill-btn" data-filter="GCash" onclick="setTxnMethodFilter('GCash', this)">${getTxnMethodIcon('GCash')} <span>GCash</span></button>
+                <button type="button" class="txn-pill-btn" data-filter="Bank Transfer" onclick="setTxnMethodFilter('Bank Transfer', this)">${getTxnMethodIcon('Bank Transfer')} <span>Bank</span></button>
+                <button type="button" class="txn-pill-btn" data-filter="Warranty Claim" onclick="setTxnMethodFilter('Warranty Claim', this)">${getTxnMethodIcon('Warranty Claim')} <span>Warranty</span></button>
             </div>
         </div>
 
@@ -100,7 +114,7 @@ function renderTransactions(ctx) {
                             <th>Customer & Unit</th>
                             <th>Lead Tech</th>
                             <th>Payment Channel</th>
-                            <th class="num-start">Tendered / Sukli</th>
+                            <th class="num-start">Tendered / Change</th>
                             <th class="num-start">Net Amount</th>
                             <th style="text-align: right;">Actions</th>
                         </tr>
@@ -191,16 +205,16 @@ function renderTxnRowsHtml(transactions) {
 
     return transactions.map(tx => {
         let methodClass = 'is-cash';
-        let methodIcon = '💵';
+        let methodIcon = getTxnMethodIcon('Cash');
         if (tx.method === 'GCash') {
             methodClass = 'is-gcash';
-            methodIcon = '📱';
+            methodIcon = getTxnMethodIcon('GCash');
         } else if (tx.method === 'Bank Transfer') {
             methodClass = 'is-bank';
-            methodIcon = '🏦';
+            methodIcon = getTxnMethodIcon('Bank Transfer');
         } else if (tx.isWarranty || tx.method === 'Warranty Claim') {
             methodClass = 'is-warranty';
-            methodIcon = '🛡️';
+            methodIcon = getTxnMethodIcon('Warranty Claim', true);
         }
 
         const refLine = tx.refNo ? `<span class="txn-ref-code">Ref: ${esc(tx.refNo)}</span>` : '';
@@ -208,7 +222,7 @@ function renderTxnRowsHtml(transactions) {
 
         let tenderedDisplay = '—';
         if (tx.method === 'Cash' && tx.tendered > 0) {
-            tenderedDisplay = `${peso(tx.tendered)}<br><small style="color:var(--text-muted);">Sukli: ${peso(tx.change)}</small>`;
+            tenderedDisplay = `${peso(tx.tendered)}<br><small style="color:var(--text-muted);">Change: ${peso(tx.change)}</small>`;
         } else if (tx.method === 'GCash' || tx.method === 'Bank Transfer') {
             tenderedDisplay = `<small style="color:var(--text-muted);">Exact payment</small>`;
         } else if (tx.isWarranty) {
@@ -235,7 +249,7 @@ function renderTxnRowsHtml(transactions) {
         const searchBlob = `${tx.receiptNo} ${tx.customer} ${tx.plate} ${tx.moto} ${tx.method} ${tx.refNo} ${tx.cashier}`.toLowerCase();
 
         return `
-            <tr data-search="${esc(searchBlob)}" data-method="${esc(tx.method)}">
+            <tr data-search="${esc(searchBlob)}" data-method="${esc(tx.isWarranty ? 'Warranty Claim' : tx.method)}">
                 <td>
                     <span class="txn-receipt-badge">${esc(tx.receiptNo)}</span>
                 </td>
@@ -254,7 +268,8 @@ function renderTxnRowsHtml(transactions) {
                 </td>
                 <td>
                     <span class="txn-method-badge ${methodClass}">
-                        ${methodIcon} ${esc(tx.method)}
+                        ${methodIcon}
+                        <span>${esc(tx.method)}</span>
                     </span>
                     ${refLine}
                     ${notesLine}

@@ -142,8 +142,8 @@
 .txn-pill-btn {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 6px 12px;
+    gap: 6px;
+    padding: 6px 13px;
     border: 1px solid var(--border);
     background: #f9fafb;
     color: var(--text-secondary);
@@ -152,6 +152,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
+    user-select: none;
 }
 
 .txn-pill-btn:hover {
@@ -159,11 +160,57 @@
     color: var(--text-primary);
 }
 
+.txn-pill-btn .txn-method-ico-svg {
+    width: 15px;
+    height: 15px;
+    stroke: currentColor;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.txn-pill-btn .txn-method-ico-img {
+    width: 15px;
+    height: 15px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.txn-pill-btn[data-filter="Cash"]:not(.is-active):hover {
+    color: #059669;
+    border-color: rgba(5, 150, 105, 0.4);
+    background: #ecfdf5;
+}
+
+.txn-pill-btn[data-filter="GCash"]:not(.is-active):hover {
+    color: #007cff;
+    border-color: rgba(0, 124, 255, 0.4);
+    background: #eff6ff;
+}
+
+.txn-pill-btn[data-filter="Bank Transfer"]:not(.is-active):hover {
+    color: #4f46e5;
+    border-color: rgba(79, 70, 229, 0.4);
+    background: #eef2ff;
+}
+
+.txn-pill-btn[data-filter="Warranty Claim"]:not(.is-active):hover {
+    color: #047857;
+    border-color: rgba(16, 185, 129, 0.4);
+    background: #ecfdf5;
+}
+
 .txn-pill-btn.is-active {
     background: var(--primary);
     border-color: var(--primary);
     color: #fff;
     box-shadow: 0 2px 6px rgba(217, 56, 30, 0.25);
+}
+
+.txn-pill-btn.is-active .txn-method-ico-img {
+    filter: brightness(0) invert(1);
 }
 
 /* ---- Ledger Table ---- */
@@ -190,7 +237,7 @@
 .txn-method-badge {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px;
     padding: 3px 9px;
     border-radius: 999px;
     font-size: 0.75rem;
@@ -198,22 +245,40 @@
     white-space: nowrap;
 }
 
+.txn-method-badge .txn-method-ico-svg {
+    width: 13px;
+    height: 13px;
+    stroke: currentColor;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.txn-method-badge .txn-method-ico-img {
+    width: 13px;
+    height: 13px;
+    object-fit: contain;
+    flex-shrink: 0;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .txn-method-badge.is-cash {
-    background: rgba(245, 158, 11, 0.12);
-    color: #b45309;
-    border: 1px solid rgba(245, 158, 11, 0.3);
+    background: #ecfdf5;
+    color: #059669;
+    border: 1px solid rgba(5, 150, 105, 0.3);
 }
 
 .txn-method-badge.is-gcash {
-    background: rgba(59, 130, 246, 0.12);
-    color: #1d4ed8;
-    border: 1px solid rgba(59, 130, 246, 0.3);
+    background: #eff6ff;
+    color: #0066d6;
+    border: 1px solid rgba(0, 124, 255, 0.3);
 }
 
 .txn-method-badge.is-bank {
-    background: rgba(139, 92, 246, 0.12);
-    color: #6d28d9;
-    border: 1px solid rgba(139, 92, 246, 0.3);
+    background: #eef2ff;
+    color: #4f46e5;
+    border: 1px solid rgba(79, 70, 229, 0.3);
 }
 
 .txn-method-badge.is-warranty {
