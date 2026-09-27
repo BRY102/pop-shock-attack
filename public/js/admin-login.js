@@ -65,7 +65,7 @@ async function handleAdminLogin(e) {
                         'Authorization': `Bearer ${data.token}`,
                         'Accept': 'application/json',
                     }
-                }).catch(() => {});
+                }).catch(() => { });
             }
 
             showAdminError('Access Denied: This portal is strictly restricted to Administrators. Staff and Customers must log in via the main portal.');

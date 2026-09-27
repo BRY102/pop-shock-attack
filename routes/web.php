@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 // Main Application Portal (Staff & Customer SPA)
 Route::get('/', function () {
-    return view('app');
+    return view('index');
 });
 
 // Dedicated Administrator Portal
