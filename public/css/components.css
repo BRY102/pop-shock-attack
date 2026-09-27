@@ -1664,6 +1664,244 @@
     width: 550px;
 }
 
+/* ------------------------------------------------- */
+/* CHANGE PASSWORD MODAL (Redesigned)               */
+/* ------------------------------------------------- */
+#modal-change-password.modal-backdrop,
+#modal-change-password.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(35, 53, 77, 0.46);
+    backdrop-filter: blur(7px);
+    -webkit-backdrop-filter: blur(7px);
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    z-index: 1000;
+}
+
+#modal-change-password.hidden {
+    display: none !important;
+}
+
+.password-modal {
+    background: #fff;
+    border-radius: 16px;
+    width: min(560px, 100%);
+    padding: 26px 32px 32px;
+    box-shadow: 0 20px 55px rgba(20, 36, 61, 0.21);
+    box-sizing: border-box;
+    animation: slideUp 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.password-modal .modal-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 34px;
+}
+
+.password-modal .modal-title {
+    display: flex;
+    gap: 17px;
+    align-items: center;
+}
+
+.password-modal .modal-icon {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #fde8eb;
+    color: #ec2937;
+    flex-shrink: 0;
+}
+
+.password-modal .modal-title h2 {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1d2d47;
+    line-height: 1.2;
+}
+
+.password-modal .modal-title p {
+    color: #8290a5;
+    margin: 6px 0 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.password-modal .close-button {
+    border: 0;
+    width: 37px;
+    height: 37px;
+    border-radius: 50%;
+    color: #536278;
+    background: #f3f5f8;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.password-modal .close-button:hover {
+    background: #e5e9f0;
+    color: #1d2d47;
+}
+
+.password-modal .field-label {
+    display: block;
+    margin-bottom: 25px;
+    cursor: pointer;
+}
+
+.password-modal .field-label > span {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    margin-bottom: 11px;
+    color: #1d2d47;
+}
+
+.password-modal .field-label b {
+    color: #eb2d3b;
+}
+
+.password-modal .password-input {
+    height: 55px;
+    border: 1px solid #dce2ea;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0 15px;
+    color: #50627b;
+    background: #fff;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    box-sizing: border-box;
+}
+
+.password-modal .password-input:focus-within {
+    border-color: #6b9ce8;
+    box-shadow: 0 0 0 3px #dceafe;
+}
+
+.password-modal .password-input .pass-lead-ico {
+    color: #8792a6;
+    flex-shrink: 0;
+}
+
+.password-modal .password-input input {
+    min-width: 0;
+    flex: 1;
+    border: 0;
+    outline: 0;
+    color: #253751;
+    font-size: 14.5px;
+    background: transparent;
+    padding: 0;
+    height: 100%;
+}
+
+.password-modal .password-input input::placeholder {
+    color: #9da7b7;
+    font-size: 14.5px;
+}
+
+.password-modal .password-input .pass-toggle-btn {
+    border: 0;
+    background: transparent;
+    padding: 4px;
+    color: #596a82;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: color 0.15s ease;
+}
+
+.password-modal .password-input .pass-toggle-btn:hover {
+    color: #1d2d47;
+}
+
+.password-modal .strength {
+    margin-top: -15px;
+    margin-bottom: 27px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8d99ac;
+}
+
+.password-modal .strength span.strength-bar {
+    width: 74px;
+    height: 9px;
+    border-radius: 5px;
+    background: #e4e8ee;
+    transition: background-color 0.2s ease;
+}
+
+.password-modal .strength svg {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.password-modal .strength small {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.password-modal .save-button {
+    width: 100%;
+    height: 55px;
+    background: #ed2935;
+    color: #fff;
+    border: 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-weight: 700;
+    font-size: 16px;
+    margin-top: 8px;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.1s ease;
+    box-sizing: border-box;
+}
+
+.password-modal .save-button:hover {
+    background: #d9202c;
+}
+
+.password-modal .save-button:active {
+    transform: scale(0.99);
+}
+
+@media (max-width: 640px) {
+    .password-modal {
+        padding: 23px 20px 24px;
+    }
+    .password-modal .modal-header {
+        margin-bottom: 28px;
+    }
+    .password-modal .modal-title p {
+        font-size: 12px;
+    }
+    .password-modal .modal-title h2 {
+        font-size: 19px;
+    }
+    .password-modal .strength span.strength-bar {
+        width: 26%;
+    }
+}
+
+
 #modal-add-expense .modal-content {
     width: 640px;
 }

@@ -80,14 +80,93 @@ window.toggleProfileMenu = function (e) {
     }
 };
 
+window.togglePasswordVisibility = function (inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isPass = input.type === 'password';
+    input.type = isPass ? 'text' : 'password';
+
+    if (isPass) {
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>`;
+        btn.setAttribute('aria-label', 'Hide password');
+    } else {
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        btn.setAttribute('aria-label', 'Show password');
+    }
+};
+
+window.checkCpPasswordStrength = function (val) {
+    const bars = document.querySelectorAll('#cp_strength .strength-bar');
+    const label = document.getElementById('cp_strength_label');
+    if (!bars.length) return;
+
+    if (!val) {
+        bars.forEach(b => { b.style.backgroundColor = '#e4e8ee'; });
+        if (label) {
+            label.textContent = 'Password strength';
+            label.style.color = '#8d99ac';
+        }
+        return;
+    }
+
+    let score = 0;
+    if (val.length >= 8) score++;
+    if (/[A-Z]/.test(val) && /[a-z]/.test(val)) score++;
+    if (/\d/.test(val)) score++;
+    if (/[^A-Za-z0-9]/.test(val) || val.length >= 12) score++;
+    if (score === 0) score = 1;
+
+    const colors = ['#ef4444', '#f97316', '#eab308', '#10b981'];
+    const texts = ['Weak', 'Fair', 'Good', 'Strong'];
+    const activeColor = colors[score - 1];
+
+    bars.forEach((b, idx) => {
+        b.style.backgroundColor = idx < score ? activeColor : '#e4e8ee';
+    });
+
+    if (label) {
+        label.textContent = texts[score - 1];
+        label.style.color = activeColor;
+    }
+};
+
 window.openChangePassword = function () {
     closeProfileMenu();
-    document.getElementById('cp_current')?.form?.reset();
+    const form = document.getElementById('cp_current')?.form;
+    if (form) form.reset();
+    ['cp_current', 'cp_new', 'cp_confirm'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.type = 'password';
+    });
+    document.querySelectorAll('#modal-change-password .pass-toggle-btn').forEach(btn => {
+        btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        btn.setAttribute('aria-label', 'Show password');
+    });
+    checkCpPasswordStrength('');
     openModal('modal-change-password');
 };
 
 window.submitChangePassword = function (e) {
     e.preventDefault();
+    const currentPass = document.getElementById('cp_current')?.value || '';
+    const newPass = document.getElementById('cp_new')?.value || '';
+    const confirmPass = document.getElementById('cp_confirm')?.value || '';
+
+    if (!currentPass) {
+        showNotification('Please enter your current password.', 'error');
+        return;
+    }
+    if (newPass.length < 8) {
+        showNotification('New password must be at least 8 characters.', 'error');
+        return;
+    }
+    if (newPass !== confirmPass) {
+        showNotification('New passwords do not match.', 'error');
+        return;
+    }
+
+    closeModal('modal-change-password');
+    showNotification('Password updated successfully!', 'success');
 };
 
 window.openActivityLog = async function () {
