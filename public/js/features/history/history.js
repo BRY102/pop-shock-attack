@@ -47,14 +47,14 @@ function renderHistory(ctx) {
     window.pendingHistoryQuery = '';
 
     ctx.title.innerText = 'Service History';
-    ctx.desc.innerText = 'Released and re-service visits, newest first.';
+    ctx.desc.innerText = 'Released and re-service visits';
     ctx.actions.innerHTML = `
         ${toolbarSearchHtml({
-            id: 'historySearchInput',
-            placeholder: 'Plate, customer, or model',
-            value: pending,
-            extra: `onkeydown="if (event.key === 'Enter') searchHistory()"`,
-        })}
+        id: 'historySearchInput',
+        placeholder: 'Plate, customer, or model',
+        value: pending,
+        extra: `onkeydown="if (event.key === 'Enter') searchHistory()"`,
+    })}
         <button class="btn btn-primary" onclick="searchHistory()">Search ${icon('chevron-right')}</button>
         <button class="btn btn-ghost" onclick="showAllHistory()">Show all ${icon('chevron-right')}</button>
     `;

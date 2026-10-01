@@ -10,6 +10,38 @@ function partsListHtml(job) {
     return `<ul class="bj-parts">${parts.map(line => `<li>${esc(line.name)} (x${line.qty})</li>`).join('')}</ul>`;
 }
 
+function partsGridHtml(job) {
+    if (!job.specs) return `<p class="bj-muted bj-no-parts">No tuning logged yet</p>`;
+    const parts = consumablesOf(job.specs);
+    if (parts.length === 0) return `<p class="bj-muted bj-no-parts">No shop-covered parts</p>`;
+    // All keys here MUST exist in the ICONS dictionary in ui.js
+    const partIcons = [
+        { keywords: ['oil'], icon: 'droplet' },  // Daily Oil, Oil Seal
+        { keywords: ['seal', 'gasket'], icon: 'shield' },  // Oil Seal, Dust Seal
+        { keywords: ['spring', 'lowering'], icon: 'sliders' },  // Lowering Spring
+        { keywords: ['filter'], icon: 'filter' },  // Air/Oil Filter
+        { keywords: ['bearing', 'bushing'], icon: 'cog' },  // Bearings
+        { keywords: ['bolt', 'nut', 'screw', 'fastener'], icon: 'wrench' },
+        { keywords: ['brake', 'pad', 'disc', 'rotor'], icon: 'circle-check' },
+        { keywords: ['chain', 'sprocket'], icon: 'layers' },
+        { keywords: ['cable', 'wire'], icon: 'tag' },
+    ];
+    function iconForPart(name) {
+        const lower = (name || '').toLowerCase();
+        for (const entry of partIcons) {
+            if (entry.keywords.some(kw => lower.includes(kw))) return icon(entry.icon);
+        }
+        return icon('package');   // safe fallback — always exists
+    }
+    return `<div class="bj-parts-grid">${parts.map(line =>
+        `<div class="bj-part-item">
+            <span class="bj-part-icon">${iconForPart(line.name)}</span>
+            <span class="bj-part-name">${esc(line.name)}</span>
+            <span class="bj-part-qty">Qty: x${line.qty}</span>
+        </div>`
+    ).join('')}</div>`;
+}
+
 function claimStatusHtml(job, compact) {
     if (!isOpenClaim(job)) return `<span class="bj-status is-closed">Closed</span>`;
     return `<span class="bj-status is-open">${compact ? 'Open' : esc(job.stage)}</span>`;
@@ -128,18 +160,18 @@ function backjobMenuHtml(kind) {
     return `
         <div class="wrn-menu" role="listbox" aria-label="${esc(aria)}">
             ${backjobSelectOptions(kind).map(opt => {
-                const on = opt.value === current;
-                const dot = opt.dot
-                    ? `<i class="wrn-dot${opt.dot === 'open' ? ' is-active' : ''}"></i>`
-                    : '';
-                return `<button type="button" role="option" class="${on ? 'is-on' : ''}"
+        const on = opt.value === current;
+        const dot = opt.dot
+            ? `<i class="wrn-dot${opt.dot === 'open' ? ' is-active' : ''}"></i>`
+            : '';
+        return `<button type="button" role="option" class="${on ? 'is-on' : ''}"
                             data-kind="${esc(kind)}" data-value="${esc(opt.value)}"
                             aria-selected="${on ? 'true' : 'false'}"
                             onclick="event.stopPropagation(); pickBackjobFilter(this.dataset.kind, this.dataset.value)">
                             <span>${dot}${esc(opt.label)}</span>
                             ${on ? icon('check') : ''}
                         </button>`;
-            }).join('')}
+    }).join('')}
         </div>`;
 }
 
@@ -216,9 +248,13 @@ function claimRowHtml(job) {
         ? `<span class="bj-rating">${starsDisplay(job.rating)} <small>${Number(job.rating)}/5</small></span>`
         : `<span class="bj-muted">Not rated</span>`;
     const complaint = job.complaint ? esc(job.complaint) : 'No complaint logged';
-    const partsHtml = open
-        ? partsListHtml(job)
-        : `<span class="bj-complaint-line">${complaint}</span>`;
+    const partCount = (job.specs ? consumablesOf(job.specs) : []).length;
+    const partsHtml = partCount > 0
+        ? `<button type="button" class="bj-view-items" data-id="${esc(job.id)}"
+                   onclick="event.stopPropagation(); toggleBackjobRow(this.dataset.id)">
+               ${icon('package')} View Items <span>(${partCount})</span>
+           </button>`
+        : `<span class="bj-muted">No parts</span>`;
     const printBtn = job.specs
         ? `<button type="button" class="bj-print" data-id="${esc(job.id)}"
                    onclick="event.stopPropagation(); openBillDetail(this.dataset.id)">
@@ -282,7 +318,6 @@ function claimRowHtml(job) {
                     <div class="bj-card-actions">
                         <button type="button" class="bj-history" data-id="${esc(job.id)}"
                                 onclick="event.stopPropagation(); openBackjob(this.dataset.id)">${openLabel}</button>
-                        ${printBtn}
                     </div>
                 </div>
             </div>` : ''}
@@ -331,9 +366,51 @@ function claimRowHtml(job) {
                     </div>
                 </div>
             </div>
-            ${open ? `<div class="bj-claim-foot">
-                <button type="button" class="bj-history" data-id="${esc(job.id)}"
-                        onclick="event.stopPropagation(); openBackjob(this.dataset.id)">${openLabel}</button>
+            ${open ? `
+            <div class="bj-expand-panel">
+                <div class="bj-expand-section bj-expand-parts">
+                    <div class="bj-expand-section-head">
+                        <span class="bj-expand-section-icon">${icon('package')}</span>
+                        <span class="bj-expand-section-title">Parts (Shop Covered)</span>
+                    </div>
+                    ${partsGridHtml(job)}
+                </div>
+                <div class="bj-expand-section bj-expand-info">
+                    <div class="bj-expand-sub">
+                        <div class="bj-expand-section-head">
+                            <span class="bj-expand-section-icon">${icon('star')}</span>
+                            <span class="bj-expand-section-title">Customer Feedback</span>
+                        </div>
+                        <div class="bj-expand-feedback">${ratingHtml}</div>
+                        ${job.complaint ? `<p class="bj-expand-complaint">${complaint}</p>` : ''}
+                    </div>
+                    <div class="bj-expand-sub">
+                        <div class="bj-expand-section-head">
+                            <span class="bj-expand-section-icon">${icon('wrench')}</span>
+                            <span class="bj-expand-section-title">Assigned Technician</span>
+                        </div>
+                        <div class="bj-expand-technician">
+                            ${bjAvatar(mechanic)}
+                            <span>${esc(mechanic)}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="bj-expand-section bj-expand-actions">
+                    <div class="bj-expand-section-head">
+                        <span class="bj-expand-section-icon">${icon('settings')}</span>
+                        <span class="bj-expand-section-title">Service Actions</span>
+                    </div>
+                    <div class="bj-expand-action-btns">
+                        <button type="button" class="bj-action-btn bj-action-primary" data-id="${esc(job.id)}"
+                                onclick="event.stopPropagation(); openBackjob(this.dataset.id)">${openLabel}</button>
+                        ${job.specs ? `
+                        <button type="button" class="bj-action-btn" data-id="${esc(job.id)}"
+                                onclick="event.stopPropagation(); openBillDetail(this.dataset.id)">${icon('receipt')} View Bill</button>
+                        <button type="button" class="bj-action-btn" data-id="${esc(job.id)}"
+                                onclick="event.stopPropagation(); printReceipt(this.dataset.id)">${icon('printer')} Print</button>
+                        ` : ''}
+                    </div>
+                </div>
             </div>` : ''}
         </article>`;
 }

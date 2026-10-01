@@ -395,14 +395,16 @@
 }
 
 .login-field:focus-within .login-field-ico,
-.login-field.is-filled .login-field-ico {
+.login-field.is-filled .login-field-ico,
+.login-field.is-peer-active .login-field-ico {
     opacity: 0;
     visibility: hidden;
     transform: translateY(-50%) translateX(-10px) scale(0.85);
 }
 
 .login-form .login-field:focus-within input,
-.login-form .login-field.is-filled input {
+.login-form .login-field.is-filled input,
+.login-form .login-field.is-peer-active input {
     padding-left: 1rem;
 }
 

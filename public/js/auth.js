@@ -46,6 +46,35 @@ function initLoginFields() {
         }
         sync();
     });
+
+    // When username is focused/blurred, mirror the animation on the password field icon
+    const userInput = document.getElementById('loginUser');
+    const passInput = document.getElementById('loginPass');
+    const userField = userInput?.closest('.login-field');
+    const passField = passInput?.closest('.login-field');
+
+    if (userInput && passField) {
+        userInput.addEventListener('focus', () => {
+            passField.classList.add('is-peer-active');
+        });
+        userInput.addEventListener('blur', () => {
+            if (document.activeElement !== passInput && !passInput?.value.length) {
+                passField.classList.remove('is-peer-active');
+            }
+        });
+    }
+
+    // When password is focused/blurred, mirror the animation on the username field icon
+    if (passInput && userField) {
+        passInput.addEventListener('focus', () => {
+            userField.classList.add('is-peer-active');
+        });
+        passInput.addEventListener('blur', () => {
+            if (document.activeElement !== userInput && !userInput?.value.length) {
+                userField.classList.remove('is-peer-active');
+            }
+        });
+    }
 }
 
 if (document.readyState === 'loading') {

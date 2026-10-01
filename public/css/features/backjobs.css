@@ -363,12 +363,13 @@ button.bj-kpi:hover,
 .bj-table-head {
     min-height: 52px;
     padding: 0 20px;
-    color: #fff;
-    background: var(--sidebar-bg);
+    color: var(--text-secondary);
+    background: var(--bg-subtle);
     font-size: 13px;
     font-weight: 700;
     letter-spacing: 0.02em;
     border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-bottom: 1px solid var(--border-soft);
 }
 
 /* ---- Claim rows ---- */
@@ -394,31 +395,281 @@ button.bj-kpi:hover,
 }
 
 .bj-claim.is-expanded {
-    border-left: 4px solid var(--primary);
-    background: var(--primary-light);
+    border-left: 3px solid var(--primary);
+    background: #fff;
+    box-shadow: inset 0 -1px 0 var(--border-soft);
 }
 
 .bj-claim.is-expanded .bj-row-grid {
-    align-items: start;
-    min-height: 0;
-    padding-top: 14px;
-    padding-bottom: 8px;
+    align-items: center;
+    min-height: 60px;
+    background: linear-gradient(90deg, var(--primary-tint) 0%, #fdf4f2 60%, transparent 100%);
+    border-bottom: 1px solid rgba(217, 56, 30, 0.10);
 }
 
 .bj-claim.is-expanded .bj-parts-cell {
-    align-self: start;
+    align-self: center;
 }
 
-.bj-claim-foot {
+/* ============================================================
+   EXPANDED INLINE DETAIL PANEL
+   ============================================================ */
+.bj-expand-panel {
+    display: grid;
+    grid-template-columns: minmax(220px, 2fr) minmax(200px, 1.5fr) minmax(180px, 1.2fr);
+    gap: 0;
+    border-top: 2px solid rgba(217, 56, 30, 0.12);
+    background: var(--bg-subtle);
+    min-width: 980px;
+    overflow: hidden;
+}
+
+/* ---- Section shells ---- */
+.bj-expand-section {
+    padding: 16px 20px 20px;
+    border-right: 1px solid var(--border-soft);
+    position: relative;
+}
+
+.bj-expand-section:last-child {
+    border-right: 0;
+}
+
+/* ---- Section header ---- */
+.bj-expand-section-head {
     display: flex;
-    justify-content: flex-end;
-    padding: 0 18px 14px;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 12px;
+    padding-bottom: 9px;
+    border-bottom: 1px solid var(--border-soft);
 }
 
-/* ---- Mobile card views (hidden by default) ---- */
-.bj-card-sum,
-.bj-card-detail {
-    display: none;
+.bj-expand-section-icon {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-sm);
+    background: var(--primary-light);
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.bj-expand-section-icon .icon {
+    width: 13px;
+    height: 13px;
+}
+
+.bj-expand-section-title {
+    font-size: 10.5px;
+    font-weight: 800;
+    color: var(--text-secondary);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   PARTS GRID
+   ============================================================ */
+.bj-parts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 7px;
+}
+
+.bj-part-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-md);
+    min-width: 0;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.12s, box-shadow 0.12s;
+}
+
+.bj-part-item:hover {
+    border-color: rgba(217, 56, 30, 0.25);
+    box-shadow: 0 2px 8px rgba(217, 56, 30, 0.08);
+}
+
+.bj-part-icon {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--primary-light);
+    color: var(--primary);
+    flex-shrink: 0;
+    border: 1px solid rgba(217, 56, 30, 0.12);
+}
+
+.bj-part-icon .icon {
+    width: 14px;
+    height: 14px;
+}
+
+.bj-part-name {
+    flex: 1;
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.bj-part-qty {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--bg-subtle);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--radius-pill);
+    padding: 1px 7px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.bj-no-parts {
+    font-size: 13px;
+    margin: 0;
+    color: var(--text-muted);
+}
+
+/* ============================================================
+   INFO COLUMN  (Customer Feedback + Assigned Technician)
+   ============================================================ */
+.bj-expand-info {
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    padding: 0;
+}
+
+.bj-expand-sub {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-soft);
+    flex: 1;
+}
+
+.bj-expand-sub:last-child {
+    border-bottom: 0;
+}
+
+.bj-expand-sub .bj-expand-section-head {
+    margin-bottom: 8px;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.bj-expand-feedback {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.bj-expand-complaint {
+    margin: 5px 0 0;
+    font-size: 11.5px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    padding: 5px 8px;
+    background: var(--bg-subtle);
+    border-radius: var(--radius-sm);
+    border-left: 2px solid var(--border);
+}
+
+.bj-expand-technician {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.bj-expand-technician .bj-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 11.5px;
+    border: 2px solid rgba(0, 0, 0, 0.10);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ============================================================
+   SERVICE ACTIONS COLUMN
+   ============================================================ */
+.bj-expand-actions {
+    background: linear-gradient(160deg, #fff 60%, var(--bg-subtle) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.bj-expand-action-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.bj-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 100%;
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: #fff;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: background 0.13s, border-color 0.13s, color 0.13s, box-shadow 0.13s;
+    white-space: nowrap;
+    letter-spacing: 0.01em;
+}
+
+.bj-action-btn:hover {
+    background: var(--bg-subtle);
+    border-color: var(--border);
+    color: var(--text-primary);
+    box-shadow: var(--shadow-md);
+}
+
+.bj-action-btn .icon {
+    width: 13px;
+    height: 13px;
+    opacity: 0.65;
+}
+
+/* Primary — Open in History/Workflow */
+.bj-action-btn.bj-action-primary {
+    background: #fff;
+    border: 1.5px solid var(--primary);
+    color: var(--primary);
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(217, 56, 30, 0.12);
+}
+
+.bj-action-btn.bj-action-primary:hover {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(217, 56, 30, 0.28);
+}
+
+.bj-action-btn.bj-action-primary .icon {
+    opacity: 1;
 }
 
 /* ---- Search ---- */
@@ -441,6 +692,12 @@ button.bj-kpi:hover,
     display: none;
 }
 
+/* ---- Mobile card views (hidden by default on desktop) ---- */
+.bj-card-sum,
+.bj-card-detail {
+    display: none;
+}
+
 /* ---- Checkbox / chevron cells ---- */
 .bj-check-cell {
     display: flex;
@@ -450,15 +707,16 @@ button.bj-kpi:hover,
 .bj-chevron {
     padding: 4px;
     border: 0;
-    color: var(--primary);
+    color: var(--text-muted);
     background: transparent;
     cursor: pointer;
     border-radius: var(--radius-sm);
-    transition: background 0.12s;
+    transition: background 0.12s, color 0.12s;
 }
 
 .bj-chevron:hover {
-    background: var(--primary-light);
+    background: var(--bg-subtle);
+    color: var(--text-secondary);
 }
 
 .bj-chevron .icon {
@@ -469,6 +727,7 @@ button.bj-kpi:hover,
 
 .bj-chevron.is-open {
     transform: rotate(90deg);
+    color: var(--text-secondary);
 }
 
 /* ---- Unit / person cells ---- */
@@ -510,11 +769,11 @@ button.bj-kpi:hover,
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    color: var(--primary);
-    background: var(--primary-light);
+    color: var(--text-secondary);
+    background: var(--bg-subtle);
     box-shadow: var(--shadow-sm);
     flex-shrink: 0;
-    border: 1px solid var(--ring-card);
+    border: 1px solid var(--border);
 }
 
 .bj-bike-thumb .icon {
@@ -529,12 +788,12 @@ button.bj-kpi:hover,
     width: 26px;
     height: 26px;
     border-radius: 50%;
-    color: var(--primary);
-    background: var(--primary-light);
+    color: #fff;
+    background: #6b7280;
     font-size: 10px;
     font-weight: 700;
     flex-shrink: 0;
-    border: 1px solid rgba(217, 56, 30, 0.15);
+    border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .bj-person-cell>span:last-child {
@@ -558,6 +817,58 @@ button.bj-kpi:hover,
     text-overflow: ellipsis;
     white-space: nowrap;
     color: var(--text-primary);
+}
+
+/* ---- "View Items (N)" chip in parts cell ---- */
+.bj-view-items {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: #fff;
+    color: var(--text-secondary);
+    font: inherit;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.13s, color 0.13s, background 0.13s, box-shadow 0.13s;
+}
+
+.bj-view-items:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+    box-shadow: 0 2px 8px rgba(217, 56, 30, 0.10);
+}
+
+.bj-view-items .icon {
+    width: 13px;
+    height: 13px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.bj-view-items span {
+    color: var(--text-muted);
+    font-weight: 500;
+    font-size: 11.5px;
+}
+
+/* Active state when row is expanded */
+.bj-claim.is-expanded .bj-view-items {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: rgba(217, 56, 30, 0.06);
+    box-shadow: 0 1px 4px rgba(217, 56, 30, 0.12);
+}
+
+.bj-claim.is-expanded .bj-view-items span {
+    color: var(--primary);
+    opacity: 0.75;
 }
 
 .bj-parts {
@@ -614,6 +925,12 @@ button.bj-kpi:hover,
     align-items: center;
     justify-content: flex-end;
     gap: 8px;
+}
+
+/* Hide the ··· menu when the expand panel is open — Service Actions covers it */
+.bj-claim.is-expanded .bj-row-actions {
+    visibility: hidden;
+    pointer-events: none;
 }
 
 /* ---- History / Print buttons in row ---- */

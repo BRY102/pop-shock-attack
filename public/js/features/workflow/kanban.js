@@ -175,7 +175,7 @@ function renderKanban(ctx) {
     ctx.title.innerText = 'Workflow';
     ctx.desc.innerText = currentRole === 'staff'
         ? 'Drag a card onto the next stage.'
-        : 'Shop floor — view only.';
+        : 'Shop floor view only.';
 
     ctx.actions.innerHTML = toolbarSearchHtml({
         id: 'searchKanbanInput',

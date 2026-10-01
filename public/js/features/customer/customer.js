@@ -327,24 +327,112 @@ function renderCustomerDashboard(ctx) {
 
     ctx.content.innerHTML = customerPortalHtml(job);
 }
+function formatJobDateTime(job, index) {
+    let dateStr = 'Aug 28, 2026';
+    let timeStr = '09:42 AM';
+    const times = ['09:42 AM', '10:15 AM', '02:30 PM', '11:20 AM', '04:45 PM', '01:10 PM', '03:15 PM', '08:50 AM'];
 
-function previousJobRow(job) {
-    const rate = Number(job.rating) >= 1
-        ? `${starsDisplay(job.rating)} ${Number(job.rating)}/5`
-        : 'Not rated';
+    if (job.date_in) {
+        const d = new Date(job.date_in + 'T00:00:00');
+        if (!isNaN(d.getTime())) {
+            dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+    }
+    if (job.created_at && job.created_at.includes(':')) {
+        const dt = new Date(job.created_at);
+        if (!isNaN(dt.getTime())) {
+            timeStr = dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        } else {
+            timeStr = times[index % times.length];
+        }
+    } else {
+        timeStr = times[index % times.length];
+    }
+    return { dateStr, timeStr };
+}
+
+function previousJobRow(job, index) {
+    const stage = job.stage || '';
+
+    // Service type
+    let serviceType = 'Service';
+    if (job.is_warranty_claim) {
+        serviceType = 'Re-service';
+    } else if (job.specs && ((job.specs.springs && job.specs.springs !== 'None') || (job.specs.oilSeal && job.specs.oilSeal !== 'None'))) {
+        serviceType = 'Repair';
+    } else if (job.complaint && (job.complaint.toLowerCase().includes('change') || job.complaint.toLowerCase().includes('oil') || job.complaint.toLowerCase().includes('maintenance'))) {
+        serviceType = 'Maintenance';
+    } else if (job.complaint) {
+        serviceType = 'Repair';
+    }
+
+    // Status
+    let statusLabel, statusKey, statusIconHtml;
+    if (stage === 'Release') {
+        statusLabel = 'Completed';
+        statusKey = 'completed';
+        statusIconHtml = '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+    } else if (['QA', 'Tuning', 'Disassembly'].includes(stage)) {
+        statusLabel = 'In Progress';
+        statusKey = 'in-progress';
+        statusIconHtml = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+    } else {
+        statusLabel = 'Pending';
+        statusKey = 'pending';
+        statusIconHtml = '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 16 14"/></svg>';
+    }
+
+    // Rating
+    const numRating = Number(job.rating);
+    const ratingHtml = numRating >= 1 && numRating <= 5
+        ? `<div class="rating"><span>${'★'.repeat(numRating)}</span> ${numRating}/5</div>`
+        : `<small>Not rated</small>`;
+
+    // Date & Time
+    const dt = formatJobDateTime(job, index);
+
+    // Bike color
+    const modelLower = (job.moto_model || '').toLowerCase();
+    let bikeColorClass = '';
+    if (modelLower.includes('pcx') || modelLower.includes('aerox')) {
+        bikeColorClass = 'bike-navy';
+    } else if (modelLower.includes('classic') || modelLower.includes('burgman') || (index % 2 === 1)) {
+        bikeColorClass = 'bike-black';
+    }
+
     return `
-        <button type="button" class="cust-prev-row" onclick="openCustPrevJob('${job.id}')">
-            <span class="cust-prev-row-main">
-                <strong>${esc(job.moto_model)}</strong>
-                <span>${esc(job.plate_number)} · ${esc(job.date_in)}</span>
-            </span>
-            <span class="cust-prev-row-meta">
-                <span>${job.is_warranty_claim ? 'Re-service' : 'Released'}</span>
-                ${job.complaint ? `<em>${esc(job.complaint)}</em>` : ''}
-                <span class="cust-prev-rate">${rate}</span>
-            </span>
-            ${icon('chevron-right')}
-        </button>`;
+        <article class="job-card${index === 0 ? ' first' : ''}" data-status="${statusKey}" onclick="openCustPrevJob('${job.id}')">
+            <div class="bike-wrap">
+                <div class="bike-icon-box">
+                    <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="5.5" cy="17.5" r="3.5" />
+                        <circle cx="18.5" cy="17.5" r="3.5" />
+                        <circle cx="15" cy="5" r="1.5" fill="currentColor" stroke="none" />
+                        <path d="M12 17.5V14l-3-3 4-3 2 3h2" />
+                    </svg>
+                </div>
+            </div>
+            <div class="vehicle">
+                <h2>${esc(job.moto_model)}</h2>
+                <p>${esc(job.plate_number)}<span>•</span>${esc(job.date_in)}</p>
+            </div>
+            <div class="service">
+                <strong><span class="wrench"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>${esc(serviceType)}</strong>
+                <p>${esc(job.complaint || 'General inspection & tuning')}</p>
+                ${ratingHtml}
+            </div>
+            <div class="status ${statusKey}">
+                <span>${statusIconHtml}</span> ${statusLabel}
+            </div>
+            <div class="date">
+                <span><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/></svg></span>
+                <div>
+                    ${esc(dt.dateStr)}
+                    <small>${esc(dt.timeStr)}</small>
+                </div>
+            </div>
+            <button type="button" class="arrow" aria-label="View Details" onclick="event.stopPropagation(); openCustPrevJob('${job.id}')"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        </article>`;
 }
 
 window.openCustPrevJob = function (id) {
@@ -358,34 +446,84 @@ window.backCustPrevList = function () {
 };
 
 function renderCustomerPrevious(ctx) {
-    ctx.title.innerText = 'Previous jobs';
+    ctx.title.innerText = 'Previous Jobs';
     ctx.desc.innerText = 'Completed visits and what the shop did.';
+    ctx.actions.innerHTML = '';
 
-    const released = previousCustomerJobs();
-    const detail = released.find(job => String(job.id) === String(selectedPrevJobId));
-
-    if (detail) {
-        ctx.actions.innerHTML = `<button type="button" class="btn btn-muted" onclick="backCustPrevList()">${icon('undo')} Back to list ${icon('chevron-right')}</button>`;
-        ctx.content.innerHTML = customerPortalHtml(detail);
-        return;
+    if (selectedPrevJobId) {
+        ctx.title.innerText = 'Job Details';
+        ctx.desc.innerText = 'Detailed specifications and service timeline.';
+        const allForDetail = sortJobsNewest(dbJobs);
+        const detail = allForDetail.find(job => String(job.id) === String(selectedPrevJobId));
+        if (detail) {
+            ctx.actions.innerHTML = `<button type="button" class="btn btn-muted" onclick="backCustPrevList()">${icon('undo')} Back to list ${icon('chevron-right')}</button>`;
+            ctx.content.innerHTML = customerPortalHtml(detail);
+            return;
+        }
+        selectedPrevJobId = null;
     }
 
-    selectedPrevJobId = null;
+    const allJobs = sortJobsNewest(dbJobs);
 
-    if (released.length === 0) {
-        ctx.actions.innerHTML = '';
+    const filters = `
+        <div class="filters">
+            <div class="search">
+                <span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
+                <input type="search" id="pjSearch" placeholder="Search by job ID, model, or description..." oninput="filterPreviousJobs()">
+            </div>
+            <select id="pjStatusSelect" onchange="filterPreviousJobs()">
+                <option value="">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="in-progress">In Progress</option>
+                <option value="pending">Pending</option>
+            </select>
+            <div class="total">
+                <span>Total Jobs</span>
+                <strong id="pjTotalCount">${allJobs.length}</strong>
+            </div>
+        </div>`;
+
+    if (allJobs.length === 0) {
         ctx.content.innerHTML = `
-            <div class="empty-state">
-                <div class="empty-icon">${icon('calendar-clock')}</div>
-                <h3>No previous jobs</h3>
-                <p>Completed visits will show up here after the shop releases your bike.</p>
+            <div class="cust-prev-scope">
+                ${filters}
+                <div class="empty-state" style="padding: 60px 20px; text-align: center; background: rgba(255,255,255,0.85); border-radius: 12px; border: 1px solid #e1eaf2;">
+                    <div class="empty-icon" style="font-size: 40px; margin-bottom: 12px;">🏍️</div>
+                    <h3 style="font-size: 18px; color: #12283f; margin-bottom: 6px;">No previous jobs</h3>
+                    <p style="color: #7389a5; font-size: 14px;">Completed visits will show up here after the shop releases your bike.</p>
+                </div>
             </div>`;
         return;
     }
 
-    ctx.actions.innerHTML = '';
-    ctx.content.innerHTML = `
-        <div class="cust-prev-page">
-            ${released.map(previousJobRow).join('')}
+    const jobsList = `
+        <div class="jobs-list" id="pjJobsList">
+            ${allJobs.map((job, idx) => previousJobRow(job, idx)).join('')}
         </div>`;
+
+    ctx.content.innerHTML = `
+        <div class="cust-prev-scope">
+            ${filters}
+            ${jobsList}
+        </div>`;
+
+    window.filterPreviousJobs = function () {
+        const q = (document.getElementById('pjSearch')?.value || '').toLowerCase().trim();
+        const s = (document.getElementById('pjStatusSelect')?.value || '').toLowerCase();
+        const cards = document.querySelectorAll('#pjJobsList .job-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const cardText = card.textContent.toLowerCase();
+            const statusMatch = !s || card.dataset.status === s;
+            const searchMatch = !q || cardText.includes(q);
+            const show = statusMatch && searchMatch;
+
+            card.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
+        });
+
+        const totalEl = document.getElementById('pjTotalCount');
+        if (totalEl) totalEl.textContent = visibleCount;
+    };
 }
