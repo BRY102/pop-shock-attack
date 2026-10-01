@@ -8,6 +8,7 @@ class Expense extends Model
 {
     protected $fillable = [
         'category',
+        'payment_method',
         'description',
         'amount',
         'date',

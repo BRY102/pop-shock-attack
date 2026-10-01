@@ -22,6 +22,7 @@ window.submitExpense = async function (e) {
 
         if (response.ok) {
             e.target.reset();
+            if (typeof updateExpenseDescCounter === 'function') updateExpenseDescCounter();
             closeModal('modal-add-expense');
             showNotification('Expense recorded successfully.', 'success');
             invalidate('expenses');
@@ -33,6 +34,24 @@ window.submitExpense = async function (e) {
     } catch (error) {
         console.error(error);
         showNotification('Server connection error.', 'error');
+    }
+};
+
+window.updateExpenseDescCounter = function (el) {
+    if (!el) el = document.getElementById('exp_desc');
+    const count = el && el.value ? el.value.length : 0;
+    const max = el ? parseInt(el.getAttribute('maxlength') || '225', 10) : 225;
+    const countEl = document.getElementById('exp_desc_count');
+    if (countEl) countEl.textContent = count;
+    const counterWrap = document.getElementById('exp_desc_counter');
+    if (counterWrap) {
+        if (count >= max) {
+            counterWrap.style.color = '#dc2626';
+        } else if (count >= max * 0.9) {
+            counterWrap.style.color = '#d97706';
+        } else {
+            counterWrap.style.color = 'var(--text-muted)';
+        }
     }
 };
 
@@ -55,7 +74,10 @@ window.openExpenseModal = function () {
     const amount = document.getElementById('exp_amount');
     if (amount) amount.value = '';
     const notes = document.getElementById('exp_desc');
-    if (notes) notes.value = '';
+    if (notes) {
+        notes.value = '';
+        updateExpenseDescCounter(notes);
+    }
     document.querySelectorAll('#modal-add-expense .exp-label-icon[data-icon]').forEach(slot => {
         slot.innerHTML = icon(slot.dataset.icon);
     });

@@ -118,10 +118,28 @@ function userTableRows() {
     }).join('');
 }
 
+function mechanicTableRows() {
+    if (dbMechanics.length === 0) {
+        return `<tr><td colspan="4" class="table-empty">No mechanics yet. Add a name so staff can assign jobs.</td></tr>`;
+    }
+
+    return dbMechanics.map((m) => {
+        const statusBadge = `<span class="users-presence"><span class="users-presence-dot is-live"></span><span class="badge-good">Active</span></span>`;
+        const roleBadge = `<span class="badge-role staff">Mechanic</span>`;
+        return `<tr>
+            <td>${esc(m.name)}</td>
+            <td>${statusBadge}</td>
+            <td>${roleBadge}</td>
+            ${mechanicRowMenu(m)}
+        </tr>`;
+    }).join('');
+}
+
 function refreshUsersList() {
     const body = document.getElementById('usersTableBody');
-    if (!body) return;
-    body.innerHTML = userTableRows();
+    if (body) body.innerHTML = userTableRows();
+    const mechBody = document.getElementById('mechanicsTableBody');
+    if (mechBody) mechBody.innerHTML = mechanicTableRows();
 }
 
 function stopUsersPresencePoll() {
@@ -149,7 +167,7 @@ window.stopUsersPresencePoll = stopUsersPresencePoll;
 function renderUsers(ctx) {
     ctx.title.innerText = 'Manage Users';
     ctx.desc.innerText = 'Accounts and mechanics.';
-    ctx.actions.innerHTML = `<button class="btn btn-primary" onclick="openUserModal('add')">${icon('plus')} Add Account ${icon('chevron-right')}</button>`;
+    ctx.actions.innerHTML = `<button class="btn btn-primary btn-add-account" style="margin-right: auto;" onclick="openUserModal('add')">${icon('plus')} Add Account ${icon('chevron-right')}</button>`;
 
     let html = resetRequestCards();
     html += `<div class="table-container"><table class="data-table"><thead><tr>
@@ -163,28 +181,17 @@ function renderUsers(ctx) {
 }
 
 function mechanicRoster() {
-    let rows = '';
-    if (dbMechanics.length === 0) {
-        rows = `<tr><td colspan="2" style="text-align:center; padding: 1.5rem; color: #777;">No mechanics yet. Add a name so staff can assign jobs.</td></tr>`;
-    } else {
-        dbMechanics.forEach((m) => {
-            rows += `<tr>
-                <td>${esc(m.name)}</td>
-                ${mechanicRowMenu(m)}
-            </tr>`;
-        });
-    }
-
-    return `<div class="approval-section" style="margin-top:2rem;">
+    return `<div class="approval-section" style="margin-top:2.5rem;">
         <h3>Shop mechanics</h3>
         <p class="approval-section-note">Names used when assigning a job.</p>
-        <form onsubmit="submitMechanic(event)" class="inline-form">
-            <input type="text" id="m_mechanic_name" class="search-bar" placeholder="Mechanic name" required minlength="2" maxlength="100">
-            <button type="submit" class="btn btn-primary">${icon('plus')} Add Mechanic</button>
+        <form onsubmit="submitMechanic(event)" class="inline-form" style="margin-bottom: 1.25rem;">
+            <input type="text" id="m_mechanic_name" class="search-bar" placeholder="Mechanic name" required minlength="2" maxlength="100" style="height: 40px; border-radius: 999px; max-width: 420px;">
+            <button type="submit" class="btn btn-action-pill">${icon('plus')} Add Mechanic ${icon('chevron-right')}</button>
         </form>
-        <div class="table-container table-compact"><table class="data-table"><thead><tr>
-            <th>Name</th><th><span class="sr-only">Actions</span></th>
-        </tr></thead><tbody>${rows}</tbody></table></div>
+        <div class="table-container"><table class="data-table"><thead><tr>
+            <th>Name</th><th>Status</th><th>Role</th>
+            <th><span class="sr-only">Actions</span></th>
+        </tr></thead><tbody id="mechanicsTableBody">${mechanicTableRows()}</tbody></table></div>
     </div>`;
 }
 

@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             InventorySeeder::class,
             AppUserSeeder::class,
             MechanicSeeder::class,
+            BackjobDataSeeder::class,
         ]);
     }
 }

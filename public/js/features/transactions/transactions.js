@@ -24,7 +24,7 @@ function getTxnMethodIcon(method, isWarranty = false) {
 
 function renderTransactions(ctx) {
     ctx.title.innerText = 'Transactions';
-    ctx.desc.innerText = 'Real-time record of all counter settlements and released services.';
+    ctx.desc.innerText = 'Real time record of all counter settlements and released services.';
 
     const releasedJobs = (dbReleased || []).filter(job => job.specs);
     const counterSales = dbCounterSales || [];

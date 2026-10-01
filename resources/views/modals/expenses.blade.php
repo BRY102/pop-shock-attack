@@ -31,10 +31,18 @@
                 </div>
             </div>
             <div class="input-group">
-                <label class="exp-label" for="exp_desc"><span class="exp-label-icon" data-icon="file-text"></span>
-                    Notes &amp; Detailed Description</label>
-                <textarea id="exp_desc" rows="4" maxlength="255" required
-                    placeholder="Describe the expense — include vendor name, invoice number, or itemized details (max 255 characters)."></textarea>
+                <div class="exp-label-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <label class="exp-label" for="exp_desc" style="margin-bottom: 0;">
+                        <span class="exp-label-icon" data-icon="file-text"></span>
+                        Notes &amp; Detailed Description
+                    </label>
+                    <span class="exp-counter" id="exp_desc_counter" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">
+                        <span id="exp_desc_count">0</span> / 225
+                    </span>
+                </div>
+                <textarea id="exp_desc" rows="4" maxlength="225" required
+                    placeholder="Describe the expense include vendor name, invoice number, or itemized details"
+                    oninput="updateExpenseDescCounter(this)"></textarea>
             </div>
             <div class="exp-actions">
                 <button type="button" class="btn btn-muted"

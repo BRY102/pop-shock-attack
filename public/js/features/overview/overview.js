@@ -307,8 +307,8 @@ function overviewWelcomeHtml() {
 }
 
 function renderOverview(ctx) {
-    ctx.title.innerText = 'Business Analytics';
-    ctx.desc.innerText = 'Real-time performance overview for shop operations.';
+    ctx.title.innerText = 'Overview';
+    ctx.desc.innerText = 'Real time performance overview for shop operations.';
     ctx.actions.innerHTML = '';
 
     const stats = computeOverviewStats();

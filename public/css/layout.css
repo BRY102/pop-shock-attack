@@ -1139,7 +1139,8 @@
 .page-toolbar .btn,
 .page-toolbar .btn-primary,
 .page-toolbar .btn-ghost,
-.page-toolbar .btn-muted {
+.page-toolbar .btn-muted,
+.btn-action-pill {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -1158,18 +1159,21 @@
     cursor: pointer;
     white-space: nowrap;
     box-shadow: 0 8px 16px rgba(15, 23, 42, 0.16);
+    transition: background 0.15s ease, transform 0.1s ease;
 }
 
 .page-toolbar .btn:hover,
 .page-toolbar .btn-primary:hover,
 .page-toolbar .btn-ghost:hover,
-.page-toolbar .btn-muted:hover {
+.page-toolbar .btn-muted:hover,
+.btn-action-pill:hover {
     background: #111827;
     color: #fff;
     border-color: transparent;
 }
 
-.page-toolbar .btn .icon {
+.page-toolbar .btn .icon,
+.btn-action-pill .icon {
     width: 15px;
     height: 15px;
     stroke-width: 2.4;

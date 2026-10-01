@@ -36,6 +36,11 @@ Route::get('/', function () {
     return view('index');
 });
 
+// Dedicated Login Route
+Route::get('/login', function () {
+    return view('index');
+})->name('login');
+
 // SPA View Routes (Clean Path URLs)
 $spaViews = 'login|overview|kanban|transactions|history|warranty|inventory|reports|backjobs|users|approvals|customer|customer-prev';
 
